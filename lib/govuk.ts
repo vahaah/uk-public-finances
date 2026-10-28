@@ -7,6 +7,7 @@ const SPREADSHEET_TYPES = new Set([
 export const GOVUK_PATHS = {
   hmrcReceipts: "/government/statistics/hmrc-tax-and-nics-receipts-for-the-uk",
   pesaPrefix: "/government/statistics/public-expenditure-statistical-analyses-",
+  incomeTaxCollection: "/government/collections/income-tax-statistics-and-distributions",
   incomeTaxPrefix: "/government/statistics/income-tax-liabilities-statistics-",
 } as const;
 
@@ -30,6 +31,19 @@ export type GovukSearchHit = {
   link?: string;
   public_timestamp?: string;
   document_type?: string;
+};
+
+export type GovukCollectionDocument = {
+  title?: string;
+  base_path?: string;
+  document_type?: string;
+  public_updated_at?: string;
+  withdrawn?: boolean;
+};
+
+export type GovukCollection = {
+  base_path?: string;
+  links?: { documents?: GovukCollectionDocument[] };
 };
 
 export function isStatisticsPath(link: string): boolean {
@@ -61,6 +75,29 @@ export function pickPesaChapters(content: GovukContent): { chapter4: GovukAttach
     throw new Error("PESA content is missing chapter 4 or chapter 6");
   }
   return { chapter4, chapter6 };
+}
+
+const LIABILITIES_TITLE = /^Income Tax liabilities statistics:/i;
+
+/** Latest liabilities statistics release on the stable HMRC collection, not a table or an older edition. */
+export function pickIncomeTaxPublication(
+  documents: GovukCollectionDocument[],
+): GovukCollectionDocument & { base_path: string } {
+  const matches = documents.filter((document) => {
+    const path = document.base_path ?? "";
+    if (document.withdrawn) return false;
+    if (!path.startsWith(GOVUK_PATHS.incomeTaxPrefix)) return false;
+    return LIABILITIES_TITLE.test(document.title ?? "");
+  });
+  const latest = matches.sort((left, right) => {
+    const byDate = (right.public_updated_at ?? "").localeCompare(left.public_updated_at ?? "");
+    if (byDate !== 0) return byDate;
+    return (right.base_path ?? "").localeCompare(left.base_path ?? "");
+  })[0];
+  if (!latest?.base_path) {
+    throw new Error("Income tax collection has no Income Tax liabilities statistics publication");
+  }
+  return { ...latest, base_path: latest.base_path };
 }
 
 export function pickIncomeTaxWorkbook(content: GovukContent): GovukAttachment {

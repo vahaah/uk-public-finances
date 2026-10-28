@@ -143,7 +143,7 @@ async function readNewestValidVersion(sourceId: SourceId): Promise<AnySnapshot |
     .filter((blob) => !blob.pathname.endsWith("/latest.json"))
     .sort((left, right) => right.uploadedAt.getTime() - left.uploadedAt.getTime());
   for (const blob of versions) {
-    const response = await fetch(blob.url, { cache: "no-store" });
+    const response = await fetch(blob.url, blobPageFetchInit());
     if (!response.ok) continue;
     const body = (await response.json()) as { snapshot?: unknown };
     const parsed = snapshotSchemas[sourceId].safeParse(body.snapshot ?? body);
@@ -178,9 +178,16 @@ function readFixture(sourceId: SourceId): AnySnapshot | null {
   return parsed.data as AnySnapshot;
 }
 
+/** Matches the minimum Blob cache on overwritten files. `no-store` opts an ISR page into dynamic rendering. */
+export const BLOB_PAGE_REVALIDATE_SECONDS = 60;
+
+export function blobPageFetchInit(): { next: { revalidate: number } } {
+  return { next: { revalidate: BLOB_PAGE_REVALIDATE_SECONDS } };
+}
+
 async function readBlobJson(pathname: string): Promise<Record<string, unknown>> {
   const blob = await head(pathname);
-  const response = await fetch(blob.url, { cache: "no-store" });
+  const response = await fetch(blob.url, blobPageFetchInit());
   if (!response.ok) throw new Error(`Blob ${pathname} returned ${response.status}`);
   return (await response.json()) as Record<string, unknown>;
 }

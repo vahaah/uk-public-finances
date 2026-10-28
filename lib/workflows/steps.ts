@@ -6,9 +6,11 @@ import { protectBuild } from "@/lib/workflows/guard";
 import {
   GOVUK_PATHS,
   pickHmrcReceiptsWorkbook,
+  pickIncomeTaxPublication,
   pickIncomeTaxWorkbook,
   pickPesaChapters,
   pickSearchHit,
+  type GovukCollection,
   type GovukContent,
   type GovukSearchHit,
 } from "@/lib/govuk";
@@ -156,14 +158,11 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
 
 export async function runIncomeTax(force: boolean): Promise<Record<string, unknown>> {
   "use step";
-  const hit = await findContent(
-    "Income Tax liabilities statistics",
-    { filter_organisations: "hm-revenue-customs" },
-    (candidate) =>
-      (candidate.link ?? "").startsWith(GOVUK_PATHS.incomeTaxPrefix) &&
-      /^Income Tax liabilities statistics:/i.test(candidate.title ?? ""),
-  );
-  const content = await getJson(`https://www.gov.uk/api/content${hit.link}`);
+  const collection = (await getJson(
+    `https://www.gov.uk/api/content${GOVUK_PATHS.incomeTaxCollection}`,
+  )) as GovukContent & GovukCollection;
+  const publication = pickIncomeTaxPublication(collection.links?.documents ?? []);
+  const content = await getJson(`https://www.gov.uk/api/content${publication.base_path}`);
   const workbook = pickIncomeTaxWorkbook(content as GovukContent);
   const releaseDate = content.public_updated_at ?? null;
   const bytes = await getBytes(workbook.url ?? "");
@@ -173,9 +172,9 @@ export async function runIncomeTax(force: boolean): Promise<Record<string, unkno
       retrievedAt: new Date().toISOString(),
       releaseDate,
       nextRelease: null,
-      sourceUrl: `https://www.gov.uk${hit.link}`,
+      sourceUrl: `https://www.gov.uk${publication.base_path}`,
       data: parseIncomeTax(bytes, {
-        contentUrl: `https://www.gov.uk${hit.link}`,
+        contentUrl: `https://www.gov.uk${publication.base_path}`,
         attachmentUrl: workbook.url ?? "",
         attachmentFilename: workbook.filename ?? "",
       }),

@@ -4,11 +4,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { evaluateSlot } from "@/lib/clock";
-import { pickHmrcReceiptsWorkbook, pickSearchHit } from "@/lib/govuk";
+import { pickHmrcReceiptsWorkbook, pickIncomeTaxPublication, pickSearchHit } from "@/lib/govuk";
 import { parseCsvLine } from "@/lib/parsers/boe";
 import { droppedTooFar } from "@/lib/quality";
 import { hmrcDataSchema } from "@/lib/schema";
-import { firstValidSnapshot, loadHealth } from "@/lib/store";
+import { blobPageFetchInit, firstValidSnapshot, loadHealth } from "@/lib/store";
 import { boeSnapshot, dmoSnapshot } from "@/lib/workflows/builds";
 import { protectBuild } from "@/lib/workflows/guard";
 
@@ -82,6 +82,37 @@ describe("health age", () => {
 describe("Bank of England CSV", () => {
   it("keeps commas inside quoted fields", () => {
     expect(parseCsvLine('02 Jan 2024,"1,234.5",3.5')).toEqual(["02 Jan 2024", "1,234.5", "3.5"]);
+  });
+});
+
+describe("income tax discovery", () => {
+  it("chooses the latest liabilities statistics release from the captured collection", () => {
+    const collection = JSON.parse(readFileSync(path.join(process.cwd(), "fixtures/raw/govuk/income-tax-collection.json"), "utf8")) as {
+      links: { documents: { title?: string; base_path?: string; public_updated_at?: string; withdrawn?: boolean }[] };
+    };
+    const picked = pickIncomeTaxPublication(collection.links.documents);
+    expect(picked.base_path).toBe(
+      "/government/statistics/income-tax-liabilities-statistics-tax-year-2023-to-2024-to-tax-year-2026-to-2027",
+    );
+    expect(picked.title).toMatch(/^Income Tax liabilities statistics:/);
+  });
+
+  it("ignores table releases that are not the liabilities statistics publication", () => {
+    expect(() =>
+      pickIncomeTaxPublication([
+        {
+          title: "Table 2.5 Income Tax liabilities by income range",
+          base_path: "/government/statistics/income-tax-liabilities-by-income-range",
+          public_updated_at: "2026-07-15T08:30:13Z",
+        },
+      ]),
+    ).toThrow(/liabilities statistics/);
+  });
+});
+
+describe("page blob reads", () => {
+  it("revalidates overwritten Blob files instead of opting the page out of ISR", () => {
+    expect(blobPageFetchInit()).toEqual({ next: { revalidate: 60 } });
   });
 });
 
