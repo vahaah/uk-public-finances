@@ -27,6 +27,10 @@ describe("forecasts view", () => {
     const totals = cumulativeYear([{ period: "2026-04", value: -1000 }, { period: "2026-05", value: -2500 }], "2026-27");
     expect(totals.slice(0, 3)).toEqual([1, 3.5, null]);
   });
+  it("keeps later totals unknown after a missing month", () => {
+    const totals = cumulativeYear([{ period: "2026-04", value: -1000 }, { period: "2026-06", value: -2000 }], "2026-27");
+    expect(totals.slice(0, 3)).toEqual([1, null, null]);
+  });
   it("writes a CSV with one row per point", () => {
     const csv = seriesCsv([{ name: "PSNB", points: [{ year: "2025-26", outturn: 134.3, forecast: null }] }], "March 2026");
     expect(csv).toBe("series,financial_year,outturn_bn,forecast_bn,vintage\nPSNB,2025-26,134.3,,March 2026\n");

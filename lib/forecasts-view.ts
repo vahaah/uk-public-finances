@@ -32,13 +32,17 @@ export function outturnFor(series: DatabankSeries | undefined, fy: string): numb
 /** Running totals in £bn (borrowing positive) for one financial year from ONS monthly J5II (£m, bulletin sign). */
 export function cumulativeYear(months: { period: string; value: number }[], fy: string): (number | null)[] {
   const start = Number(fy.slice(0, 4));
-  let total = 0;
+  let total: number | null = 0;
   return FY_MONTHS.map((_, index) => {
     const year = index < 9 ? start : start + 1;
     const month = ((index + 3) % 12) + 1;
     const period = `${year}-${String(month).padStart(2, "0")}`;
     const value = months.find((item) => item.period === period)?.value;
-    if (value == null) return null;
+    // Once a month is missing, later running totals are unknown rather than silently low.
+    if (value == null || total == null) {
+      total = null;
+      return null;
+    }
     total += -value / 1000;
     return roundBn(total);
   });
