@@ -22,7 +22,33 @@ export function taxGroup(name: string): TaxGroup {
   return "other";
 }
 
-export type MixRow = { year: string } & Record<TaxGroup, number>;
+export type MixRow = { year: string; raw: Record<string, number> } & Record<TaxGroup, number>;
+
+export type FunctionMixRow = { year: string; series: { key: string; label: string; value: number; raw: number }[] };
+
+/** Flat chart rows. `raw` is the amount before rounding to £0.1bn. */
+export function functionChartRows(rows: FunctionMixRow[]): { year: string; raw: Record<string, number> }[] {
+  return rows.map((row) => {
+    const flat: { year: string; raw: Record<string, number> } & Record<string, string | number | Record<string, number>> = {
+      year: row.year,
+      raw: {},
+    };
+    for (const series of row.series) {
+      flat[series.key] = series.value;
+      flat.raw[series.key] = series.raw;
+    }
+    return flat;
+  });
+}
+
+/**
+ * Unrounded £bn (or the unrounded share) for one mix series.
+ * Chart values are already rounded to 0.1, so today's prices must rebase this instead.
+ */
+export function mixNominal(raw: Record<string, number> | undefined, key: string): number | null {
+  const value = raw?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
 
 export function receiptMix(
   history: { year: string; taxes: { name: string; value: number }[] }[],
@@ -33,9 +59,12 @@ export function receiptMix(
     for (const tax of year.taxes) totals[taxGroup(tax.name)] += tax.value;
     const values = TAX_GROUPS.map((group) => totals[group]);
     const shown = asShare ? largestRemainder(values) : values.map((value) => value / 1000);
-    const row = { year: year.year } as MixRow;
+    const raw: Record<string, number> = {};
+    const row = { year: year.year, raw } as MixRow;
     TAX_GROUPS.forEach((group, index) => {
-      row[group] = Number((shown[index] ?? 0).toFixed(1));
+      const exact = shown[index] ?? 0;
+      raw[group] = exact;
+      row[group] = Number(exact.toFixed(1));
     });
     return row;
   });
@@ -44,7 +73,7 @@ export function receiptMix(
 export function functionMix(
   history: { year: string; items: { name: string; value: number }[] }[],
   asShare: boolean,
-): { year: string; series: { key: string; label: string; value: number }[] }[] {
+): FunctionMixRow[] {
   const latest = history.at(-1);
   const ranked = [...(latest?.items ?? [])].filter((item) => item.value > 0).sort((left, right) => right.value - left.value);
   const kept = ranked.slice(0, 5).map((item) => clean(item.name));
@@ -63,7 +92,10 @@ export function functionMix(
     const shown = asShare ? largestRemainder(values) : values;
     return {
       year: year.year,
-      series: labels.map((label, index) => ({ key: label, label, value: Number((shown[index] ?? 0).toFixed(1)) })),
+      series: labels.map((label, index) => {
+        const exact = shown[index] ?? 0;
+        return { key: label, label, value: Number(exact.toFixed(1)), raw: exact };
+      }),
     };
   });
 }

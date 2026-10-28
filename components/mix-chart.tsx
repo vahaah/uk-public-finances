@@ -6,7 +6,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { ChartTooltip } from "@/components/chart-tooltip";
 import { yearTickValues } from "@/lib/chart-time";
 import { formatAxis } from "@/lib/format";
-import { TAX_GROUPS, TAX_LABELS, type MixRow, type TaxGroup } from "@/lib/mix";
+import { functionChartRows, mixNominal, TAX_GROUPS, TAX_LABELS, type FunctionMixRow, type MixRow, type TaxGroup } from "@/lib/mix";
 import { chartBaseYear, todayPricesLine, type PriceBundle } from "@/lib/prices";
 
 const TAX_COLOR: Record<TaxGroup, string> = {
@@ -49,18 +49,14 @@ export function FunctionMixChart({
   shares,
   prices = null,
 }: {
-  pounds: { year: string; series: { key: string; label: string; value: number }[] }[];
-  shares: { year: string; series: { key: string; label: string; value: number }[] }[];
+  pounds: FunctionMixRow[];
+  shares: FunctionMixRow[];
   prices?: PriceBundle | null;
 }) {
   const [asShare, setAsShare] = useState(false);
   const source = asShare ? shares : pounds;
   const keys = pounds[0]?.series.map((series) => series.key) ?? [];
-  const rows = source.map((row) => {
-    const flat: Record<string, string | number> = { year: row.year };
-    for (const series of row.series) flat[series.key] = series.value;
-    return flat;
-  });
+  const rows = functionChartRows(source);
   return (
     <MixFrame
       asShare={asShare}
@@ -75,6 +71,8 @@ export function FunctionMixChart({
   );
 }
 
+type MixChartRow = { year: string; raw: Record<string, number> };
+
 function MixFrame({
   asShare,
   onToggle,
@@ -87,7 +85,7 @@ function MixFrame({
 }: {
   asShare: boolean;
   onToggle: () => void;
-  rows: Record<string, string | number>[];
+  rows: MixChartRow[];
   keys: readonly string[];
   label: (key: string) => string;
   color: (key: string, index: number) => string;
@@ -121,10 +119,12 @@ function MixFrame({
                     active={active}
                     label={period}
                     rows={(payload ?? []).map((item) => {
+                      const point = item.payload as { raw?: Record<string, number> } | undefined;
+                      const nominal = mixNominal(point?.raw, String(item.dataKey ?? ""));
                       const line =
-                        prices && !asShare
+                        prices && !asShare && nominal != null
                           ? todayPricesLine({
-                              nominal: Number(item.value),
+                              nominal,
                               period,
                               frequency: "financial",
                               unit: "billion",
