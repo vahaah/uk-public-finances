@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { DepartmentChart, HistoryChart, SpendingVisuals } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
-import { formatBillions, formatGbpFromMillions } from "@/lib/format";
+import { formatBillions, formatGbpFromMillions, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -11,7 +11,7 @@ import { SOURCES } from "@/lib/site";
 export const metadata = pageMeta({
   title: "UK government spending by function and department",
   description:
-    "What the UK government spends money on: health, pensions and welfare, education, defence and debt interest, from HM Treasury PESA, with departmental budgets.",
+    "What the UK government spends on health, welfare, education, defence and debt interest, plus departmental budgets. From HM Treasury PESA.",
   path: "/spending",
 });
 
@@ -59,7 +59,7 @@ export default async function SpendingPage() {
       />
       <ChartFrame
         title={`Spending on services by function, ${functions.year}`}
-        subtitle="£ billion."
+        subtitle="£bn."
         source={
           <SourceNote
             publisher={meta.publisher}
@@ -67,21 +67,25 @@ export default async function SpendingPage() {
             url={snapshot.sourceUrl}
             releaseDate={snapshot.releaseDate}
             licenceUrl={meta.licenceUrl}
-            extra="Top-level functions only. EU transactions are left out of the chart when they are negative."
+            extra="Top-level functions only. EU transactions are shown only when positive."
             sourceId="pesa"
           />
         }
       >
         <SpendingVisuals items={functions.items.filter((item) => item.value > 0)} year={functions.year} prices={bundle} />
         <DataTable
-          columns={["Function", "£bn"]}
-          rows={functions.items.map((item) => [item.name.replace(/^\d+\.\s*/, ""), item.value.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })])}
+          columns={["Function", "£bn", "Share of total"]}
+          rows={functions.items.map((item) => [
+            item.name.replace(/^\d+\.\s*/, ""),
+            formatBillions(item.value),
+            functions.totalServices ? formatPercent((item.value / functions.totalServices) * 100) : "—",
+          ])}
         />
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame
           title="Total managed expenditure over time"
-          subtitle="£ billion. Financial years from PESA table 4.1 and 4.2."
+          subtitle="£bn, by financial year. From PESA table 4.2."
           source={
             <SourceNote
               publisher={meta.publisher}
@@ -107,11 +111,11 @@ export default async function SpendingPage() {
       <div className="mt-3">
         <ChartFrame
           title="Departmental budgets (DEL) by department"
-          subtitle="£ billion. Central government own expenditure within departmental expenditure limits."
+          subtitle="£bn. Central government spending within departmental expenditure limits."
           source={
             <SourceNote
               publisher={meta.publisher}
-              title={`PESA table 6.1. Outturn total ${departments.total == null ? "not available" : formatGbpFromMillions(departments.total)}.`}
+              title={`PESA table 6.1. Total spent in ${departments.year}: ${departments.total == null ? "not available" : formatGbpFromMillions(departments.total)}.`}
               url={snapshot.sourceUrl}
               releaseDate={snapshot.releaseDate}
               licenceUrl={meta.licenceUrl}

@@ -22,20 +22,24 @@ export function PriceControls({
   years,
   frequency = false,
   gdp = true,
+  showRange = true,
 }: {
   years: string[];
   frequency?: boolean;
   gdp?: boolean;
+  showRange?: boolean;
 }) {
   const view = usePriceView();
   const selectedBase = view.base && years.includes(view.base) ? view.base : (years.at(-1) ?? "");
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2">
-      <Segmented
-        value={view.range}
-        options={RANGES.map((option) => ({ value: option, label: option === "all" ? "All" : `${option}y` }))}
-        onChange={view.setRange}
-      />
+    <div className="mb-3 flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
+      {showRange ? (
+        <Segmented
+          value={view.range}
+          options={RANGES.map((option) => ({ value: option, label: option === "all" ? "All" : `${option}y` }))}
+          onChange={view.setRange}
+        />
+      ) : null}
       {frequency ? (
         <Segmented
           value={view.freq}
@@ -51,7 +55,7 @@ export function PriceControls({
         value={view.mode}
         options={[
           { value: "nominal", label: "Nominal" },
-          { value: "real", label: "Real" },
+          { value: "real", label: "Real terms" },
           ...(gdp ? [{ value: "gdp" as const, label: "% of GDP" }] : []),
         ]}
         onChange={view.setMode}
@@ -76,7 +80,7 @@ export function PriceControls({
   );
 }
 
-function Segmented<T extends string>({
+export function Segmented<T extends string>({
   value,
   options,
   onChange,

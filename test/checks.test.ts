@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { evaluateSlot } from "@/lib/clock";
+import { formatGbpFromMillions, formatReceiptBn, formatReceiptShare, millionsToBillions } from "@/lib/format";
 import { shouldWriteSnapshot } from "@/lib/snapshot";
 import { pickHmrcReceiptsWorkbook, pickIncomeTaxPublication, pickSearchHit } from "@/lib/govuk";
 import { parseCsvLine } from "@/lib/parsers/boe";
@@ -149,6 +150,20 @@ describe("GOV.UK attachment picking", () => {
     expect(() =>
       pickSearchHit([{ title: "Public Expenditure Statistical Analyses 2026", link: "/government/publications/pesa" }], () => true),
     ).toThrow(/no official statistics/);
+  });
+});
+
+describe("HMRC receipt units", () => {
+  it("treats monthly workbook totals as £ million and charts them as £bn", () => {
+    const snapshot = JSON.parse(readFileSync("fixtures/snapshots/hmrc-receipts.json", "utf8")) as {
+      data: { monthly: { period: string; total: number }[] };
+    };
+    const september = snapshot.data.monthly.find((row) => row.period === "2026-09");
+    expect(september?.total).toBe(75778);
+    expect(millionsToBillions(september?.total ?? 0)).toBeCloseTo(75.778);
+    expect(formatGbpFromMillions(september?.total ?? 0)).toBe("£75.8bn");
+    expect(formatReceiptBn(10)).toBe("less than £0.1bn");
+    expect(formatReceiptShare(-400, 1000)).toBe("share not shown");
   });
 });
 

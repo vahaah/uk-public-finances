@@ -5,7 +5,7 @@ import { DERIVED_LICENCE, DERIVED_LICENCE_URL, SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
   title: "Data sources and licences",
-  description: "The official publishers, datasets and licences behind this site, including CC BY 4.0 for derived figures.",
+  description: "The official publishers, datasets and licences behind every figure on this site.",
   path: "/data-sources",
 });
 
@@ -20,15 +20,15 @@ export default function DataSourcesPage() {
         lede="Contains public sector information licensed under the Open Government Licence v3.0, from the ONS, HMRC, HM Treasury and the OBR. Bank of England and Debt Management Office data is used under their own terms."
       />
       <p className="mb-6 max-w-[68ch] text-sm leading-6 text-neutral-800 dark:text-neutral-200">
-        Sums, shares and the borrowing presentation on this site are{" "}
+        Figures this site calculates, such as totals, shares and borrowing shown as a positive number, are{" "}
         <a className="underline decoration-neutral-500 underline-offset-4" href={DERIVED_LICENCE_URL}>
           {DERIVED_LICENCE}
         </a>
-        . Credit the original publisher, and this site if you use a derived figure. How the files are checked is on the{" "}
+        . Credit the original publisher, and this site for a calculated figure. See{" "}
         <a className="underline decoration-neutral-500 underline-offset-4" href="/methodology">
-          methodology
+          Methodology
         </a>{" "}
-        page.
+        for how files are checked.
       </p>
       <ul className="divide-y divide-neutral-200 border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
         {SOURCE_IDS.map((id) => {

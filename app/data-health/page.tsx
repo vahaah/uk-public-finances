@@ -6,8 +6,8 @@ import { SOURCES } from "@/lib/site";
 import type { HealthSource } from "@/lib/schema";
 
 export const metadata = pageMeta({
-  title: "Data health: snapshot status",
-  description: "Whether the data from each source is up to date, with the release date and any failed check.",
+  title: "Data health: is each source up to date?",
+  description: "Whether each official source is up to date, when it was last published and any failed check.",
   path: "/data-health",
   noindex: true,
 });
@@ -43,10 +43,16 @@ export default async function DataHealthPage() {
       <JsonLd data={breadcrumbJsonLd("Data health", "/data-health")} />
       <Breadcrumb current="Data health" />
       <PageIntro
-        kicker={`${counts.ok} up to date · ${counts.stale} out of date · ${counts.missing + counts.validation_failed} missing or failed`}
+        kicker=""
         title="Data health"
-        lede={`Last checked ${formatDateLong(health.checkedAt)}. If a new file fails the checks, the previous figures stay on the site and the problem is listed here.`}
+        lede={`Last checked ${formatDateLong(health.checkedAt)}. If a new file fails a check, the previous figures stay and the problem is listed here.`}
       />
+      <div className="mb-4 flex flex-wrap gap-2">
+        <CountChip count={counts.ok} label="up to date" dot="bg-green-700" />
+        <CountChip count={counts.pending} label="pending" dot="bg-amber-700" />
+        <CountChip count={counts.stale} label="out of date" dot="bg-amber-700" />
+        <CountChip count={counts.missing + counts.validation_failed} label="failed" dot="bg-red-700" />
+      </div>
       <ul className="divide-y divide-neutral-200 border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
         {ordered.map((source) => (
           <li key={source.source} id={source.source} className="grid gap-2 px-4 py-3 text-sm sm:grid-cols-[1fr_auto_auto]">
@@ -58,7 +64,9 @@ export default async function DataHealthPage() {
                 {source.usingLastGood ? " · showing the previous release" : ""}
               </p>
             </div>
-            <p className="text-sm text-neutral-700 dark:text-neutral-300">Published {formatRelease(source.releaseDate)}</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
+              {source.releaseDate ? `Published ${formatRelease(source.releaseDate)}` : "Not yet published here"}
+            </p>
             <p className="inline-flex h-6 items-center gap-1.5 self-start rounded-full px-2 text-xs">
               <span className={`size-2 rounded-full ${DOT[source.status]}`} aria-hidden="true" />
               {LABEL[source.status]}
@@ -67,6 +75,15 @@ export default async function DataHealthPage() {
         ))}
       </ul>
     </>
+  );
+}
+
+function CountChip({ count, label, dot }: { count: number; label: string; dot: string }) {
+  return (
+    <p className="inline-flex h-6 items-center gap-1.5 rounded-full border border-neutral-200 px-2 text-xs dark:border-neutral-800">
+      <span className={`size-2 rounded-full ${dot}`} aria-hidden="true" />
+      {count} {label}
+    </p>
   );
 }
 

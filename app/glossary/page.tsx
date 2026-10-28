@@ -28,13 +28,13 @@ export default function GlossaryPage() {
       <JsonLd data={defined} />
       <Breadcrumb current="Glossary" />
       <PageIntro
-        kicker="Glossary"
+        kicker=""
         title="Glossary"
-        lede="Plain definitions of the terms used on this site. The figures themselves stay on the data pages."
+        lede="Plain definitions of the terms used on this site."
       />
       <dl className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
         {GLOSSARY.map((entry) => (
-          <div key={entry.id} id={entry.id} className="scroll-mt-4 py-4">
+          <div key={entry.id} id={entry.id} className="scroll-mt-20 py-4">
             <dt className="text-sm font-medium">{entry.term}</dt>
             <dd className="mt-1 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{entry.body}</dd>
           </div>

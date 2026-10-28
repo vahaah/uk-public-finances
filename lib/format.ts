@@ -82,3 +82,52 @@ function formatMonthStyle(period: string, month: "short" | "long"): string {
 export function borrowingWords(bulletinMillions: number): string {
   return bulletinMillions < 0 ? "surplus" : "borrowing";
 }
+
+/** HMRC publishes monthly and annual receipts in £ million. £75,778 million is £75.8bn. */
+export const HMRC_MILLION = 1_000;
+
+export function millionsToBillions(millions: number): number {
+  return millions / HMRC_MILLION;
+}
+
+export function formatAxis(value: number): string {
+  const abs = Math.abs(value).toLocaleString("en-GB", { maximumFractionDigits: 1 });
+  return value < 0 ? `−${abs}` : abs;
+}
+
+/** Under £0.05bn prints as less than £0.1bn. A negative amount is a repayment, not a share. */
+export function formatReceiptBn(millions: number): string {
+  if (Math.abs(millions) < 50) return "less than £0.1bn";
+  return formatGbpFromMillions(millions);
+}
+
+export function formatReceiptShare(millions: number, totalMillions: number): string {
+  if (millions < 0 || totalMillions === 0) return "share not shown";
+  const share = (millions / totalMillions) * 100;
+  if (Math.abs(millions) < 50 || Math.abs(share) < 0.05) return "less than 0.1%";
+  return formatPercent(share);
+}
+
+export function niceTicks(values: number[]): number[] {
+  if (values.length === 0) return [0];
+  const max = Math.max(...values, 0);
+  const min = Math.min(...values, 0);
+  const span = Math.max(max - min, Math.abs(max), Math.abs(min), 1);
+  const rough = span / 4;
+  const pow = 10 ** Math.floor(Math.log10(rough));
+  const step = [1, 2, 2.5, 5, 10].map((factor) => factor * pow).find((candidate) => candidate >= rough) ?? rough;
+  const start = Math.floor(min / step) * step;
+  const end = Math.ceil(max / step) * step;
+  const ticks: number[] = [];
+  for (let value = start; value <= end + step / 100; value += step) {
+    ticks.push(Number(value.toFixed(6)));
+  }
+  return ticks.length > 0 ? ticks : [0];
+}
+
+export function previousFinancialYear(year: string): string {
+  const match = /^(\d{4})-(\d{2})$/.exec(year);
+  if (!match) return "A year earlier";
+  const start = Number(match[1]) - 1;
+  return `${start}-${String(start + 1).slice(2)}`;
+}

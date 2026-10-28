@@ -26,7 +26,7 @@ export const FOOTER = [
   { href: "/data-health", label: "Data health" },
   { href: "/glossary", label: "Glossary" },
   { href: "/faq", label: "FAQ" },
-  { href: "/old-money", label: "Old money vs new" },
+  { href: "/old-money", label: "Old money" },
   { href: "/api", label: "API" },
 ] as const;
 
@@ -66,7 +66,7 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
   },
   "ons-prices": {
     id: "ons-prices",
-    title: "GDP deflator, money GDP, CPI, CPIH and RPI",
+    title: "GDP deflator, GDP, CPI, CPIH and RPI",
     publisher: "Office for National Statistics",
     licence: "Open Government Licence v3.0",
     licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
@@ -95,7 +95,7 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
     id: "dmo-gilts",
     title: "Gilts in issue",
     publisher: "UK Debt Management Office",
-    licence: "Crown copyright. Use is subject to the DMO website terms.",
+    licence: "Crown copyright. DMO website terms apply.",
     licenceUrl: "https://www.dmo.gov.uk/help/",
     page: "https://www.dmo.gov.uk/data/gilt-market/gilts-in-issue/",
     staleAfterMs: 14 * 24 * 60 * 60 * 1000,

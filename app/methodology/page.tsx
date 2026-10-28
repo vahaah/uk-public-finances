@@ -97,13 +97,13 @@ export default function MethodologyPage() {
         <section id="not-estimated">
           <h2 className="text-base font-medium text-neutral-950 dark:text-white">What this site does not estimate</h2>
           <p className="mt-2">
-            There is no forecast until an Office for Budget Responsibility public finances databank has been read. The forecast vintage is pending. The gilt portfolio totals are the values in the Debt Management Office feed. That feed does not state a unit, so the totals are not rescaled. The index-linked share is the index-linked field divided by the total field. Average maturity is in years, and the yields are percent. A breakdown of gilts by remaining maturity is not in this capture. Departmental plans are the plan columns in PESA table 6.1. They are not OBR forecasts. HMRC&apos;s 2026-27 income tax payer counts are HMRC&apos;s projection, based on the 2023-24 Survey of Personal Incomes and the OBR&apos;s March 2026 Economic and fiscal outlook.
+            There is no forecast until the OBR&apos;s public finances data has been read. Gilt totals are shown as the DMO publishes them; the DMO does not state a unit, so they are not rescaled. A breakdown of gilts by maturity is not available yet. Departmental plans are the plan columns in PESA table 6.1. They are not OBR forecasts. HMRC&apos;s 2026-27 income tax payer counts are HMRC&apos;s projection, based on the 2023-24 Survey of Personal Incomes and the OBR&apos;s March 2026 Economic and fiscal outlook.
           </p>
         </section>
         <section id="licence">
           <h2 className="text-base font-medium text-neutral-950 dark:text-white">Licence</h2>
           <p className="mt-2">
-            Sums, shares and the borrowing presentation on this site are available under{" "}
+            Figures this site calculates, such as totals, shares and borrowing shown as a positive number, are available under{" "}
             <a className="underline decoration-neutral-500 underline-offset-4" href={DERIVED_LICENCE_URL}>
               {DERIVED_LICENCE}
             </a>
