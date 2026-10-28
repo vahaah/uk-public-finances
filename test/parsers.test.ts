@@ -31,6 +31,10 @@ describe("ONS public sector finances", () => {
     expect(data.series.hf6x?.latest?.value).toBe(94);
     expect(data.series.jw2o?.latest?.value).toBe(99271);
     expect(data.series.kx5q?.latest?.value).toBe(123791);
+    expect(data.series.j5ii?.years[0]).toEqual({ period: "1946", value: -623 });
+    expect(data.series.j5ii?.years.at(-1)?.period).toBe("2025");
+    expect(data.series.j5ii?.quarters[0]?.period).toBe("1946-Q1");
+    expect(data.series.j5ii?.months[0]?.period).toBe("1993-01");
   });
 });
 
@@ -48,6 +52,10 @@ describe("HMRC receipts", () => {
     expect(data.annual.taxes.find((tax) => tax.name === "Income Tax")?.value).toBe(326932);
     expect(data.annual.taxes.some((tax) => /PAYE NIC/i.test(tax.name))).toBe(false);
     expect(data.monthly.at(-1)).toEqual({ period: "2026-09", total: 75778 });
+    expect(data.annualHistory[0]?.year).toBe("2006-07");
+    expect(data.annualHistory.at(-1)?.year).toBe("2025-26");
+    expect(data.annualHistory[0]?.taxes.length).toBeGreaterThan(0);
+    expect(data.monthly[0]?.period).toBe("2017-04");
   });
 });
 
@@ -68,6 +76,16 @@ describe("PESA", () => {
     expect(data.functions.totalManagedExpenditure).toBe(1360.1);
     expect(data.departments.items[0]).toEqual({ name: "Health and Social Care", value: 213249 });
     expect(data.departments.total).toBe(489766);
+    expect(data.functionHistory[0]?.year).toBe("2003-04");
+    expect(data.functionHistory.at(-1)?.year).toBe("2025-26");
+    expect(data.functionHistory).toHaveLength(23);
+    expect(data.departmentHistory.filter((row) => row.basis === "outturn").map((row) => row.year)).toEqual([
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25",
+      "2025-26",
+    ]);
   });
 });
 

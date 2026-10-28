@@ -2,6 +2,7 @@ import { BorrowingChart, CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
 import { formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
@@ -13,8 +14,10 @@ export const metadata = pageMeta({
 });
 
 export default async function BorrowingPage() {
-  const loaded = await readSnapshot("ons-psf");
+  const [loaded, priceLoaded] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices")]);
   const snapshot = takeSnapshot("ons-psf", loaded.snapshot);
+  const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
+  const bundle = prices ? priceBundle(prices.data) : null;
   const meta = SOURCES["ons-psf"];
   if (!snapshot) return <EmptySource name="ONS borrowing" />;
   const fy = snapshot.data.financialYear;
@@ -71,11 +74,16 @@ export default async function BorrowingPage() {
         }
       />
       <ChartFrame title="Public sector net borrowing by month" subtitle="£ billion. Bars above zero are borrowing." source={source}>
-        <BorrowingChart months={snapshot.data.series.j5ii?.months ?? []} />
+        <BorrowingChart
+          months={snapshot.data.series.j5ii?.months ?? []}
+          quarters={snapshot.data.series.j5ii?.quarters ?? []}
+          years={snapshot.data.series.j5ii?.years ?? []}
+          prices={bundle}
+        />
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame title={fy ? `Borrowing so far in ${fy.year}` : "Borrowing so far"} subtitle="£ billion, running total." source={source}>
-          {fy ? <CumulativeChart months={fy.months} /> : null}
+          {fy ? <CumulativeChart months={fy.months} prices={bundle} /> : null}
           {fy ? (
             <DataTable
               columns={["Month", `${fy.year} to date, £bn`, "A year earlier, £bn"]}

@@ -34,6 +34,8 @@ export const ONS_FILES = [
 
 type OnsData = z.infer<typeof onsDataSchema>;
 
+type RawPoint = { date?: string; value?: string };
+
 type RawSeries = {
   description?: {
     title?: string;
@@ -43,7 +45,9 @@ type RawSeries = {
     unit?: string;
     preUnit?: string;
   };
-  months?: { date?: string; value?: string }[];
+  months?: RawPoint[];
+  quarters?: RawPoint[];
+  years?: RawPoint[];
 };
 
 export function parseOnsRecords(records: Record<string, RawSeries>): OnsData {
@@ -84,14 +88,9 @@ function parseSeries(raw: RawSeries): OnsData["series"][string] {
   if (!description?.cdid || !description.title || !description.releaseDate) {
     throw new Error("ONS series is missing its description");
   }
-  const months = (raw.months ?? [])
-    .map((row) => {
-      const period = periodFromOns(row.date ?? "");
-      const value = parsePublishedNumber(row.value ?? "");
-      if (!period || value == null) return null;
-      return { period, value };
-    })
-    .filter((row): row is { period: string; value: number } => row != null);
+  const months = observations(raw.months, periodFromOns);
+  const quarters = observations(raw.quarters, periodFromQuarter);
+  const years = observations(raw.years, periodFromYear);
   const latest = months.at(-1) ?? null;
   return {
     cdid: description.cdid,
@@ -102,7 +101,25 @@ function parseSeries(raw: RawSeries): OnsData["series"][string] {
     nextRelease: description.nextRelease ?? "",
     latest,
     months,
+    quarters,
+    years,
   };
+}
+
+function observations(
+  rows: { date?: string; value?: string }[] | undefined,
+  toPeriod: (date: string) => string | null,
+): { period: string; value: number }[] {
+  const byPeriod = new Map<string, number>();
+  for (const row of rows ?? []) {
+    const period = toPeriod(row.date ?? "");
+    const value = parsePublishedNumber(row.value ?? "");
+    if (!period || value == null) continue;
+    byPeriod.set(period, value);
+  }
+  return [...byPeriod.entries()]
+    .sort(([left], [right]) => (left < right ? -1 : 1))
+    .map(([period, value]) => ({ period, value }));
 }
 
 export function periodFromOns(date: string): string | null {
@@ -111,6 +128,18 @@ export function periodFromOns(date: string): string | null {
   const month = MONTH_INDEX[match[2] ?? ""];
   if (!month) return null;
   return `${match[1]}-${month}`;
+}
+
+export function periodFromQuarter(date: string): string | null {
+  const match = /^(\d{4})\s+Q([1-4])$/.exec(date.trim());
+  if (!match) return null;
+  return `${match[1]}-Q${match[2]}`;
+}
+
+export function periodFromYear(date: string): string | null {
+  const match = /^(\d{4})$/.exec(date.trim());
+  if (!match) return null;
+  return match[1] ?? null;
 }
 
 export function financialYearCumulative(

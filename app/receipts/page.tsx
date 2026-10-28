@@ -1,9 +1,10 @@
 import Link from "next/link";
 
-import { ReceiptsChart } from "@/components/charts";
+import { HistoryChart, ReceiptsChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatGbpFromMillions, formatMonth, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
@@ -15,8 +16,10 @@ export const metadata = pageMeta({
 });
 
 export default async function ReceiptsPage() {
-  const loaded = await readSnapshot("hmrc-receipts");
+  const [loaded, priceLoaded] = await Promise.all([readSnapshot("hmrc-receipts"), readSnapshot("ons-prices")]);
   const snapshot = takeSnapshot("hmrc-receipts", loaded.snapshot);
+  const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
+  const bundle = prices ? priceBundle(prices.data) : null;
   const meta = SOURCES["hmrc-receipts"];
   if (!snapshot) return <EmptySource name="HMRC receipts" />;
   const { annual, monthly } = snapshot.data;
@@ -73,12 +76,36 @@ export default async function ReceiptsPage() {
           />
         }
       >
-        <ReceiptsChart taxes={annual.taxes} />
+        <ReceiptsChart taxes={annual.taxes} year={annual.year} prices={bundle} />
         <DataTable
           columns={["Tax", "£bn", "Share"]}
           rows={rows.map((tax) => [tax.name, formatGbpFromMillions(tax.value), formatPercent((tax.value / annual.total) * 100)])}
         />
       </ChartFrame>
+      <div className="mt-3">
+        <ChartFrame
+          title="HMRC receipts by financial year"
+          subtitle="Cash HMRC received. The range and price controls follow the address bar."
+          source={
+            <SourceNote
+              publisher={meta.publisher}
+              title="HMRC tax receipts and National Insurance contributions for the UK, annual table"
+              url={snapshot.sourceUrl}
+              releaseDate={snapshot.releaseDate}
+              licenceUrl={meta.licenceUrl}
+              sourceId="hmrc-receipts"
+            />
+          }
+        >
+          <HistoryChart
+            points={snapshot.data.annualHistory.map((row) => ({ period: row.year, value: row.total }))}
+            frequency="financial"
+            unit="million"
+            prices={bundle}
+            name="Total HMRC receipts"
+          />
+        </ChartFrame>
+      </div>
       <div className="mt-3">
         <ChartFrame
           title="Total HMRC receipts by month, last 18 months"
@@ -94,6 +121,14 @@ export default async function ReceiptsPage() {
             />
           }
         >
+          <HistoryChart
+            points={monthly.map((row) => ({ period: row.period, value: row.total }))}
+            frequency="month"
+            unit="million"
+            prices={bundle}
+            gdp={false}
+            name="HMRC receipts"
+          />
           <DataTable
             columns={["Month", "£m"]}
             rows={monthly.slice(-18).map((row) => [formatMonth(row.period), row.total.toLocaleString("en-GB")])}

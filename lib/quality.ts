@@ -10,13 +10,21 @@ export function droppedTooFar(previous: number, next: number): boolean {
 export function snapshotRows(snapshot: AnySnapshot): number {
   const sourceId: SourceId = snapshot.sourceId;
   switch (sourceId) {
-    case "ons-psf":
-      return (snapshot as SnapshotOf<"ons-psf">).data.series.j5ii?.months.length ?? 0;
-    case "hmrc-receipts":
-      return (snapshot as SnapshotOf<"hmrc-receipts">).data.monthly.length;
+    case "ons-psf": {
+      const series = (snapshot as SnapshotOf<"ons-psf">).data.series.j5ii;
+      return (series?.months.length ?? 0) + (series?.quarters.length ?? 0) + (series?.years.length ?? 0);
+    }
+    case "ons-prices": {
+      const data = (snapshot as SnapshotOf<"ons-prices">).data;
+      return data.mnf2.years.length + data.l8gg.quarters.length + data.bktl.years.length + data.d7bt.months.length;
+    }
+    case "hmrc-receipts": {
+      const data = (snapshot as SnapshotOf<"hmrc-receipts">).data;
+      return data.monthly.length + data.annualHistory.length;
+    }
     case "pesa": {
       const data = (snapshot as SnapshotOf<"pesa">).data;
-      return data.functions.items.length + data.departments.items.length;
+      return data.functionHistory.reduce((sum, year) => sum + year.items.length, 0) + data.departmentHistory.length;
     }
     case "boe-yields":
       return (snapshot as SnapshotOf<"boe-yields">).data.series.IUDBEDR.points.length;

@@ -1,9 +1,10 @@
 import Link from "next/link";
 
-import { DepartmentChart, SpendingVisuals } from "@/components/charts";
+import { DepartmentChart, HistoryChart, SpendingVisuals } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatBillions, formatGbpFromMillions } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
@@ -15,11 +16,13 @@ export const metadata = pageMeta({
 });
 
 export default async function SpendingPage() {
-  const loaded = await readSnapshot("pesa");
+  const [loaded, priceLoaded] = await Promise.all([readSnapshot("pesa"), readSnapshot("ons-prices")]);
   const snapshot = takeSnapshot("pesa", loaded.snapshot);
+  const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
+  const bundle = prices ? priceBundle(prices.data) : null;
   const meta = SOURCES.pesa;
   if (!snapshot) return <EmptySource name="PESA spending" />;
-  const { functions, departments, departmentPlans } = snapshot.data;
+  const { functions, departments, departmentPlans, functionHistory } = snapshot.data;
   return (
     <>
       <JsonLd data={breadcrumbJsonLd("What the UK government spends", "/spending")} />
@@ -69,12 +72,38 @@ export default async function SpendingPage() {
           />
         }
       >
-        <SpendingVisuals items={functions.items.filter((item) => item.value > 0)} />
+        <SpendingVisuals items={functions.items.filter((item) => item.value > 0)} year={functions.year} prices={bundle} />
         <DataTable
           columns={["Function", "£bn"]}
           rows={functions.items.map((item) => [item.name.replace(/^\d+\.\s*/, ""), item.value.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })])}
         />
       </ChartFrame>
+      <div className="mt-3">
+        <ChartFrame
+          title="Total managed expenditure over time"
+          subtitle="£ billion. Financial years from PESA table 4.1 and 4.2."
+          source={
+            <SourceNote
+              publisher={meta.publisher}
+              title="Public Expenditure Statistical Analyses (PESA), total managed expenditure"
+              url={snapshot.sourceUrl}
+              releaseDate={snapshot.releaseDate}
+              licenceUrl={meta.licenceUrl}
+              sourceId="pesa"
+            />
+          }
+        >
+          <HistoryChart
+            points={functionHistory.flatMap((row) =>
+              row.totalManagedExpenditure == null ? [] : [{ period: row.year, value: row.totalManagedExpenditure }],
+            )}
+            frequency="financial"
+            unit="billion"
+            prices={bundle}
+            name="Total managed expenditure"
+          />
+        </ChartFrame>
+      </div>
       <div className="mt-3">
         <ChartFrame
           title="Departmental budgets (DEL) by department"
@@ -91,6 +120,7 @@ export default async function SpendingPage() {
           }
         >
           <DepartmentChart
+            prices={bundle}
             outturn={{ year: departments.year, items: departments.items }}
             plans={{ year: departmentPlans.year, items: departmentPlans.items }}
           />

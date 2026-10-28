@@ -15,6 +15,7 @@ import {
 import { parseHmrcReceipts } from "@/lib/parsers/hmrc";
 import { parseIncomeTax } from "@/lib/parsers/taxpayers";
 import { ONS_FILES, parseOnsRecords } from "@/lib/parsers/ons";
+import { parsePriceRecords } from "@/lib/parsers/prices";
 import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
@@ -71,6 +72,36 @@ export async function runOns(force: boolean): Promise<Record<string, unknown>> {
       data: parseOnsRecords(records as never),
     }),
   );
+}
+
+const PRICE_URLS = {
+  mnf2: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/mnf2/qna/data",
+  l8gg: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/l8gg/qna/data",
+  bktl: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/bktl/qna/data",
+  d7bt: "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7bt/mm23/data",
+  l522: "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23/data",
+  chaw: "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/chaw/mm23/data",
+} as const;
+
+export async function runPrices(force: boolean): Promise<Record<string, unknown>> {
+  "use step";
+  const records: Record<string, unknown> = {};
+  for (const [code, url] of Object.entries(PRICE_URLS)) {
+    records[code] = await getJson(url);
+  }
+  return finish("ons-prices", () => {
+    const data = parsePriceRecords(records as never);
+    const releases = [data.mnf2, data.l8gg, data.bktl, data.d7bt, data.l522, data.chaw].map((series) => series.releaseDate);
+    const oldest = releases.slice().sort()[0] ?? null;
+    return buildEnvelope({
+      sourceId: "ons-prices",
+      retrievedAt: new Date().toISOString(),
+      releaseDate: oldest,
+      nextRelease: null,
+      sourceUrl: PRICE_URLS.l8gg,
+      data,
+    });
+  });
 }
 
 export async function runHmrc(force: boolean): Promise<Record<string, unknown>> {

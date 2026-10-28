@@ -26,6 +26,7 @@ export const FOOTER = [
   { href: "/data-health", label: "Data health" },
   { href: "/glossary", label: "Glossary" },
   { href: "/faq", label: "FAQ" },
+  { href: "/old-money", label: "Old money vs new" },
   { href: "/api", label: "API" },
 ] as const;
 
@@ -37,6 +38,7 @@ export const REVALIDATE_PATHS = [
   "/debt",
   "/taxpayers",
   "/forecasts",
+  "/old-money",
   "/data-health",
   "/llms.txt",
   "/llms-full.txt",
@@ -61,6 +63,15 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
     licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     page: "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance",
     staleAfterMs: 45 * 24 * 60 * 60 * 1000,
+  },
+  "ons-prices": {
+    id: "ons-prices",
+    title: "GDP deflator, money GDP, CPI, CPIH and RPI",
+    publisher: "Office for National Statistics",
+    licence: "Open Government Licence v3.0",
+    licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    page: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/l8gg/qna",
+    staleAfterMs: 120 * 24 * 60 * 60 * 1000,
   },
   "hmrc-receipts": {
     id: "hmrc-receipts",

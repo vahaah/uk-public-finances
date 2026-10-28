@@ -25,6 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/debt", lastModified: onsDate ?? boeDate, changeFrequency: "monthly", priority: 0.8 },
     { path: "/taxpayers", lastModified: taxDate, changeFrequency: "yearly", priority: 0.7 },
     { path: "/forecasts", lastModified: onsDate, changeFrequency: "monthly", priority: 0.6 },
+    { path: "/old-money", lastModified: staticDate, changeFrequency: "monthly", priority: 0.6 },
     { path: "/methodology", lastModified: staticDate, changeFrequency: "yearly", priority: 0.4 },
     { path: "/data-sources", lastModified: staticDate, changeFrequency: "yearly", priority: 0.4 },
     { path: "/glossary", lastModified: staticDate, changeFrequency: "yearly", priority: 0.5 },

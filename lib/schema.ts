@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const SOURCE_IDS = [
   "ons-psf",
+  "ons-prices",
   "hmrc-receipts",
   "pesa",
   "dmo-gilts",
@@ -21,12 +22,24 @@ export const CRITICAL_SOURCES: readonly SourceId[] = [
 ];
 
 const monthPeriod = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
+const quarterPeriod = z.string().regex(/^\d{4}-Q[1-4]$/);
+const calendarYear = z.string().regex(/^\d{4}$/);
 const dayPeriod = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
 const fiscalYear = z.string().regex(/^\d{4}-\d{2}$/);
 const finite = z.number().finite();
 
 const observation = z.object({
   period: monthPeriod,
+  value: finite,
+});
+
+const yearObservation = z.object({
+  period: calendarYear,
+  value: finite,
+});
+
+const quarterObservation = z.object({
+  period: quarterPeriod,
   value: finite,
 });
 
@@ -43,6 +56,8 @@ export const onsDataSchema = z.object({
       nextRelease: z.string(),
       latest: observation.nullable(),
       months: z.array(observation).min(1),
+      quarters: z.array(quarterObservation).min(1),
+      years: z.array(yearObservation).min(1),
     }),
   ),
   financialYear: z
@@ -101,15 +116,25 @@ export const hmrcDataSchema = z.object({
     total: finite,
     taxes: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
   }),
-  annualHistory: z.array(z.object({ year: fiscalYear, total: finite })).min(1),
+  annualHistory: z
+    .array(
+      z.object({
+        year: fiscalYear,
+        total: finite,
+        taxes: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
+      }),
+    )
+    .min(1),
   monthly: z.array(z.object({ period: monthPeriod, total: finite })).min(1),
 }).superRefine((data, context) => {
-  const sum = data.annual.taxes.reduce((total, tax) => total + tax.value, 0);
-  if (Math.abs(sum - data.annual.total) > 50) {
-    context.addIssue({
-      code: "custom",
-      message: `HMRC tax lines sum to ${sum}, total is ${data.annual.total}`,
-    });
+  for (const year of data.annualHistory) {
+    const sum = year.taxes.reduce((total, tax) => total + tax.value, 0);
+    if (Math.abs(sum - year.total) > 50) {
+      context.addIssue({
+        code: "custom",
+        message: `HMRC ${year.year} tax lines sum to ${sum}, total is ${year.total}`,
+      });
+    }
   }
 });
 
@@ -136,6 +161,26 @@ export const pesaDataSchema = z.object({
     total: finite.nullable(),
     items: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
   }),
+  functionHistory: z
+    .array(
+      z.object({
+        year: fiscalYear,
+        totalServices: finite.nullable(),
+        totalManagedExpenditure: finite.nullable(),
+        items: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
+      }),
+    )
+    .min(1),
+  departmentHistory: z
+    .array(
+      z.object({
+        year: fiscalYear,
+        basis: z.enum(["outturn", "plans"]),
+        total: finite.nullable(),
+        items: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
+      }),
+    )
+    .min(1),
 });
 
 export const boePoint = z.object({
@@ -198,6 +243,50 @@ export const dmoDataSchema = z.object({
     .nullable(),
 });
 
+const positivePoint = z.object({
+  period: z.string().min(1),
+  value: finite.positive(),
+});
+
+export const priceSeriesSchema = z.object({
+  cdid: z.string().min(1),
+  title: z.string().min(1),
+  unit: z.string(),
+  releaseDate: z.string().min(1),
+  years: z.array(z.object({ period: calendarYear, value: finite.positive() })),
+  quarters: z.array(z.object({ period: quarterPeriod, value: finite.positive() })),
+  months: z.array(z.object({ period: monthPeriod, value: finite.positive() })),
+});
+
+export const priceDataSchema = z
+  .object({
+    mnf2: priceSeriesSchema,
+    l8gg: priceSeriesSchema,
+    bktl: priceSeriesSchema,
+    d7bt: priceSeriesSchema,
+    l522: priceSeriesSchema,
+    chaw: priceSeriesSchema,
+  })
+  .superRefine((data, context) => {
+    if (data.mnf2.cdid !== "MNF2" || data.mnf2.years.length < 1) {
+      context.addIssue({ code: "custom", message: "MNF2 calendar-year deflator is missing" });
+    }
+    if (data.l8gg.cdid !== "L8GG" || data.l8gg.quarters.length < 1) {
+      context.addIssue({ code: "custom", message: "L8GG quarterly deflator is missing" });
+    }
+    if (data.bktl.cdid !== "BKTL" || data.bktl.years.length < 1 || data.bktl.quarters.length < 1) {
+      context.addIssue({ code: "custom", message: "BKTL money GDP is missing" });
+    }
+    for (const code of ["d7bt", "l522", "chaw"] as const) {
+      if (data[code].years.length < 1 || data[code].months.length < 1) {
+        context.addIssue({ code: "custom", message: `${code} is missing annual or monthly observations` });
+      }
+    }
+    if (positivePoint.safeParse(data.mnf2.years[0]).success === false) {
+      context.addIssue({ code: "custom", message: "Deflator observations must be positive" });
+    }
+  });
+
 export const obrDataSchema = z.object({
   origin: z.enum(["obr", "blob-manual"]),
   round: z.string().nullable(),
@@ -233,6 +322,7 @@ const envelope = <T extends z.ZodType>(data: T) =>
 
 export const snapshotSchemas = {
   "ons-psf": envelope(onsDataSchema),
+  "ons-prices": envelope(priceDataSchema),
   "hmrc-receipts": envelope(hmrcDataSchema),
   pesa: envelope(pesaDataSchema),
   "dmo-gilts": envelope(dmoDataSchema),

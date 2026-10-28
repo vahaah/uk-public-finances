@@ -9,7 +9,7 @@
   "publisher": "HM Revenue & Customs",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "e27593dcc6b8bd9ef2499a98900fbdd4ddaa1629ccc799556792e3de1a4b4d4e",
+  "contentHash": "692c266e18b5f82fda80de8e7264bab6a872344363ff31d3f79c349097ddf27c",
   "data": {
     "contentUrl": "https://www.gov.uk/government/statistics/hmrc-tax-and-nics-receipts-for-the-uk",
     "attachmentUrl": "https://assets.publishing.service.gov.uk/media/6acf86ffc84c8ff1bc8b8172/NS_Table.ods",
@@ -163,83 +163,2363 @@
     "annualHistory": [
       {
         "year": "2006-07",
-        "total": 428629
+        "total": 428629,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 147712
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 3830
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 87274
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 77360
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 44875
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 2155
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 23585
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 3545
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3757
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 9635
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8149
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 2256
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3072
+          },
+          {
+            "name": "Wines Duties",
+            "value": 2385
+          },
+          {
+            "name": "Cider Duties",
+            "value": 200
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 1391
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 971
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 2314
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 804
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 712
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 321
+          },
+          {
+            "name": "Misc",
+            "value": 1
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2325
+          }
+        ]
       },
       {
         "year": "2007-08",
-        "total": 456121
+        "total": 456121,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 151738
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 5268
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 100410
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 80599
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 47036
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 1680
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 24905
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 3824
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 4167
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 9958
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8094
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 2374
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3067
+          },
+          {
+            "name": "Wines Duties",
+            "value": 2641
+          },
+          {
+            "name": "Cider Duties",
+            "value": 220
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 1481
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 1994
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 2306
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 877
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 688
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 339
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2456
+          }
+        ]
       },
       {
         "year": "2008-09",
-        "total": 445531
+        "total": 445531,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 153442
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 7852
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 96882
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 78439
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 43927
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 2567
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 24615
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 2839
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3203
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 4796
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8219
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 2358
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3127
+          },
+          {
+            "name": "Wines Duties",
+            "value": 2741
+          },
+          {
+            "name": "Cider Duties",
+            "value": 244
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 1474
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 1862
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 2281
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 954
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 716
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 334
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2659
+          }
+        ]
       },
       {
         "year": "2009-10",
-        "total": 414920
+        "total": 414920,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 144881
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 2491
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 95517
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 70160
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 36628
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 923
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 26197
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 2384
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3017
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 4886
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8813
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 2570
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3182
+          },
+          {
+            "name": "Wines Duties",
+            "value": 2949
+          },
+          {
+            "name": "Cider Duties",
+            "value": 311
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 1439
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 1856
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 2259
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 842
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 695
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 275
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2646
+          }
+        ]
       },
       {
         "year": "2010-11",
-        "total": 453958
+        "total": 453958,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 153491
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 3601
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 96548
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 83502
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 43040
+          },
+          {
+            "name": "Bank payroll tax",
+            "value": 3416
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 1458
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 27256
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 2718
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 2971
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 5961
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9144
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 2675
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3296
+          },
+          {
+            "name": "Wines Duties",
+            "value": 3101
+          },
+          {
+            "name": "Cider Duties",
+            "value": 324
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 1533
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 2155
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 2400
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 1065
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 674
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 288
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2998
+          },
+          {
+            "name": "Penalties",
+            "value": 343
+          }
+        ]
       },
       {
         "year": "2011-12",
-        "total": 472035
+        "total": 472035,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 150939
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 4337
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 101617
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 98292
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 42475
+          },
+          {
+            "name": "Bank Levy",
+            "value": 1612
+          },
+          {
+            "name": "Bank payroll tax",
+            "value": -2
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 2032
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 26800
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 2903
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 2794
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 6125
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9551
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 2889
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3463
+          },
+          {
+            "name": "Wines Duties",
+            "value": 3356
+          },
+          {
+            "name": "Cider Duties",
+            "value": 329
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 1633
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 2607
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 2941
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 1090
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 676
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 290
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2912
+          },
+          {
+            "name": "Penalties",
+            "value": 376
+          }
+        ]
       },
       {
         "year": "2012-13",
-        "total": 473627
+        "total": 473627,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 152030
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 3927
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 102037
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 100572
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 39841
+          },
+          {
+            "name": "Bank Levy",
+            "value": 1595
+          },
+          {
+            "name": "Bank payroll tax",
+            "value": 0
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 1737
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 26571
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 3105
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 2234
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 6907
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9681
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 2931
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3426
+          },
+          {
+            "name": "Wines Duties",
+            "value": 3537
+          },
+          {
+            "name": "Cider Duties",
+            "value": 326
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 1680
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 2791
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 3021
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 1092
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 635
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 265
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 342
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2854
+          },
+          {
+            "name": "Penalties",
+            "value": 490
+          }
+        ]
       },
       {
         "year": "2013-14",
-        "total": 492802
+        "total": 492802,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 156898
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 3908
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 107690
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 104718
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 38932
+          },
+          {
+            "name": "Bank Levy",
+            "value": 2200
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 1118
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 26881
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 3402
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3108
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 9273
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 100
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9531
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 3056
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3346
+          },
+          {
+            "name": "Wines Duties",
+            "value": 3713
+          },
+          {
+            "name": "Cider Duties",
+            "value": 340
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 2098
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3013
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 3014
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 1189
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1068
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 285
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 466
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2901
+          },
+          {
+            "name": "Penalties",
+            "value": 551
+          }
+        ]
       },
       {
         "year": "2014-15",
-        "total": 514058
+        "total": 514058,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 163109
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 5559
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 110406
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 111363
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 41091
+          },
+          {
+            "name": "Bank Levy",
+            "value": 2748
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": 77
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 27156
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 3804
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 2926
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 10738
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 116
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9548
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 3023
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3310
+          },
+          {
+            "name": "Wines Duties",
+            "value": 3837
+          },
+          {
+            "name": "Cider Duties",
+            "value": 320
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 2116
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3175
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 2965
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 1144
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1491
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 342
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 66
+          },
+          {
+            "name": "Customs Duties",
+            "value": 3007
+          },
+          {
+            "name": "Penalties",
+            "value": 623
+          }
+        ]
       },
       {
         "year": "2015-16",
-        "total": 532504
+        "total": 532504,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 168451
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 7060
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 113701
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 114941
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 43016
+          },
+          {
+            "name": "Bank Levy",
+            "value": 3392
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -562
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 27623
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 4650
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3320
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 10682
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 178
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9485
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 3147
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3271
+          },
+          {
+            "name": "Wines Duties",
+            "value": 3973
+          },
+          {
+            "name": "Cider Duties",
+            "value": 296
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 2666
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3077
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 3293
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 919
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1763
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 356
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 32
+          },
+          {
+            "name": "Customs Duties",
+            "value": 3089
+          },
+          {
+            "name": "Penalties",
+            "value": 686
+          }
+        ]
       },
       {
         "year": "2016-17",
-        "total": 567992
+        "total": 567992,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 177065
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 8561
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 124469
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 119799
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 48017
+          },
+          {
+            "name": "Bank Levy",
+            "value": 2975
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 1145
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 138
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -654
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 27936
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 4824
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3714
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 11766
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 175
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8909
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 3378
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3320
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4169
+          },
+          {
+            "name": "Cider Duties",
+            "value": 288
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 2742
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3157
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 4861
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 874
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1864
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 374
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": -1
+          },
+          {
+            "name": "Customs Duties",
+            "value": 3359
+          },
+          {
+            "name": "Penalties",
+            "value": 768
+          }
+        ]
       },
       {
         "year": "2017-18",
-        "total": 593324
+        "total": 593324,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 180049
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 7793
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 2271
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 130931
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 126423
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 52714
+          },
+          {
+            "name": "Bank Levy",
+            "value": 2764
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 1778
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 219
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -569
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 27877
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 5205
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3519
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 12906
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 143
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8827
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 3430
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3460
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4256
+          },
+          {
+            "name": "Cider Duties",
+            "value": 294
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 2860
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3352
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 5669
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 757
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1861
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 376
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 51
+          },
+          {
+            "name": "Customs Duties",
+            "value": 3412
+          },
+          {
+            "name": "Penalties",
+            "value": 696
+          }
+        ]
       },
       {
         "year": "2018-19",
-        "total": 621208
+        "total": 621208,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 191030
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 9191
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 2713
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 136850
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 132540
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 54381
+          },
+          {
+            "name": "Bank Levy",
+            "value": 2591
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 1904
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 12
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -744
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 28147
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 5359
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3620
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 11942
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 139
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9290
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 3779
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3661
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4392
+          },
+          {
+            "name": "Cider Duties",
+            "value": 279
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 2985
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3632
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 6196
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 683
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1922
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 367
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 240
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": -1
+          },
+          {
+            "name": "Customs Duties",
+            "value": 3356
+          },
+          {
+            "name": "Penalties",
+            "value": 755
+          }
+        ]
       },
       {
         "year": "2019-20",
-        "total": 633428
+        "total": 633428,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 193243
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 9826
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 2798
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 142871
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 129885
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 61565
+          },
+          {
+            "name": "Bank Levy",
+            "value": 2472
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 1988
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 5
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -408
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 27504
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 5122
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3619
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 11601
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 128
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8804
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 3825
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3446
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4296
+          },
+          {
+            "name": "Cider Duties",
+            "value": 270
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 3019
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3814
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 6415
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 641
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 2004
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 397
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 337
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 0
+          },
+          {
+            "name": "Customs Duties",
+            "value": 3287
+          },
+          {
+            "name": "Penalties",
+            "value": 654
+          }
+        ]
       },
       {
         "year": "2020-21",
-        "total": 584212
+        "total": 584212,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 193742
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 11131
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 2910
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 143460
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 101650
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 50486
+          },
+          {
+            "name": "Bank Levy",
+            "value": 2343
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 1409
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 140
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -241
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 21174
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 5326
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3678
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 8668
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 111
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 9964
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 4115
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3084
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4659
+          },
+          {
+            "name": "Cider Duties",
+            "value": 248
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 2837
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 600
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 6307
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 566
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1778
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 359
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 299
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": -1
+          },
+          {
+            "name": "Customs Duties",
+            "value": 2962
+          },
+          {
+            "name": "Penalties",
+            "value": 448
+          }
+        ]
       },
       {
         "year": "2021-22",
-        "total": 715720
+        "total": 715720,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 220612
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 15263
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 3213
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 158043
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 157546
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 63745
+          },
+          {
+            "name": "Bank Levy",
+            "value": 1469
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 2335
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 220
+          },
+          {
+            "name": "Digital Services Tax",
+            "value": 380
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -552
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 25972
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 6054
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 4369
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 14098
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 119
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 10278
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 4401
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3747
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4734
+          },
+          {
+            "name": "Cider Duties",
+            "value": 234
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 3074
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 1020
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 6627
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 667
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1930
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 410
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 334
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 0
+          },
+          {
+            "name": "Customs Duties",
+            "value": 4791
+          },
+          {
+            "name": "Penalties",
+            "value": 586
+          }
+        ]
       },
       {
         "year": "2022-23",
-        "total": 787004
+        "total": 787004,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 248358
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 16929
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 3580
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 177445
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 158048
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 77894
+          },
+          {
+            "name": "Bank Levy",
+            "value": 1332
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 2580
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 42
+          },
+          {
+            "name": "Digital Services Tax",
+            "value": 567
+          },
+          {
+            "name": "Residential Property Developer Tax",
+            "value": 157
+          },
+          {
+            "name": "Energy Profits Levy",
+            "value": 2632
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -234
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 25104
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 7087
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3782
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 15359
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 124
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 10004
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 4136
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3680
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4391
+          },
+          {
+            "name": "Cider Duties",
+            "value": 236
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 3303
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3184
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 7341
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 626
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 2094
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 378
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 355
+          },
+          {
+            "name": "Plastic Packaging Tax",
+            "value": 200
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 0
+          },
+          {
+            "name": "Customs Duties",
+            "value": 5526
+          },
+          {
+            "name": "Penalties",
+            "value": 763
+          }
+        ]
       },
       {
         "year": "2023-24",
-        "total": 828584
+        "total": 828584,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 275255
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 14493
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 3841
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 179190
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 168389
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 85658
+          },
+          {
+            "name": "Bank Levy",
+            "value": 1428
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 1446
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 108
+          },
+          {
+            "name": "Digital Services Tax",
+            "value": 678
+          },
+          {
+            "name": "Residential Property Developer Tax",
+            "value": 103
+          },
+          {
+            "name": "Energy Profits Levy",
+            "value": 3587
+          },
+          {
+            "name": "Electricity Generator Levy",
+            "value": 1473
+          },
+          {
+            "name": "Economic Crime Levy",
+            "value": 13
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -428
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 24923
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 7499
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 3199
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 11614
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 132
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 8804
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 4137
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3621
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4611
+          },
+          {
+            "name": "Cider Duties",
+            "value": 220
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 3389
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 3811
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 8146
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 489
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1827
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 350
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 338
+          },
+          {
+            "name": "Plastic Packaging Tax",
+            "value": 270
+          },
+          {
+            "name": "Swiss Capital Tax",
+            "value": 0
+          },
+          {
+            "name": "Customs Duties",
+            "value": 4804
+          },
+          {
+            "name": "Penalties",
+            "value": 1168
+          }
+        ]
       },
       {
         "year": "2024-25",
-        "total": 858648
+        "total": 858648,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 302799
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 13687
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 4100
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 172518
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 170994
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 90915
+          },
+          {
+            "name": "Bank Levy",
+            "value": 1320
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 974
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 105
+          },
+          {
+            "name": "Digital Services Tax",
+            "value": 808
+          },
+          {
+            "name": "Residential Property Developer Tax",
+            "value": 102
+          },
+          {
+            "name": "Energy Profits Levy",
+            "value": 2857
+          },
+          {
+            "name": "Electricity Generator Levy",
+            "value": 749
+          },
+          {
+            "name": "Economic Crime Levy",
+            "value": 16
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -350
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 24360
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 8249
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 4321
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 13883
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 133
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 7927
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 4153
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3520
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4722
+          },
+          {
+            "name": "Cider Duties",
+            "value": 221
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 3616
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 4125
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 8883
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 486
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1792
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 359
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 327
+          },
+          {
+            "name": "Plastic Packaging Tax",
+            "value": 253
+          },
+          {
+            "name": "Customs Duties",
+            "value": 4896
+          },
+          {
+            "name": "Penalties",
+            "value": 826
+          }
+        ]
       },
       {
         "year": "2025-26",
-        "total": 937763
+        "total": 937763,
+        "taxes": [
+          {
+            "name": "Income Tax",
+            "value": 326932
+          },
+          {
+            "name": "Capital Gains Tax",
+            "value": 24310
+          },
+          {
+            "name": "Apprenticeship Levy",
+            "value": 4391
+          },
+          {
+            "name": "National Insurance Contributions",
+            "value": 200829
+          },
+          {
+            "name": "Value Added Tax",
+            "value": 179861
+          },
+          {
+            "name": "Corporation Tax",
+            "value": 95105
+          },
+          {
+            "name": "Bank Levy",
+            "value": 1442
+          },
+          {
+            "name": "Bank Surcharge",
+            "value": 1170
+          },
+          {
+            "name": "Diverted Profits Tax",
+            "value": 604
+          },
+          {
+            "name": "Digital Services Tax",
+            "value": 944
+          },
+          {
+            "name": "Residential Property Developer Tax",
+            "value": 89
+          },
+          {
+            "name": "Energy Profits Levy",
+            "value": 2564
+          },
+          {
+            "name": "Electricity Generator Levy",
+            "value": 41
+          },
+          {
+            "name": "Economic Crime Levy",
+            "value": 21
+          },
+          {
+            "name": "Petroleum Revenue Tax",
+            "value": -443
+          },
+          {
+            "name": "Hydrocarbon Oil (Fuel duties)",
+            "value": 24558
+          },
+          {
+            "name": "Inheritance Tax",
+            "value": 8467
+          },
+          {
+            "name": "Stamp Duty Shares",
+            "value": 4735
+          },
+          {
+            "name": "Stamp Duty Land Tax",
+            "value": 15159
+          },
+          {
+            "name": "Annual Tax on Enveloped Dwellings",
+            "value": 139
+          },
+          {
+            "name": "Tobacco Duties",
+            "value": 7567
+          },
+          {
+            "name": "Spirits Duties",
+            "value": 4069
+          },
+          {
+            "name": "Beer Duties",
+            "value": 3461
+          },
+          {
+            "name": "Wines Duties",
+            "value": 4609
+          },
+          {
+            "name": "Cider Duties",
+            "value": 296
+          },
+          {
+            "name": "Betting & Gaming",
+            "value": 3831
+          },
+          {
+            "name": "Air Passenger Duty",
+            "value": 4618
+          },
+          {
+            "name": "Insurance Premium Tax",
+            "value": 9037
+          },
+          {
+            "name": "Landfill Tax",
+            "value": 623
+          },
+          {
+            "name": "Climate Change Levy",
+            "value": 1790
+          },
+          {
+            "name": "Aggregates Levy",
+            "value": 369
+          },
+          {
+            "name": "Soft Drinks Industry Levy",
+            "value": 354
+          },
+          {
+            "name": "Plastic Packaging Tax",
+            "value": 256
+          },
+          {
+            "name": "Customs Duties",
+            "value": 4972
+          },
+          {
+            "name": "Penalties",
+            "value": 996
+          }
+        ]
       }
     ],
     "monthly": [

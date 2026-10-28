@@ -5,6 +5,7 @@ import { parseBoeCsv } from "@/lib/parsers/boe";
 import { parseDmoSales } from "@/lib/parsers/dmo";
 import { parseHmrcReceipts } from "@/lib/parsers/hmrc";
 import { parseOnsDirectory } from "@/lib/parsers/ons";
+import { parsePriceDirectory } from "@/lib/parsers/prices";
 import { parsePesa } from "@/lib/parsers/pesa";
 import { parseIncomeTax } from "@/lib/parsers/taxpayers";
 import { snapshotSchemas, type SourceId } from "@/lib/schema";
@@ -25,6 +26,19 @@ async function main(): Promise<void> {
     nextRelease: ons.series.j5ii?.nextRelease || null,
     sourceUrl: "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf/data",
     data: ons,
+  }));
+
+  const prices = parsePriceDirectory(path.join(root, "fixtures/raw/ons/prices"));
+  const priceReleases = [prices.mnf2, prices.l8gg, prices.bktl, prices.d7bt, prices.l522, prices.chaw].map(
+    (series) => series.releaseDate,
+  );
+  write("ons-prices", buildEnvelope({
+    sourceId: "ons-prices",
+    retrievedAt: FIXTURE_RETRIEVED_AT,
+    releaseDate: priceReleases.slice().sort()[0] ?? null,
+    nextRelease: null,
+    sourceUrl: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/l8gg/qna/data",
+    data: prices,
   }));
 
   const hmrcContent = JSON.parse(readFileSync(path.join(root, "fixtures/raw/govuk/hmrc-receipts-content.json"), "utf8")) as {

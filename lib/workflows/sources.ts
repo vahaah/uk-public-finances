@@ -8,6 +8,7 @@ import {
   runObr,
   runOns,
   runPesa,
+  runPrices,
 } from "@/lib/workflows/steps";
 import type { SourceId } from "@/lib/schema";
 
@@ -24,6 +25,11 @@ async function settle(sourceId: SourceId, run: Runner, force: boolean): Promise<
     await recordValidationFailure(sourceId, message);
     return { status: "error", error: message };
   }
+}
+
+export async function pricesWorkflow(input: Input): Promise<Record<string, unknown>> {
+  "use workflow";
+  return settle("ons-prices", runPrices, Boolean(input.force));
 }
 
 export async function onsPsfWorkflow(input: Input): Promise<Record<string, unknown>> {
@@ -63,6 +69,7 @@ export async function obrDatabankWorkflow(input: Input): Promise<Record<string, 
 
 export const DAILY_WORKFLOWS = [
   onsPsfWorkflow,
+  pricesWorkflow,
   hmrcReceiptsWorkflow,
   pesaWorkflow,
   incomeTaxWorkflow,

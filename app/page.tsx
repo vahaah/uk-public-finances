@@ -11,6 +11,7 @@ import {
 } from "@/components/blocks";
 import { formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
@@ -22,8 +23,9 @@ export const metadata = pageMeta({
 });
 
 export default async function HomePage() {
-  const loaded = await readSnapshot("ons-psf");
+  const [loaded, priceLoaded] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices")]);
   const snapshot = takeSnapshot("ons-psf", loaded.snapshot);
+  const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
   const meta = SOURCES["ons-psf"];
   if (!snapshot) return <EmptySource name="ONS public sector finances" />;
   const data = snapshot.data;
@@ -145,7 +147,12 @@ export default async function HomePage() {
             />
           }
         >
-          <BorrowingChart months={data.series.j5ii?.months ?? []} />
+          <BorrowingChart
+            months={data.series.j5ii?.months ?? []}
+            quarters={data.series.j5ii?.quarters ?? []}
+            years={data.series.j5ii?.years ?? []}
+            prices={prices ? priceBundle(prices.data) : null}
+          />
         </ChartFrame>
       </div>
     </>

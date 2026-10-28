@@ -41,7 +41,7 @@ export function parseHmrcReceipts(
       total: latest.total,
       taxes: latest.taxes,
     },
-    annualHistory: annualTable.map((row) => ({ year: row.year, total: row.total })),
+    annualHistory: annualTable,
     monthly: monthlyTable,
   };
 }

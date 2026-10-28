@@ -13,6 +13,7 @@ const pages = [
   ["/debt", "debt", "94.0%"],
   ["/taxpayers", "taxpayers", "26.6%"],
   ["/forecasts", "forecasts", "Forecast vintage: pending"],
+  ["/old-money", "old-money", "GDP deflator, calendar year"],
   ["/methodology", "methodology", "How the figures are collected"],
   ["/data-sources", "data-sources", "Office for National Statistics"],
   ["/data-health", "data-health", "Data health"],

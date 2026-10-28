@@ -17,6 +17,7 @@ const SECTIONS = [
   ["signs", "Signs and totals"],
   ["revisions", "Revisions"],
   ["nominal", "Nominal figures"],
+  ["prices", "Prices and history"],
   ["not-estimated", "What this site does not estimate"],
   ["licence", "Licence"],
 ] as const;
@@ -62,7 +63,7 @@ export default function MethodologyPage() {
         <section id="signs">
           <h2 className="text-base font-medium text-neutral-950 dark:text-white">Signs and totals</h2>
           <p className="mt-2">
-            In the ONS time series download, public sector net borrowing (J5II) and the current budget deficit (JW2T) are negative in months when the public sector finances bulletin reports borrowing or a deficit. For September 2026 the download is −24,520 for J5II and −15,770 for JW2T, in £ million. The bulletin published on 21 October 2026 reports borrowing of £24.5 billion and a current budget deficit of £15.8 billion for that month. This site stores the download and shows the negation of those two series, so a positive figure matches the bulletin. Receipts, total managed expenditure, debt and central government net interest payable are shown with the sign in the download.
+            In the ONS time series download, public sector net borrowing (J5II) and the current budget deficit (JW2T) are negative in months, quarters and calendar years when the public sector finances bulletin reports borrowing or a deficit. For September 2026 the download is −24,520 for J5II and −15,770 for JW2T, in £ million. The bulletin published on 21 October 2026 reports borrowing of £24.5 billion and a current budget deficit of £15.8 billion for that month. This site stores the download and shows the negation of those two series, so a positive figure matches the bulletin. Receipts, total managed expenditure, debt and central government net interest payable are shown with the sign in the download.
           </p>
           <p className="mt-2">
             A financial-year total adds the published monthly values from April. A missing month is left out. It is not treated as zero. On the receipts chart, lines HMRC describes as included in another tax, and the National Insurance splits, are left out so they are not counted twice.
@@ -82,6 +83,15 @@ export default function MethodologyPage() {
               glossary
             </Link>
             .
+          </p>
+        </section>
+        <section id="prices">
+          <h2 className="text-base font-medium text-neutral-950 dark:text-white">Prices and history</h2>
+          <p className="mt-2">
+            The public sector finances series are stored at every frequency ONS publishes. In the September 2026 file, J5II runs from the 1946 calendar year and the 1946 Q1 quarter, and the monthly series runs from January 1993. Other series start later, where ONS starts them. HMRC&apos;s workbook has annual receipts from 2006-07 and months from April 2017. PESA table 4.2 has financial years from 2003-04. Table 6.1 has outturn from 2021-22 and plans to 2028-29.
+          </p>
+          <p className="mt-2">
+            Real terms on the money charts use the GDP deflator at market prices. HM Treasury&apos;s September 2026 GDP deflators release says calendar years are taken from ONS series MNF2 and financial years from ONS series L8GG. A financial year here is the average of the four L8GG quarters from Q2 to the following Q1. A month uses the L8GG quarter that contains it. The base year defaults to 2025, the latest calendar year with a MNF2 observation and a complete L8GG year. A share of GDP uses non-seasonally adjusted money GDP, ONS series BKTL. A financial-year total of BKTL is the sum of those same four quarters. A single month is not shown as a share of GDP. CPI (D7BT), CPIH (L522) and RPI (CHAW) are used on the old-money page. RPI is for index-linked gilts, not for spending.
           </p>
         </section>
         <section id="not-estimated">
