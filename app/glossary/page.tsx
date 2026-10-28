@@ -1,23 +1,42 @@
-import type { Metadata } from "next";
-
-import { PageIntro } from "@/components/blocks";
+import { Breadcrumb, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
 import { GLOSSARY } from "@/lib/content";
+import { pageMeta } from "@/lib/meta";
+import { SITE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Glossary",
-  description: "Short definitions for the public finance terms used on Budget.",
-  alternates: { canonical: "/glossary" },
-};
+export const metadata = pageMeta({
+  title: "Glossary of public finance terms",
+  description: "Plain definitions of the public finance terms used on this site, from ONS, HM Treasury, HMRC and Bank of England wording.",
+  path: "/glossary",
+});
 
 export default function GlossaryPage() {
+  const defined = {
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    name: "UK public finances glossary",
+    url: `${SITE_URL}/glossary`,
+    hasDefinedTerm: GLOSSARY.map((entry) => ({
+      "@type": "DefinedTerm",
+      "@id": `${SITE_URL}/glossary#${entry.id}`,
+      name: entry.term,
+      description: entry.body,
+    })),
+  };
   return (
     <>
-      <PageIntro kicker="Glossary" title="Terms" lede="Definitions of the series and budget terms the charts use. Figures themselves stay on the data pages." />
-      <dl className="max-w-3xl divide-y divide-neutral-200 dark:divide-neutral-800">
+      <JsonLd data={breadcrumbJsonLd("Glossary", "/glossary")} />
+      <JsonLd data={defined} />
+      <Breadcrumb current="Glossary" />
+      <PageIntro
+        kicker="Glossary"
+        title="Glossary"
+        lede="Plain definitions of the terms used on this site. The figures themselves stay on the data pages."
+      />
+      <dl className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
         {GLOSSARY.map((entry) => (
-          <div key={entry.term} className="py-4">
+          <div key={entry.id} id={entry.id} className="scroll-mt-4 py-4">
             <dt className="text-sm font-medium">{entry.term}</dt>
-            <dd className="mt-1 text-sm leading-6 text-neutral-600 dark:text-neutral-400">{entry.body}</dd>
+            <dd className="mt-1 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{entry.body}</dd>
           </div>
         ))}
       </dl>

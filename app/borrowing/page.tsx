@@ -1,63 +1,84 @@
-import type { Metadata } from "next";
-
-import { ChartFrame, DataTable, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
 import { BorrowingChart, CumulativeChart } from "@/components/charts";
-import { formatGbpFromMillions, formatMonth } from "@/lib/format";
+import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
+import { formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
+import { pageMeta } from "@/lib/meta";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Borrowing and the deficit",
-  description: "Monthly public sector net borrowing and the financial-year cumulative, against the same months a year earlier.",
-  alternates: { canonical: "/borrowing" },
-};
+export const metadata = pageMeta({
+  title: "UK government borrowing and the deficit",
+  description:
+    "Monthly UK public sector net borrowing and the financial year to date against a year earlier. The next ONS release date is shown. Source: ONS.",
+  path: "/borrowing",
+});
 
 export default async function BorrowingPage() {
   const loaded = await readSnapshot("ons-psf");
   const snapshot = takeSnapshot("ons-psf", loaded.snapshot);
   const meta = SOURCES["ons-psf"];
-  if (!snapshot) return <EmptySource name="ONS public sector finances" />;
+  if (!snapshot) return <EmptySource name="ONS borrowing" />;
   const fy = snapshot.data.financialYear;
-  const note = (
+  const sign = snapshot.data.bulletinSign;
+  const source = (
     <SourceNote
       publisher={meta.publisher}
-      title="J5II. The chart negates the download so it matches the bulletin."
+      title="Public sector net borrowing excluding public sector banks (J5II)"
       url={snapshot.sourceUrl}
       releaseDate={snapshot.releaseDate}
       licenceUrl={meta.licenceUrl}
+      sourceId="ons-psf"
     />
   );
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd("UK government borrowing and the deficit", "/borrowing")} />
       <JsonLd
         data={datasetJsonLd({
-          name: "UK public sector net borrowing",
-          description: "Monthly J5II and the April-to-latest cumulative, with the previous year.",
           path: "/borrowing",
+          name: "UK public sector net borrowing, monthly and financial year to date",
+          description:
+            "Monthly public sector net borrowing excluding public sector banks, and the financial year running total compared with a year earlier, from the ONS.",
+          keywords: ["UK government borrowing", "budget deficit", "PSNB"],
+          temporalCoverage: "1993-01/2026-09",
+          variableMeasured: ["Public sector net borrowing excluding public sector banks (J5II)", "Current budget deficit (JW2T)"],
           dateModified: snapshot.releaseDate,
-          license: meta.licenceUrl,
-          publisher: meta.publisher,
-          sourceUrl: snapshot.sourceUrl,
+          sources: [{ id: "ons-psf", name: meta.title, url: snapshot.sourceUrl, publisher: meta.publisher, licenceUrl: meta.licenceUrl, releaseDate: snapshot.releaseDate }],
         })}
       />
+      <Breadcrumb current="Borrowing" />
       <PageIntro
-        kicker="Borrowing"
-        title="Borrowing and the deficit"
+        kicker="Public sector finances"
+        title="UK government borrowing and the deficit"
         lede={
-          fy && snapshot.data.bulletinSign.financialYearBorrowing != null
-            ? `Borrowing in ${fy.year} to ${formatMonth(fy.through)} was ${formatGbpFromMillions(snapshot.data.bulletinSign.financialYearBorrowing)}. The same months a year earlier were ${snapshot.data.bulletinSign.previousFinancialYearBorrowing == null ? "unpublished" : formatGbpFromMillions(snapshot.data.bulletinSign.previousFinancialYearBorrowing)}.`
-            : "Monthly public sector net borrowing."
+          <>
+            <p>
+              {fy && sign.financialYearBorrowing != null
+                ? `Public sector net borrowing in the financial year ${fy.year} to date (April to ${formatMonthLong(fy.through)}) was ${formatGbpFromMillions(sign.financialYearBorrowing)}. In the same months of the previous financial year it was ${sign.previousFinancialYearBorrowing == null ? "not available" : formatGbpFromMillions(sign.previousFinancialYearBorrowing)}.`
+                : "Monthly public sector net borrowing, excluding public sector banks."}
+            </p>
+            <p className="mt-2">
+              Borrowing is the gap between what the public sector spends and what it receives. Figures are revised in later releases. The running total adds to{" "}
+              <a className="underline decoration-neutral-500 underline-offset-4" href="/debt">
+                net debt
+              </a>
+              . Comparison with a forecast is on{" "}
+              <a className="underline decoration-neutral-500 underline-offset-4" href="/forecasts">
+                forecasts
+              </a>
+              .
+            </p>
+          </>
         }
       />
-      <ChartFrame title="Monthly borrowing" source={note}>
+      <ChartFrame title="Public sector net borrowing by month" subtitle="£ billion. Bars above zero are borrowing." source={source}>
         <BorrowingChart months={snapshot.data.series.j5ii?.months ?? []} />
       </ChartFrame>
       <div className="mt-3">
-        <ChartFrame title={`Cumulative borrowing, ${fy?.year ?? ""}`} source={note}>
+        <ChartFrame title={fy ? `Borrowing so far in ${fy.year}` : "Borrowing so far"} subtitle="£ billion, running total." source={source}>
           {fy ? <CumulativeChart months={fy.months} /> : null}
           {fy ? (
             <DataTable
-              columns={["Month", "Cumulative £bn", "A year earlier £bn"]}
+              columns={["Month", `${fy.year} to date, £bn`, "A year earlier, £bn"]}
               rows={fy.months.map((row) => [
                 formatMonth(row.period),
                 formatGbpFromMillions(-row.cumulative),

@@ -27,6 +27,8 @@ export function parseDmoSales(body: unknown): DmoData {
       rawIndexLinked: indexLinked,
       averageMaturityYears: maturity,
       indexLinkedShare: indexLinked / total,
+      conventionalYield: parsePublishedNumber(record.AverageGiltPortfolioYieldConventional as number | string),
+      indexLinkedYield: parsePublishedNumber(record.AverageGiltPortfolioYieldIl as number | string),
       unitNote: UNIT_NOTE,
     },
     maturity: null,

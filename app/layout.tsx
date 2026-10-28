@@ -12,28 +12,24 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "UK public finances",
-    template: `%s · ${SITE_NAME}`,
+    default: "UK public finances: tax, spending, borrowing and debt | Budget",
+    template: `%s | ${SITE_NAME}`,
   },
   description:
-    "Borrowing, receipts, spending, debt, gilts and taxpayers for the UK, from ONS, HMRC, HM Treasury, the DMO, the Bank of England and the OBR.",
+    "UK government borrowing, tax receipts, spending and debt, using official statistics from the ONS, HMRC, HM Treasury, the Debt Management Office, the Bank of England and the OBR.",
   applicationName: SITE_NAME,
-  alternates: { canonical: "/" },
   openGraph: {
-    title: "UK public finances",
-    description: "Official public finance statistics, with the source and release date on every chart.",
-    url: SITE_URL,
     siteName: SITE_NAME,
+    locale: "en_GB",
     type: "website",
   },
-  robots: { index: true, follow: true },
 };
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en-GB" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="min-h-screen font-sans">
         <ThemeScript />
         <NuqsAdapter>

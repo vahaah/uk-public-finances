@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { parseBoeCsv } from "@/lib/parsers/boe";
 import { parseDmoSales } from "@/lib/parsers/dmo";
 import {
+  GOVUK_PATHS,
   pickHmrcReceiptsWorkbook,
   pickIncomeTaxWorkbook,
   pickPesaChapters,
@@ -16,9 +17,10 @@ import { parseIncomeTax } from "@/lib/parsers/taxpayers";
 import { ONS_FILES, parseOnsRecords } from "@/lib/parsers/ons";
 import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
-import { snapshotSchemas, type SourceId } from "@/lib/schema";
+import { droppedTooFar, snapshotRows } from "@/lib/quality";
+import { snapshotSchemas, type AnySnapshot, type SourceId } from "@/lib/schema";
 import { buildEnvelope, decidePublish } from "@/lib/snapshot";
-import { readSnapshot, takeSnapshot } from "@/lib/store";
+import { readSnapshot } from "@/lib/store";
 import { REVALIDATE_PATHS, USER_AGENT } from "@/lib/site";
 
 const ONS_BASE =
@@ -31,20 +33,12 @@ export async function revalidateDashboard(): Promise<void> {
 
 export async function recordValidationFailure(sourceId: SourceId, error: string): Promise<void> {
   "use step";
-  await writeJson(`health/${sourceId}.json`, {
-    validationError: error,
-    usingLastGood: true,
-    at: new Date().toISOString(),
-  });
+  await writeHealth(sourceId, error, true);
 }
 
 export async function clearValidationFailure(sourceId: SourceId): Promise<void> {
   "use step";
-  await writeJson(`health/${sourceId}.json`, {
-    validationError: null,
-    usingLastGood: false,
-    at: new Date().toISOString(),
-  });
+  await writeHealth(sourceId, null, false);
 }
 
 export async function publishSnapshot(sourceId: SourceId, snapshot: unknown): Promise<void> {
@@ -54,18 +48,14 @@ export async function publishSnapshot(sourceId: SourceId, snapshot: unknown): Pr
       ? String((snapshot as { contentHash: string }).contentHash)
       : "snapshot";
   const pathname = `snapshots/${sourceId}/${hash}.json`;
-  await writeJson(pathname, snapshot);
-  await writeJson(`snapshots/${sourceId}/latest.json`, { pathname });
+  await writeJson(pathname, snapshot, false);
+  await writeJson(`snapshots/${sourceId}/latest.json`, { pathname }, true);
 }
 
 export async function runOns(force: boolean): Promise<Record<string, unknown>> {
   "use step";
   const probe = await getJson(`${ONS_BASE}/j5ii/pusf/data`);
   const releaseDate = text(probe.description, "releaseDate");
-  const current = await readSnapshot("ons-psf");
-  if (!force && current.snapshot?.releaseDate === releaseDate) {
-    return { status: "unchanged", releaseDate };
-  }
   const records: Record<string, unknown> = { j5ii: probe };
   for (const code of ONS_FILES) {
     if (code === "j5ii") continue;
@@ -85,18 +75,9 @@ export async function runOns(force: boolean): Promise<Record<string, unknown>> {
 
 export async function runHmrc(force: boolean): Promise<Record<string, unknown>> {
   "use step";
-  const hit = await findContent(
-    "HMRC tax receipts and National Insurance contributions for the UK",
-    { filter_organisations: "hm-revenue-customs" },
-    (candidate) => /tax receipts/i.test(candidate.title ?? ""),
-  );
-  const content = await getJson(`https://www.gov.uk/api/content${hit.link}`);
+  const content = await getJson(`https://www.gov.uk/api/content${GOVUK_PATHS.hmrcReceipts}`);
+  const hit = { link: GOVUK_PATHS.hmrcReceipts };
   const workbook = pickHmrcReceiptsWorkbook(content as GovukContent);
-  const current = await readSnapshot("hmrc-receipts");
-  if (!force && current.snapshot && "data" in current.snapshot) {
-    const data = current.snapshot.data as { attachmentUrl?: string };
-    if (data.attachmentUrl === workbook.url) return { status: "unchanged", releaseDate: content.public_updated_at };
-  }
   const bytes = await getBytes(workbook.url ?? "");
   return finish("hmrc-receipts", () =>
     buildEnvelope({
@@ -119,13 +100,13 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
   const hit = await findContent(
     "Public Expenditure Statistical Analyses",
     { filter_organisations: "hm-treasury" },
-    (candidate) => /^Public Expenditure Statistical Analyses/i.test(candidate.title ?? ""),
+    (candidate) =>
+      (candidate.link ?? "").startsWith(GOVUK_PATHS.pesaPrefix) &&
+      /^Public Expenditure Statistical Analyses 20\d\d$/.test(candidate.title ?? ""),
   );
   const content = await getJson(`https://www.gov.uk/api/content${hit.link}`);
   const chapters = pickPesaChapters(content as GovukContent);
-  const current = await readSnapshot("pesa");
   const releaseDate = content.public_updated_at ?? null;
-  if (!force && current.snapshot?.releaseDate === releaseDate) return { status: "unchanged", releaseDate };
   const chapter4 = await getBytes(chapters.chapter4.url ?? "");
   const chapter6 = await getBytes(chapters.chapter6.url ?? "");
   return finish("pesa", () =>
@@ -147,13 +128,13 @@ export async function runIncomeTax(force: boolean): Promise<Record<string, unkno
   const hit = await findContent(
     "Income Tax liabilities statistics",
     { filter_organisations: "hm-revenue-customs" },
-    (candidate) => /^Income Tax liabilities statistics:/i.test(candidate.title ?? ""),
+    (candidate) =>
+      (candidate.link ?? "").startsWith(GOVUK_PATHS.incomeTaxPrefix) &&
+      /^Income Tax liabilities statistics:/i.test(candidate.title ?? ""),
   );
   const content = await getJson(`https://www.gov.uk/api/content${hit.link}`);
   const workbook = pickIncomeTaxWorkbook(content as GovukContent);
   const releaseDate = content.public_updated_at ?? null;
-  const current = await readSnapshot("hmrc-income-tax");
-  if (!force && current.snapshot?.releaseDate === releaseDate) return { status: "unchanged", releaseDate };
   const bytes = await getBytes(workbook.url ?? "");
   return finish("hmrc-income-tax", () =>
     buildEnvelope({
@@ -178,9 +159,6 @@ export async function runBoe(force: boolean): Promise<Record<string, unknown>> {
   const csv = await getText(url);
   const data = parseBoeCsv(csv);
   const latest = data.series.IUDBEDR.latest?.date ?? null;
-  const current = await readSnapshot("boe-yields");
-  const currentLatest = takeSnapshot("boe-yields", current.snapshot)?.data.series.IUDBEDR.latest?.date ?? null;
-  if (!force && currentLatest === latest) return { status: "unchanged", releaseDate: latest };
   return finish("boe-yields", () =>
     buildEnvelope({
       sourceId: "boe-yields",
@@ -203,12 +181,6 @@ export async function runDmo(force: boolean): Promise<Record<string, unknown>> {
   }
   const body = (await response.json()) as unknown;
   const data = parseDmoSales(body);
-  const marker = data.portfolio ? String(data.portfolio.rawTotal) : null;
-  const current = await readSnapshot("dmo-gilts");
-  const currentTotal = takeSnapshot("dmo-gilts", current.snapshot)?.data.portfolio?.rawTotal ?? null;
-  if (!force && currentTotal != null && String(currentTotal) === marker) {
-    return { status: "unchanged", releaseDate: null };
-  }
   return finish("dmo-gilts", () =>
     buildEnvelope({
       sourceId: "dmo-gilts",
@@ -227,7 +199,9 @@ export async function runObr(force: boolean): Promise<Record<string, unknown>> {
   const html = await page.text();
   const blocked = page.status === 403 || /just a moment|cloudflare/i.test(html);
   if (!blocked) {
-    const link = html.match(/href="([^"]+\.xlsx)"/i)?.[1];
+    const link = [...html.matchAll(/href="([^"]+)"/gi)]
+      .map((match) => match[1] ?? "")
+      .find((href) => /public-finances-databank/i.test(href) && /\.xlsx(?:$|\?)/i.test(href));
     if (link) {
       const url = new URL(link, "https://obr.uk").toString();
       const bytes = await getBytes(url);
@@ -248,11 +222,6 @@ export async function runObr(force: boolean): Promise<Record<string, unknown>> {
   }
   try {
     const blob = await readManualObr();
-    const current = await readSnapshot("obr-databank");
-    const currentObr = takeSnapshot("obr-databank", current.snapshot);
-    if (!force && currentObr?.data.origin === "blob-manual") {
-      return { status: "unchanged", releaseDate: currentObr?.releaseDate ?? null };
-    }
     return finish("obr-databank", async () =>
       buildEnvelope({
         sourceId: "obr-databank",
@@ -284,32 +253,33 @@ async function finish(
       parsed.success ? { ok: true as const, snapshot: parsed.data } : { ok: false as const, error: parsed.error.message },
     );
     if (decision.action === "keep-last-good") {
-      await writeJson(`health/${sourceId}.json`, {
-        validationError: decision.error,
-        usingLastGood: true,
-        at: new Date().toISOString(),
-      });
+      await writeHealth(sourceId, decision.error, true);
       return { status: "validation_failed", error: decision.error };
     }
-    const hash = decision.snapshot.contentHash;
-    const pathname = `snapshots/${sourceId}/${hash}.json`;
-    await writeJson(pathname, decision.snapshot);
-    await writeJson(`snapshots/${sourceId}/latest.json`, { pathname });
-    await writeJson(`health/${sourceId}.json`, {
-      validationError: null,
-      usingLastGood: false,
-      at: new Date().toISOString(),
-    });
-    return { status: "updated", releaseDate: decision.snapshot.releaseDate };
+    return commitSnapshot(decision.snapshot);
   } catch (error) {
     const message = error instanceof Error ? error.message : "parse failed";
-    await writeJson(`health/${sourceId}.json`, {
-      validationError: message,
-      usingLastGood: true,
-      at: new Date().toISOString(),
-    });
+    await writeHealth(sourceId, message, true);
     return { status: "validation_failed", error: message };
   }
+}
+
+export async function commitSnapshot(snapshot: AnySnapshot): Promise<Record<string, unknown>> {
+  "use step";
+  const current = await readSnapshot(snapshot.sourceId);
+  if (current.snapshot?.contentHash === snapshot.contentHash) {
+    return { status: "unchanged", releaseDate: snapshot.releaseDate };
+  }
+  if (current.snapshot && droppedTooFar(snapshotRows(current.snapshot), snapshotRows(snapshot))) {
+    const error = `Row count fell by more than 20% for ${snapshot.sourceId}`;
+    await writeHealth(snapshot.sourceId, error, true);
+    return { status: "validation_failed", error };
+  }
+  const pathname = `snapshots/${snapshot.sourceId}/${snapshot.contentHash}.json`;
+  await writeJson(pathname, snapshot, false);
+  await writeJson(`snapshots/${snapshot.sourceId}/latest.json`, { pathname }, true);
+  await writeHealth(snapshot.sourceId, null, false);
+  return { status: "updated", releaseDate: snapshot.releaseDate };
 }
 
 async function findContent(
@@ -321,6 +291,7 @@ async function findContent(
   url.searchParams.set("q", query);
   url.searchParams.set("count", "10");
   url.searchParams.set("order", "-public_timestamp");
+  url.searchParams.set("filter_content_store_document_type", "national_statistics");
   for (const [key, value] of Object.entries(filters)) url.searchParams.set(key, value);
   const body = await getJson(url.toString());
   const hits = (Array.isArray(body.results) ? body.results : []) as GovukSearchHit[];
@@ -345,13 +316,22 @@ async function getBytes(url: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer());
 }
 
-async function writeJson(pathname: string, value: unknown): Promise<void> {
+async function writeHealth(sourceId: SourceId, validationError: string | null, usingLastGood: boolean): Promise<void> {
+  await writeJson(
+    `health/${sourceId}.json`,
+    { validationError, usingLastGood, at: new Date().toISOString() },
+    true,
+  );
+}
+
+async function writeJson(pathname: string, value: unknown, overwritten: boolean): Promise<void> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return;
   await put(pathname, JSON.stringify(value), {
     access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: "application/json",
+    ...(overwritten ? { cacheControlMaxAge: 60 } : {}),
   });
 }
 

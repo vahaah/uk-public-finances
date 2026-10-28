@@ -32,7 +32,7 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={active ? "text-neutral-950 dark:text-white" : "hover:text-neutral-950 dark:hover:text-white"}
+                className={`shrink-0 whitespace-nowrap ${active ? "font-medium text-neutral-950 dark:text-white" : "hover:text-neutral-950 dark:hover:text-white"}`}
                 aria-current={active ? "page" : undefined}
               >
                 {item.label}
@@ -58,7 +58,10 @@ export function Footer() {
         <a href="/llms.txt" className="hover:text-neutral-950 dark:hover:text-white">
           llms.txt
         </a>
-        <span className="ml-auto">Open UK public finances · budget.vahaah.com</span>
+        <a href="/llms-full.txt" className="hover:text-neutral-950 dark:hover:text-white">
+          llms-full.txt
+        </a>
+        <span className="ml-auto">UK public finances from official statistics · budget.vahaah.com</span>
       </div>
     </footer>
   );
@@ -72,7 +75,8 @@ function ThemeToggle() {
   return (
     <button
       type="button"
-      className="text-xs text-neutral-500 hover:text-neutral-950 dark:hover:text-white"
+      className="inline-flex size-8 items-center justify-center rounded-md border border-neutral-300 text-sm dark:border-neutral-700"
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={() => {
         const next = !document.documentElement.classList.contains("dark");
         document.documentElement.classList.toggle("dark", next);
@@ -80,7 +84,7 @@ function ThemeToggle() {
         setDark(next);
       }}
     >
-      {dark ? "Light" : "Dark"}
+      {dark ? "☀" : "☾"}
     </button>
   );
 }

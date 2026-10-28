@@ -11,7 +11,7 @@ const DESCRIPTIONS = {
 
 export function parseBoeCsv(csv: string): BoeData {
   const lines = csv.trim().split(/\r?\n/).filter((line) => line.trim());
-  const header = lines[0]?.split(",") ?? [];
+  const header = parseCsvLine(lines[0] ?? "");
   const dateIndex = header.indexOf("DATE");
   const bankIndex = header.indexOf("IUDBEDR");
   const yieldIndex = header.indexOf("IUDMNPY");
@@ -21,7 +21,7 @@ export function parseBoeCsv(csv: string): BoeData {
   const bank: { date: string; value: number }[] = [];
   const gilt: { date: string; value: number }[] = [];
   for (const line of lines.slice(1)) {
-    const cells = line.split(",");
+    const cells = parseCsvLine(line);
     const date = isoDate(cells[dateIndex] ?? "");
     if (!date) continue;
     const bankRate = parsePublishedNumber(cells[bankIndex] ?? "");
@@ -36,6 +36,34 @@ export function parseBoeCsv(csv: string): BoeData {
       IUDMNPY: { description: DESCRIPTIONS.IUDMNPY, latest: gilt.at(-1) ?? null, points: gilt },
     },
   };
+}
+
+export function parseCsvLine(line: string): string[] {
+  const cells: string[] = [];
+  let current = "";
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index] ?? "";
+    if (quoted) {
+      if (character === '"' && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else if (character === '"') {
+        quoted = false;
+      } else {
+        current += character;
+      }
+    } else if (character === '"') {
+      quoted = true;
+    } else if (character === ",") {
+      cells.push(current);
+      current = "";
+    } else {
+      current += character;
+    }
+  }
+  cells.push(current);
+  return cells;
 }
 
 const MONTHS: Record<string, string> = {

@@ -12,8 +12,8 @@ const pages = [
   ["/borrowing", "borrowing", "£97.8bn"],
   ["/debt", "debt", "94.0%"],
   ["/taxpayers", "taxpayers", "26.6%"],
-  ["/forecasts", "forecasts", "OBR public finances databank"],
-  ["/methodology", "methodology", "How the numbers are made"],
+  ["/forecasts", "forecasts", "Forecast vintage: pending"],
+  ["/methodology", "methodology", "How the figures are collected"],
   ["/data-sources", "data-sources", "Office for National Statistics"],
   ["/data-health", "data-health", "Data health"],
   ["/glossary", "glossary", "Public sector net borrowing"],
@@ -21,15 +21,19 @@ const pages = [
 ] as const;
 
 for (const [path, name, text] of pages) {
-  test(`${name} renders published figures`, async ({ page }) => {
-    await page.goto(path);
+  test(`${name} renders published figures`, async ({ page }, testInfo) => {
+    await page.goto(path, { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByText(text).first()).toBeVisible();
+    const ready = page.locator("[data-ready]");
+    if ((await ready.count()) > 0) await expect(ready.first()).toBeVisible();
     const chart = page.locator(".recharts-surface");
     if ((await chart.count()) > 0) await expect(chart.first()).toBeVisible();
-    await page.screenshot({ path: `${shots}/${name}-light.png`, fullPage: true });
-    await page.getByRole("button", { name: "Dark" }).click();
-    await page.screenshot({ path: `${shots}/${name}-dark.png`, fullPage: true });
+    const width = testInfo.project.name;
+    await page.screenshot({ path: `${shots}/${name}-${width}-light.png`, fullPage: true });
+    await page.getByRole("button", { name: "Switch to dark mode" }).click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.screenshot({ path: `${shots}/${name}-${width}-dark.png`, fullPage: true });
   });
 }
 
@@ -40,4 +44,14 @@ test("health endpoint reports fixture sources", async ({ request }) => {
   expect(body.ok).toBe(true);
   expect(body.sources.find((source: { source: string }) => source.source === "ons-psf").status).toBe("ok");
   expect(body.sources.find((source: { source: string }) => source.source === "obr-databank").status).toBe("missing");
+});
+
+test("robots allows snapshots and AI crawlers", async ({ request }) => {
+  const response = await request.get("/robots.txt");
+  expect(response.ok()).toBeTruthy();
+  const body = await response.text();
+  expect(body).toContain("CCBot");
+  expect(body).toContain("Bytespider");
+  expect(body).toContain("/api/snapshots/");
+  expect(body).toContain("Disallow: /api/cron/");
 });

@@ -20,10 +20,17 @@ export const CRITICAL_SOURCES: readonly SourceId[] = [
   "hmrc-income-tax",
 ];
 
+const monthPeriod = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
+const dayPeriod = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+const fiscalYear = z.string().regex(/^\d{4}-\d{2}$/);
+const finite = z.number().finite();
+
 const observation = z.object({
-  period: z.string(),
-  value: z.number(),
+  period: monthPeriod,
+  value: finite,
 });
+
+const REQUIRED_ONS = ["j5ii", "jw2o", "kx5q", "jw2t", "kse6", "hf6x", "cpoa", "nmfx", "jnyx", "jnyy"] as const;
 
 export const onsDataSchema = z.object({
   series: z.record(
@@ -35,7 +42,7 @@ export const onsDataSchema = z.object({
       releaseDate: z.string(),
       nextRelease: z.string(),
       latest: observation.nullable(),
-      months: z.array(observation),
+      months: z.array(observation).min(1),
     }),
   ),
   financialYear: z
@@ -46,9 +53,9 @@ export const onsDataSchema = z.object({
       previousYearBorrowing: z.number().nullable(),
       months: z.array(
         z.object({
-          period: z.string(),
-          cumulative: z.number(),
-          previousCumulative: z.number().nullable(),
+          period: monthPeriod,
+          cumulative: finite,
+          previousCumulative: finite.nullable(),
         }),
       ),
     })
@@ -59,12 +66,30 @@ export const onsDataSchema = z.object({
    * Debt, receipts, spending and interest are already on the bulletin's sign.
    */
   bulletinSign: z.object({
-    note: z.string(),
+    note: z.string().min(1),
     borrowingLatest: z.number().nullable(),
     currentBudgetDeficitLatest: z.number().nullable(),
     financialYearBorrowing: z.number().nullable(),
     previousFinancialYearBorrowing: z.number().nullable(),
   }),
+}).superRefine((data, context) => {
+  for (const code of REQUIRED_ONS) {
+    if (!data.series[code]) {
+      context.addIssue({ code: "custom", message: `ONS series ${code} is missing` });
+    }
+  }
+  const ratio = data.series.hf6x?.latest?.value;
+  if (ratio != null && (ratio < 0 || ratio > 250)) {
+    context.addIssue({ code: "custom", message: `HF6X ${ratio} is outside 0 to 250` });
+  }
+  const exBoe = data.series.cpoa?.latest?.value;
+  if (exBoe != null && (exBoe < 0 || exBoe > 250)) {
+    context.addIssue({ code: "custom", message: `CPOA ${exBoe} is outside 0 to 250` });
+  }
+  const borrowing = data.series.j5ii?.latest?.value;
+  if (borrowing != null && (borrowing < -200000 || borrowing > 200000)) {
+    context.addIssue({ code: "custom", message: `J5II ${borrowing} is outside the monthly range` });
+  }
 });
 
 export const hmrcDataSchema = z.object({
@@ -72,52 +97,63 @@ export const hmrcDataSchema = z.object({
   attachmentUrl: z.string(),
   attachmentFilename: z.string(),
   annual: z.object({
-    year: z.string(),
-    total: z.number(),
-    taxes: z.array(z.object({ name: z.string(), value: z.number() })),
+    year: fiscalYear,
+    total: finite,
+    taxes: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
   }),
-  annualHistory: z.array(z.object({ year: z.string(), total: z.number() })),
-  monthly: z.array(z.object({ period: z.string(), total: z.number() })),
+  annualHistory: z.array(z.object({ year: fiscalYear, total: finite })).min(1),
+  monthly: z.array(z.object({ period: monthPeriod, total: finite })).min(1),
+}).superRefine((data, context) => {
+  const sum = data.annual.taxes.reduce((total, tax) => total + tax.value, 0);
+  if (Math.abs(sum - data.annual.total) > 50) {
+    context.addIssue({
+      code: "custom",
+      message: `HMRC tax lines sum to ${sum}, total is ${data.annual.total}`,
+    });
+  }
 });
 
 export const pesaDataSchema = z.object({
   contentUrl: z.string(),
   functions: z.object({
-    year: z.string(),
+    year: fiscalYear,
     unit: z.literal("£ billion"),
-    totalServices: z.number().nullable(),
-    totalManagedExpenditure: z.number().nullable(),
-    items: z.array(z.object({ name: z.string(), value: z.number() })),
+    totalServices: finite.nullable(),
+    totalManagedExpenditure: finite.nullable(),
+    items: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
   }),
   departments: z.object({
-    year: z.string(),
-    basis: z.string(),
+    year: fiscalYear,
+    basis: z.string().min(1),
     unit: z.literal("£ million"),
-    total: z.number().nullable(),
-    items: z.array(z.object({ name: z.string(), value: z.number() })),
+    total: finite.nullable(),
+    items: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
   }),
   departmentPlans: z.object({
-    year: z.string(),
-    basis: z.string(),
+    year: fiscalYear,
+    basis: z.string().min(1),
     unit: z.literal("£ million"),
-    total: z.number().nullable(),
-    items: z.array(z.object({ name: z.string(), value: z.number() })),
+    total: finite.nullable(),
+    items: z.array(z.object({ name: z.string().min(1), value: finite })).min(1),
   }),
 });
 
-export const boePoint = z.object({ date: z.string(), value: z.number() });
+export const boePoint = z.object({
+  date: dayPeriod,
+  value: finite.min(-5).max(40),
+});
 
 export const boeDataSchema = z.object({
   series: z.object({
     IUDBEDR: z.object({
       description: z.string(),
       latest: boePoint.nullable(),
-      points: z.array(boePoint),
+      points: z.array(boePoint).min(1),
     }),
     IUDMNPY: z.object({
-      description: z.string(),
+      description: z.string().min(1),
       latest: boePoint.nullable(),
-      points: z.array(boePoint),
+      points: z.array(boePoint).min(1),
     }),
   }),
 });
@@ -131,25 +167,27 @@ export const incomeTaxDataSchema = z.object({
     projected: z.boolean(),
     unit: z.literal("thousands"),
     total: z.number().nullable(),
-    bands: z.array(z.object({ name: z.string(), value: z.number() })),
+    bands: z.array(z.object({ name: z.string().min(1), value: finite.nonnegative() })).min(1),
   }),
   shares: z.object({
-    yearLabel: z.string(),
-    top1Percent: z.number().nullable(),
-    top10Percent: z.number().nullable(),
-    totalTaxBillion: z.number().nullable(),
+    yearLabel: z.string().min(1),
+    top1Percent: finite.min(0).max(100).nullable(),
+    top10Percent: finite.min(0).max(100).nullable(),
+    totalTaxBillion: finite.nonnegative().nullable(),
   }),
 });
 
 export const dmoDataSchema = z.object({
   portfolio: z
     .object({
-      rawTotal: z.number(),
-      rawConventional: z.number(),
-      rawIndexLinked: z.number(),
-      averageMaturityYears: z.number(),
-      indexLinkedShare: z.number(),
-      unitNote: z.string(),
+      rawTotal: finite.positive(),
+      rawConventional: finite.nonnegative(),
+      rawIndexLinked: finite.nonnegative(),
+      averageMaturityYears: finite.min(0).max(80),
+      indexLinkedShare: finite.min(0).max(1),
+      conventionalYield: finite.min(-5).max(40).nullable(),
+      indexLinkedYield: finite.min(-5).max(40).nullable(),
+      unitNote: z.string().min(1),
     })
     .nullable(),
   maturity: z
@@ -168,11 +206,11 @@ export const obrDataSchema = z.object({
       name: z.string(),
       points: z.array(
         z.object({
-          year: z.string(),
-          outturn: z.number().nullable(),
-          forecast: z.number().nullable(),
+          year: fiscalYear,
+          outturn: finite.nullable(),
+          forecast: finite.nullable(),
         }),
-      ),
+      ).min(1),
     }),
   ),
 });

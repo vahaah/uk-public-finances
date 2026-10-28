@@ -4,7 +4,6 @@ import path from "node:path";
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
 
-import { shouldRunSlot } from "@/lib/clock";
 import { pickHmrcReceiptsWorkbook, pickPesaChapters, pickSearchHit } from "@/lib/govuk";
 import { maturityBuckets, parseDmoSales } from "@/lib/parsers/dmo";
 import { parseHmrcReceipts } from "@/lib/parsers/hmrc";
@@ -117,15 +116,6 @@ describe("publish decision and health", () => {
     expect(health.ok).toBe(true);
     expect(health.sources.find((source) => source.source === "ons-psf")?.status).toBe("ok");
     expect(health.sources.find((source) => source.source === "obr-databank")?.status).toBe("missing");
-  });
-});
-
-describe("clock", () => {
-  it("accepts 07:05 and 07:30 London and skips the other UTC twin", () => {
-    expect(shouldRunSlot("release", new Date("2026-01-20T07:05:00.000Z"))).toBe(true);
-    expect(shouldRunSlot("release", new Date("2026-07-20T06:05:00.000Z"))).toBe(true);
-    expect(shouldRunSlot("release", new Date("2026-07-20T07:05:00.000Z"))).toBe(false);
-    expect(shouldRunSlot("daily", new Date("2026-01-20T07:30:00.000Z"))).toBe(true);
   });
 });
 

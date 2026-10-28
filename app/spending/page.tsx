@@ -1,70 +1,92 @@
-import type { Metadata } from "next";
+import Link from "next/link";
 
-import { ChartFrame, DataTable, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
 import { DepartmentChart, SpendingVisuals } from "@/components/charts";
-import { formatBillions, formatMillions } from "@/lib/format";
+import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
+import { formatBillions, formatGbpFromMillions } from "@/lib/format";
+import { pageMeta } from "@/lib/meta";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Where it goes",
-  description: "PESA spending on services by function, and central government DEL by department.",
-  alternates: { canonical: "/spending" },
-};
+export const metadata = pageMeta({
+  title: "UK government spending by function and department",
+  description:
+    "What the UK government spends money on: health, pensions and welfare, education, defence and debt interest, from HM Treasury PESA, with departmental budgets.",
+  path: "/spending",
+});
 
 export default async function SpendingPage() {
   const loaded = await readSnapshot("pesa");
   const snapshot = takeSnapshot("pesa", loaded.snapshot);
   const meta = SOURCES.pesa;
-  if (!snapshot) return <EmptySource name="PESA" />;
+  if (!snapshot) return <EmptySource name="PESA spending" />;
   const { functions, departments, departmentPlans } = snapshot.data;
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd("What the UK government spends", "/spending")} />
       <JsonLd
         data={datasetJsonLd({
-          name: "PESA spending by function and department",
-          description: `Public sector expenditure on services in ${functions.year} and departmental DEL.`,
           path: "/spending",
+          name: "UK public spending by function and department (PESA)",
+          description: `Public sector expenditure on services in ${functions.year} and central government departmental expenditure limits, from HM Treasury PESA 2026.`,
+          keywords: ["UK government spending", "NHS spending", "PESA"],
+          temporalCoverage: "2025-04/2026-03",
+          variableMeasured: ["Expenditure on services by COFOG function", "DEL by department"],
           dateModified: snapshot.releaseDate,
-          license: meta.licenceUrl,
-          publisher: meta.publisher,
-          sourceUrl: snapshot.sourceUrl,
+          sources: [{ id: "pesa", name: meta.title, url: snapshot.sourceUrl, publisher: meta.publisher, licenceUrl: meta.licenceUrl, releaseDate: snapshot.releaseDate }],
         })}
       />
+      <Breadcrumb current="Spending" />
       <PageIntro
-        kicker="Spending"
-        title="Where it goes"
-        lede={`Public sector expenditure on services was ${functions.totalServices == null ? "unpublished" : formatBillions(functions.totalServices)} in ${functions.year}. Total managed expenditure in the same table was ${functions.totalManagedExpenditure == null ? "unpublished" : formatBillions(functions.totalManagedExpenditure)}. Debt interest is inside general public services.`}
+        kicker="HM Treasury PESA"
+        title="What the UK government spends"
+        lede={
+          <>
+            <p>
+              In {functions.year}, public sector spending on services was {functions.totalServices == null ? "not available" : formatBillions(functions.totalServices)}. Total managed expenditure, which also includes items not allocated to a function, was {functions.totalManagedExpenditure == null ? "not available" : formatBillions(functions.totalManagedExpenditure)}. Public sector debt interest is counted within general public services.
+            </p>
+            <p className="mt-2">
+              Outturn is money already spent. Plans are amounts set for later years and can change. Receipts are on{" "}
+              <Link className="underline decoration-neutral-500 underline-offset-4" href="/receipts">
+                where UK tax comes from
+              </Link>
+              .
+            </p>
+          </>
+        }
       />
       <ChartFrame
         title={`Spending on services by function, ${functions.year}`}
+        subtitle="£ billion."
         source={
           <SourceNote
             publisher={meta.publisher}
-            title="PESA table 4.2, £ billion"
+            title="Public Expenditure Statistical Analyses (PESA), table 4.2"
             url={snapshot.sourceUrl}
             releaseDate={snapshot.releaseDate}
             licenceUrl={meta.licenceUrl}
-            extra="Top-level functions only. EU transactions are outside the ten functions and are omitted when negative."
+            extra="Top-level functions only. EU transactions are left out of the chart when they are negative."
+            sourceId="pesa"
           />
         }
       >
         <SpendingVisuals items={functions.items.filter((item) => item.value > 0)} />
         <DataTable
-          columns={["Function", "£ billion"]}
-          rows={functions.items.map((item) => [item.name, item.value.toLocaleString("en-GB")])}
+          columns={["Function", "£bn"]}
+          rows={functions.items.map((item) => [item.name.replace(/^\d+\.\s*/, ""), item.value.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })])}
         />
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame
-          title="Central government own expenditure within DEL"
+          title="Departmental budgets (DEL) by department"
+          subtitle="£ billion. Central government own expenditure within departmental expenditure limits."
           source={
             <SourceNote
               publisher={meta.publisher}
-              title={`PESA table 6.1. Outturn total ${departments.total == null ? "—" : formatMillions(departments.total)}.`}
+              title={`PESA table 6.1. Outturn total ${departments.total == null ? "not available" : formatGbpFromMillions(departments.total)}.`}
               url={snapshot.sourceUrl}
               releaseDate={snapshot.releaseDate}
               licenceUrl={meta.licenceUrl}
+              sourceId="pesa"
             />
           }
         >

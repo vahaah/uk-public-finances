@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import Link from "next/link";
 
-import { JsonLd, PageIntro } from "@/components/blocks";
+import { Breadcrumb, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
 import { FAQ } from "@/lib/content";
+import { pageMeta } from "@/lib/meta";
 import { SITE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "FAQ",
-  description: "How Budget sources, signs and updates UK public finance statistics.",
-  alternates: { canonical: "/faq" },
-};
+export const metadata = pageMeta({
+  title: "Frequently asked questions",
+  description: "Where the figures on this site come from, how often they update and how you can use them.",
+  path: "/faq",
+});
 
 export default function FaqPage() {
   const jsonLd = {
@@ -23,13 +24,31 @@ export default function FaqPage() {
   };
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd("FAQ", "/faq")} />
       <JsonLd data={jsonLd} />
-      <PageIntro kicker="FAQ" title="Questions" lede="Answers about sources, the borrowing sign, failed updates and the OBR file." />
-      <div className="max-w-3xl divide-y divide-neutral-200 dark:divide-neutral-800">
+      <Breadcrumb current="FAQ" />
+      <PageIntro
+        kicker="FAQ"
+        title="Frequently asked questions"
+        lede="Where the figures come from, when they update and how to reuse them."
+      />
+      <div className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
         {FAQ.map((item) => (
           <section key={item.question} className="py-4">
             <h2 className="text-sm font-medium">{item.question}</h2>
-            <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-400">{item.answer}</p>
+            <p className="mt-2 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{item.answer}</p>
+            {item.links && item.links.length > 0 ? (
+              <p className="mt-2 text-sm">
+                {item.links.map((link, index) => (
+                  <span key={link.href}>
+                    {index > 0 ? " · " : null}
+                    <Link className="underline decoration-neutral-500 underline-offset-4" href={link.href}>
+                      {link.label}
+                    </Link>
+                  </span>
+                ))}
+              </p>
+            ) : null}
           </section>
         ))}
       </div>

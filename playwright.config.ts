@@ -9,11 +9,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   use: { baseURL, trace: "retain-on-failure" },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "1280", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 900 } } },
+    { name: "390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 } } },
+  ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: "npm run dev",
+        command: "npm run start",
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

@@ -92,7 +92,9 @@ function odsRows(table: XmlTable): Grid {
   const rows: Grid = [];
   for (const row of asArray(table["table-row"])) {
     const cells = odsCells(row);
-    const repeat = Math.min(Number(row["@_number-rows-repeated"] ?? 1) || 1, cells.some((cell) => cell != null) ? 1 : 1);
+    const requested = Number(row["@_number-rows-repeated"] ?? 1) || 1;
+    const hasContent = cells.some((cell) => cell != null && cell !== "");
+    const repeat = hasContent ? Math.min(requested, 30) : 1;
     for (let index = 0; index < repeat; index += 1) rows.push(cells);
     if (rows.length > 5000) break;
   }
@@ -102,9 +104,10 @@ function odsRows(table: XmlTable): Grid {
 function odsCells(row: XmlRow): Cell[] {
   const cells: Cell[] = [];
   for (const cell of asArray(row["table-cell"])) {
-    const repeat = Math.min(Number(cell["@_number-columns-repeated"] ?? 1) || 1, MAX_REPEAT);
+    const requested = Number(cell["@_number-columns-repeated"] ?? 1) || 1;
     const value = odsValue(cell);
-    if (repeat > 8 && value == null) break;
+    if (requested > MAX_REPEAT && value == null) continue;
+    const repeat = Math.min(requested, MAX_REPEAT);
     for (let index = 0; index < repeat; index += 1) cells.push(value);
     if (cells.length > 48) break;
   }

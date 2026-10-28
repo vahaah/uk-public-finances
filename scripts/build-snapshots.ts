@@ -100,10 +100,13 @@ async function main(): Promise<void> {
     url: string;
     body: unknown;
   };
+  const lastUpdated = typeof (sales.body as { LastUpdated?: string }).LastUpdated === "string"
+    ? (sales.body as { LastUpdated: string }).LastUpdated
+    : sales.capturedAt;
   write("dmo-gilts", buildEnvelope({
     sourceId: "dmo-gilts",
-    retrievedAt: sales.capturedAt,
-    releaseDate: sales.capturedAt,
+    retrievedAt: lastUpdated,
+    releaseDate: lastUpdated,
     nextRelease: null,
     sourceUrl: sales.url,
     data: parseDmoSales(sales.body),

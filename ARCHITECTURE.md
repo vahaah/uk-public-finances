@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-  cron[Vercel Cron UTC] --> gate["shouldRunSlot Europe/London"]
+  cron[Vercel Cron UTC] --> gate["evaluateSlot Europe/London window"]
   gate --> wf["one workflow per source"]
   wf --> detect[detect release]
   detect --> download[download]
@@ -36,7 +36,7 @@ GOV.UK search picks the publication. The Content API then supplies the spreadshe
 
 ## Snapshot
 
-`fixtures/snapshots/{id}.json` and Blob `snapshots/{id}/{contentHash}.json` share one envelope: publisher, licence, release date, source URL, and `contentHash` of the data. `snapshots/{id}/latest.json` points at the current object. Pages call `readSnapshot`. With `BLOB_READ_WRITE_TOKEN` they prefer Blob and fall back to the fixture if the object is missing. A Blob object that fails the schema is not rendered; the fixture is kept and `/api/health` reports `validation_failed` with `usingLastGood`.
+`fixtures/snapshots/{id}.json` and Blob `snapshots/{id}/{contentHash}.json` share one envelope: publisher, licence, release date, source URL, and `contentHash` of the data. `snapshots/{id}/latest.json` points at the current object. `latest.json` and `health/*.json` are written with `cacheControlMaxAge: 60` and read with `cache: "no-store"`. Pages call `readSnapshot`. With `BLOB_READ_WRITE_TOKEN` they prefer the latest Blob object. If it fails the schema, the newest earlier version that validates is used. The fixture is used only when no Blob version validates. `/api/health` then reports `validation_failed` with `usingLastGood`. A new extract that drops more than 20% of the previous row count is rejected the same way.
 
 `/api/health` is `ok` unless a critical source is missing or any source failed validation. OBR and, when empty, a missing DMO file are not critical. Stale data stays `ok` and is flagged `stale`.
 
@@ -46,8 +46,8 @@ The September 2026 ONS bulletin says borrowing was £24.5 billion and the financ
 
 ## Routes
 
-`/`, `/receipts`, `/spending`, `/borrowing`, `/debt`, `/taxpayers`, `/forecasts`, `/methodology`, `/data-sources`, `/data-health`, `/glossary`, `/faq`, `/api`. Machine readable: `/api/health`, `/api/snapshots/{id}`, `/llms.txt`, `/sitemap.xml`, `/robots.txt`. FAQ page emits FAQPage JSON-LD. Data pages emit Dataset JSON-LD.
+`/`, `/receipts`, `/spending`, `/borrowing`, `/debt`, `/taxpayers`, `/forecasts`, `/methodology`, `/data-sources`, `/data-health`, `/glossary`, `/faq`, `/api`. `/data-health`, `/api` and the 404 are `noindex`. Machine readable: `/api/health`, `/api/snapshots`, `/api/snapshots/{id}`, `/llms.txt`, `/llms-full.txt`, `/sitemap.xml`, `/robots.txt`. FAQ page emits FAQPage JSON-LD. Data pages emit Dataset JSON-LD. Derived figures are CC BY 4.0.
 
 ## Cron
 
-`vercel.json` schedules `5 6,7 18-23 * *` for `/api/cron/ons-psf?slot=release` and `30 6,7 * * *` for `/api/cron/daily?slot=daily`. The handler returns 200 when the London clock does not match, so Vercel does not retry the other UTC hour.
+`vercel.json` schedules `5 6,7 18-23 * *` for `/api/cron/ons-psf?slot=release` and `30 6,7 * * *` for `/api/cron/daily?slot=daily`. `evaluateSlot` accepts a 20-minute window, dedupes by London date and slot, and a skip response always includes `reason`. The daily route starts every workflow with `Promise.allSettled`.

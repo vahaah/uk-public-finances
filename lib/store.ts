@@ -1,4 +1,4 @@
-import { head } from "@vercel/blob";
+import { head, list } from "@vercel/blob";
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 
@@ -27,31 +27,22 @@ export async function readSnapshot(sourceId: SourceId): Promise<{
   validationError: string | null;
 }> {
   if (process.env.BLOB_READ_WRITE_TOKEN) {
-    try {
-      const pointer = await readBlobJson(`snapshots/${sourceId}/latest.json`);
-      const pathname = typeof pointer.pathname === "string" ? pointer.pathname : null;
-      const body = pathname ? await readBlobJson(pathname) : pointer;
-      const parsed = snapshotSchemas[sourceId].safeParse(body.snapshot ?? body);
-      if (parsed.success) {
-        return { snapshot: parsed.data as AnySnapshot, origin: "blob", validationError: null };
-      }
-      const fixture = readFixture(sourceId);
+    const latest = await readLatest(sourceId);
+    if (latest.snapshot) return { ...latest, origin: "blob" };
+    const earlier = await readNewestValidVersion(sourceId);
+    if (earlier) {
       return {
-        snapshot: fixture,
-        origin: fixture ? "fixture" : "none",
-        validationError: parsed.error.issues.map((issue) => issue.message).join("; "),
-      };
-    } catch (error) {
-      const fixture = readFixture(sourceId);
-      if (isMissingBlob(error)) {
-        return { snapshot: fixture, origin: fixture ? "fixture" : "none", validationError: null };
-      }
-      return {
-        snapshot: fixture,
-        origin: fixture ? "fixture" : "none",
-        validationError: error instanceof Error ? error.message : "Blob read failed",
+        snapshot: earlier,
+        origin: "blob",
+        validationError: latest.validationError ?? "latest.json failed; using an earlier Blob version",
       };
     }
+    const fixture = readFixture(sourceId);
+    return {
+      snapshot: fixture,
+      origin: fixture ? "fixture" : "none",
+      validationError: latest.validationError,
+    };
   }
   const fixture = readFixture(sourceId);
   return { snapshot: fixture, origin: fixture ? "fixture" : "none", validationError: null };
@@ -129,6 +120,47 @@ function toHealthSource(
   };
 }
 
+async function readLatest(sourceId: SourceId): Promise<{
+  snapshot: AnySnapshot | null;
+  validationError: string | null;
+}> {
+  try {
+    const pointer = await readBlobJson(`snapshots/${sourceId}/latest.json`);
+    const pathname = typeof pointer.pathname === "string" ? pointer.pathname : null;
+    const body = pathname ? await readBlobJson(pathname) : pointer;
+    const parsed = snapshotSchemas[sourceId].safeParse(body.snapshot ?? body);
+    if (parsed.success) return { snapshot: parsed.data as AnySnapshot, validationError: null };
+    return { snapshot: null, validationError: parsed.error.issues.map((issue) => issue.message).join("; ") };
+  } catch (error) {
+    if (isMissingBlob(error)) return { snapshot: null, validationError: null };
+    return { snapshot: null, validationError: error instanceof Error ? error.message : "Blob read failed" };
+  }
+}
+
+async function readNewestValidVersion(sourceId: SourceId): Promise<AnySnapshot | null> {
+  const listed = await list({ prefix: `snapshots/${sourceId}/` });
+  const versions = listed.blobs
+    .filter((blob) => !blob.pathname.endsWith("/latest.json"))
+    .sort((left, right) => right.uploadedAt.getTime() - left.uploadedAt.getTime());
+  for (const blob of versions) {
+    const response = await fetch(blob.url, { cache: "no-store" });
+    if (!response.ok) continue;
+    const body = (await response.json()) as { snapshot?: unknown };
+    const parsed = snapshotSchemas[sourceId].safeParse(body.snapshot ?? body);
+    if (parsed.success) return parsed.data as AnySnapshot;
+  }
+  return null;
+}
+
+export function firstValidSnapshot(sourceId: SourceId, candidates: unknown[]): AnySnapshot | null {
+  for (const candidate of candidates) {
+    const body = candidate as { snapshot?: unknown };
+    const parsed = snapshotSchemas[sourceId].safeParse(body.snapshot ?? candidate);
+    if (parsed.success) return parsed.data as AnySnapshot;
+  }
+  return null;
+}
+
 function isMissingBlob(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return /not found|404|BlobNotFound|does not exist/i.test(message);
@@ -148,7 +180,7 @@ function readFixture(sourceId: SourceId): AnySnapshot | null {
 
 async function readBlobJson(pathname: string): Promise<Record<string, unknown>> {
   const blob = await head(pathname);
-  const response = await fetch(blob.url);
+  const response = await fetch(blob.url, { cache: "no-store" });
   if (!response.ok) throw new Error(`Blob ${pathname} returned ${response.status}`);
   return (await response.json()) as Record<string, unknown>;
 }

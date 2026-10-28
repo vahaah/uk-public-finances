@@ -2,7 +2,7 @@
 
 Open UK public finances for [budget.vahaah.com](https://budget.vahaah.com). Receipts, spending, borrowing, debt, gilts and taxpayers, taken from the publishers' own files.
 
-The site renders committed snapshots captured on 28 October 2026. A Vercel cron starts one Workflow per source, which writes a new snapshot to Blob only after zod accepts it. A failed file leaves the previous snapshot in place and shows up on `/api/health`.
+The site renders committed snapshots captured on 28 October 2026. A Vercel cron starts one Workflow per source, which writes a new snapshot to Blob only after zod accepts it. A failed file keeps the newest earlier Blob version that still validates, then the fixture, and shows up on `/api/health`. Derived figures are CC BY 4.0. Upstream statistics keep the publisher's licence.
 
 ```bash
 npm install

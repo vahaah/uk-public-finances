@@ -7,19 +7,22 @@ export const FIXTURE_RETRIEVED_AT = "2026-10-28T06:45:00.000Z";
 
 export const USER_AGENT = "Budget/0.1 (+https://budget.vahaah.com)";
 
+export const DERIVED_LICENCE = "CC BY 4.0";
+export const DERIVED_LICENCE_URL = "https://creativecommons.org/licenses/by/4.0/";
+
 export const NAV = [
   { href: "/", label: "Overview" },
-  { href: "/receipts", label: "Receipts" },
+  { href: "/receipts", label: "Tax and receipts" },
   { href: "/spending", label: "Spending" },
   { href: "/borrowing", label: "Borrowing" },
-  { href: "/debt", label: "Debt" },
-  { href: "/taxpayers", label: "Taxpayers" },
+  { href: "/debt", label: "Debt and gilts" },
+  { href: "/taxpayers", label: "Income taxpayers" },
   { href: "/forecasts", label: "Forecasts" },
 ] as const;
 
 export const FOOTER = [
   { href: "/methodology", label: "Methodology" },
-  { href: "/data-sources", label: "Sources" },
+  { href: "/data-sources", label: "Data sources" },
   { href: "/data-health", label: "Data health" },
   { href: "/glossary", label: "Glossary" },
   { href: "/faq", label: "FAQ" },
@@ -36,6 +39,7 @@ export const REVALIDATE_PATHS = [
   "/forecasts",
   "/data-health",
   "/llms.txt",
+  "/llms-full.txt",
 ] as const;
 
 export type SourceMeta = {
@@ -60,7 +64,7 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
   },
   "hmrc-receipts": {
     id: "hmrc-receipts",
-    title: "HMRC tax receipts and National Insurance contributions",
+    title: "HMRC tax receipts and National Insurance contributions for the UK",
     publisher: "HM Revenue & Customs",
     licence: "Open Government Licence v3.0",
     licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
@@ -87,7 +91,7 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
   },
   "boe-yields": {
     id: "boe-yields",
-    title: "Bank Rate and 10-year nominal par yield",
+    title: "Bank Rate and 10-year nominal par gilt yield",
     publisher: "Bank of England",
     licence: "Bank of England terms of use",
     licenceUrl: "https://www.bankofengland.co.uk/legal/terms-and-conditions",

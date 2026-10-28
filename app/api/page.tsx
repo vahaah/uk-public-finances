@@ -1,31 +1,38 @@
-import type { Metadata } from "next";
-
-import { PageIntro } from "@/components/blocks";
+import { Breadcrumb, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
+import { pageMeta } from "@/lib/meta";
 import { SOURCE_IDS } from "@/lib/schema";
 
-export const metadata: Metadata = {
-  title: "API",
-  description: "JSON snapshots and the health check for Budget.",
-  alternates: { canonical: "/api" },
-};
+export const metadata = pageMeta({
+  title: "API: JSON snapshots",
+  description: "Free JSON access to the latest figures on this site. Credit the original publisher when you reuse them.",
+  path: "/api",
+  noindex: true,
+});
 
 export default function ApiPage() {
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd("API", "/api")} />
+      <Breadcrumb current="API" />
       <PageIntro
-        kicker="API"
-        title="JSON"
-        lede="No key. The snapshot routes return the last validated file. Cron routes require CRON_SECRET and are not for public use."
+        kicker="Data"
+        title="API"
+        lede="No key is needed. Each link returns the latest figures for one source as JSON. Credit the original publisher when you reuse them. Derived figures on this site are CC BY 4.0."
       />
       <ul className="space-y-2 font-mono text-xs">
         <li>
-          <a className="underline" href="/api/health">
+          <a className="underline decoration-neutral-500 underline-offset-4" href="/api/health">
             /api/health
+          </a>
+        </li>
+        <li>
+          <a className="underline decoration-neutral-500 underline-offset-4" href="/api/snapshots">
+            /api/snapshots
           </a>
         </li>
         {SOURCE_IDS.map((id) => (
           <li key={id}>
-            <a className="underline" href={`/api/snapshots/${id}`}>
+            <a className="underline decoration-neutral-500 underline-offset-4" href={`/api/snapshots/${id}`}>
               /api/snapshots/{id}
             </a>
           </li>

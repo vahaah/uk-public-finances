@@ -6,6 +6,8 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -16,7 +18,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { formatBillions, formatMonth, formatPercent } from "@/lib/format";
+import { formatBillions, formatDay, formatMonth, formatPercent } from "@/lib/format";
 
 const ranges = ["2", "5", "10", "all"] as const;
 
@@ -31,12 +33,14 @@ export function useChartTheme() {
     return () => observer.disconnect();
   }, []);
   return {
-    stroke: dark ? "#fafafa" : "#171717",
-    muted: dark ? "#a3a3a3" : "#737373",
-    grid: dark ? "#262626" : "#e5e5e5",
-    fills: dark
-      ? ["#fafafa", "#d4d4d4", "#a3a3a3", "#737373", "#525252", "#404040"]
-      : ["#171717", "#404040", "#525252", "#737373", "#a3a3a3", "#d4d4d4"],
+    stroke: dark ? "#fafafa" : "#111827",
+    bar: dark ? "#93c5fd" : "#1d4ed8",
+    negative: dark ? "#fca5a5" : "#b91c1c",
+    muted: dark ? "#e5e5e5" : "#111827",
+    second: dark ? "#6ee7b7" : "#047857",
+    tick: dark ? "#fafafa" : "#111827",
+    grid: dark ? "#404040" : "#e5e5e5",
+    fills: ["#1d4ed8", "#047857", "#b45309", "#6d28d9", "#be123c", "#0e7490", "#c2410c", "#0f766e", "#4338ca", "#4d7c0f"],
   };
 }
 
@@ -66,17 +70,21 @@ function BorrowingChartInner({
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <BarChart data={plotted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="period" tick={{ fontSize: 11, fill: theme.muted }} interval="preserveStartEnd" />
-            <YAxis tick={{ fontSize: 11, fill: theme.muted }} width={40} />
+            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval="preserveStartEnd" />
+            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={40} />
             <Tooltip
               formatter={(value) => [`£${value}bn`, "Borrowing"]}
               contentStyle={{ background: theme.stroke === "#fafafa" ? "#000" : "#fff", borderColor: theme.grid, fontSize: 12 }}
             />
-            <Bar dataKey="borrowing" fill={theme.stroke} />
+            <Bar dataKey="borrowing" isAnimationActive={false}>
+              {plotted.map((point) => (
+                <Cell key={point.period} fill={point.borrowing < 0 ? theme.negative : theme.bar} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="mt-2 text-xs text-neutral-500">£ billion. Positive is borrowing, the negation of published J5II.</p>
+      <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">£ billion.</p>
     </div>
   );
 }
@@ -97,11 +105,12 @@ export function CumulativeChart({
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid stroke={theme.grid} vertical={false} />
-          <XAxis dataKey="period" tick={{ fontSize: 11, fill: theme.muted }} />
-          <YAxis tick={{ fontSize: 11, fill: theme.muted }} width={40} />
+          <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} />
+          <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={40} />
           <Tooltip contentStyle={{ fontSize: 12 }} />
-          <Line type="monotone" dataKey="thisYear" name="This year" stroke={theme.stroke} dot={false} strokeWidth={1.5} />
-          <Line type="monotone" dataKey="lastYear" name="A year earlier" stroke={theme.muted} dot={false} strokeWidth={1.5} />
+          <Line type="monotone" dataKey="thisYear" name="This year" stroke={theme.bar} dot={false} strokeWidth={2} isAnimationActive={false} />
+          <Line type="monotone" dataKey="lastYear" name="A year earlier" stroke={theme.muted} strokeDasharray="4 4" dot={false} strokeWidth={2} isAnimationActive={false} />
+          <Legend />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -110,7 +119,10 @@ export function CumulativeChart({
 
 export function ReceiptsChart({ taxes }: { taxes: { name: string; value: number }[] }) {
   const theme = useChartTheme();
-  const data = [...taxes].sort((a, b) => b.value - a.value).slice(0, 12).map((tax) => ({
+  const sorted = [...taxes].sort((a, b) => b.value - a.value);
+  const head = sorted.slice(0, 10);
+  const other = sorted.slice(10).reduce((sum, tax) => sum + tax.value, 0);
+  const data = [...head, ...(other ? [{ name: "Other", value: other }] : [])].map((tax) => ({
     name: shortName(tax.name),
     value: Number((tax.value / 1000).toFixed(1)),
   }));
@@ -119,10 +131,10 @@ export function ReceiptsChart({ taxes }: { taxes: { name: string; value: number 
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid stroke={theme.grid} horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 11, fill: theme.muted }} />
-          <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: theme.muted }} />
+          <XAxis type="number" tick={{ fontSize: 12, fill: theme.tick }} />
+          <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12, fill: theme.tick }} />
           <Tooltip formatter={(value) => [`£${value}bn`, "Receipts"]} contentStyle={{ fontSize: 12 }} />
-          <Bar dataKey="value" fill={theme.stroke} />
+          <Bar dataKey="value" fill={theme.bar} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -152,6 +164,7 @@ export function SpendingVisuals({
             nameKey="name"
             stroke={theme.grid}
             fill={theme.stroke}
+            isAnimationActive={false}
             content={<TreemapCell />}
           />
         </ResponsiveContainer>
@@ -161,15 +174,47 @@ export function SpendingVisuals({
           <Sankey
             data={{ nodes, links }}
             nodeWidth={8}
-            nodePadding={16}
+            nodePadding={14}
+            margin={{ left: 8, right: 128, top: 18, bottom: 8 }}
             link={{ stroke: theme.muted }}
-            node={{ fill: theme.stroke, stroke: theme.stroke }}
+            node={(props) => <SankeyLabel {...props} fill={theme.bar} ink={theme.tick} />}
           >
-            <Tooltip contentStyle={{ fontSize: 12 }} />
+            <Tooltip contentStyle={{ fontSize: 12 }} formatter={(value) => [formatBillions(Number(value)), ""]} />
           </Sankey>
         </ResponsiveContainer>
       </div>
     </div>
+  );
+}
+
+function SankeyLabel(props: {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  payload?: { name?: string };
+  fill?: string;
+  ink?: string;
+}) {
+  const { x = 0, y = 0, width = 0, height = 0, payload, fill, ink } = props;
+  const name = payload?.name ?? "";
+  const source = x < 40;
+  return (
+    <g>
+      <rect x={x} y={y} width={width} height={height} fill={fill} />
+      {source || height > 14 ? (
+        <text
+          x={source ? x : x + width + 6}
+          y={source ? Math.max(10, y - 2) : y + height / 2}
+          textAnchor="start"
+          dominantBaseline={source ? "auto" : "middle"}
+          fill={ink}
+          fontSize={11}
+        >
+          {source ? name : name}
+        </text>
+      ) : null}
+    </g>
   );
 }
 
@@ -222,22 +267,22 @@ function DepartmentChartInner({
   }));
   return (
     <div>
-      <div className="mb-2 flex gap-2 text-xs">
-        <button type="button" className={basis === "outturn" ? "underline" : "text-neutral-500"} onClick={() => setBasis("outturn")}>
-          Outturn {outturn.year}
-        </button>
-        <button type="button" className={basis === "plans" ? "underline" : "text-neutral-500"} onClick={() => setBasis("plans")}>
-          Plans {plans.year}
-        </button>
-      </div>
+      <Segmented
+        value={basis}
+        options={[
+          { value: "outturn", label: `Outturn ${outturn.year}` },
+          { value: "plans", label: `Plans ${plans.year}` },
+        ]}
+        onChange={setBasis}
+      />
       <div className="h-[36rem]">
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <BarChart data={data} layout="vertical" margin={{ left: 8, right: 8 }}>
             <CartesianGrid stroke={theme.grid} horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 11, fill: theme.muted }} />
-            <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 11, fill: theme.muted }} />
-            <Tooltip formatter={(value) => [`£${value}bn`, basis]} contentStyle={{ fontSize: 12 }} />
-            <Bar dataKey="value" fill={theme.stroke} />
+            <XAxis type="number" tick={{ fontSize: 12, fill: theme.tick }} />
+            <YAxis type="category" dataKey="name" width={180} tick={{ fontSize: 12, fill: theme.tick }} />
+            <Tooltip formatter={(value) => [formatBillions(Number(value)), basis === "plans" ? "Plans" : "Outturn"]} contentStyle={{ fontSize: 12 }} />
+            <Bar dataKey="value" fill={theme.bar} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -288,11 +333,12 @@ function YieldChartInner({
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: theme.muted }} minTickGap={48} />
-            <YAxis tick={{ fontSize: 11, fill: theme.muted }} width={36} unit="%" />
+            <XAxis dataKey="date" tick={{ fontSize: 12, fill: theme.tick }} minTickGap={48} tickFormatter={(value) => formatDay(String(value))} />
+            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={36} unit="%" />
             <Tooltip contentStyle={{ fontSize: 12 }} />
-            <Line type="stepAfter" dataKey="bank" name="Bank Rate" stroke={theme.stroke} dot={false} strokeWidth={1.5} connectNulls={false} />
-            <Line type="monotone" dataKey="gilt" name="10-year gilt" stroke={theme.muted} dot={false} strokeWidth={1.5} connectNulls={false} />
+            <Line type="stepAfter" dataKey="bank" name="Bank Rate" stroke={theme.bar} dot={false} strokeWidth={2} connectNulls={false} isAnimationActive={false} />
+            <Line type="monotone" dataKey="gilt" name="10-year gilt yield" stroke={theme.second} dot={false} strokeWidth={2} connectNulls={false} isAnimationActive={false} />
+            <Legend />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -319,10 +365,10 @@ function DebtRatioChartInner({ points }: { points: { period: string; value: numb
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="period" tick={{ fontSize: 11, fill: theme.muted }} minTickGap={32} />
-            <YAxis tick={{ fontSize: 11, fill: theme.muted }} width={36} domain={["auto", "auto"]} />
+            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} minTickGap={32} />
+            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={36} domain={["auto", "auto"]} />
             <Tooltip formatter={(value) => [formatPercent(Number(value)), "PSND ex"]} contentStyle={{ fontSize: 12 }} />
-            <Line type="monotone" dataKey="value" stroke={theme.stroke} dot={false} strokeWidth={1.5} />
+            <Line type="monotone" dataKey="value" name="Net debt, % of GDP" stroke={theme.bar} dot={false} strokeWidth={2} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -338,15 +384,34 @@ function RangeControl({
   onChange: (value: (typeof ranges)[number]) => void;
 }) {
   return (
-    <div className="mb-2 flex gap-3 text-xs text-neutral-500">
-      {ranges.map((option) => (
+    <Segmented
+      value={value}
+      options={ranges.map((option) => ({ value: option, label: option === "all" ? "All" : `${option}y` }))}
+      onChange={onChange}
+    />
+  );
+}
+
+function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="mb-3 inline-flex rounded-md border border-neutral-300 p-0.5 dark:border-neutral-700" role="group">
+      {options.map((option) => (
         <button
-          key={option}
+          key={option.value}
           type="button"
-          className={option === value ? "text-neutral-950 underline dark:text-white" : ""}
-          onClick={() => onChange(option)}
+          aria-pressed={option.value === value}
+          className={`h-7 px-2.5 text-xs ${option.value === value ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200"}`}
+          onClick={() => onChange(option.value)}
         >
-          {option === "all" ? "All" : `${option}y`}
+          {option.label}
         </button>
       ))}
     </div>
