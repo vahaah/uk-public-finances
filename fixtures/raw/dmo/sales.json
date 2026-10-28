@@ -1,0 +1,11 @@
+{
+  "capturedAt": "2026-10-28T06:50:00Z",
+  "url": "https://www.dmo.gov.uk/umbraco/surface/TabularData/GetSalesData",
+  "note": "Yield fields were truncated in the capture and are not included.",
+  "body": {
+    "UpliftedNominalValueGiltPortfolio": 2923087430.711195,
+    "UpliftedNominalValueGiltPortfolioConventional": 2207530292.6288676,
+    "UpliftedNominalValueGiltPortfolioIl": 715557138.0823275,
+    "AverageMaturity": 13.353780028030203
+  }
+}

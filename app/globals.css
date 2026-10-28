@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-chart: #171717;
+  --color-chart-muted: #737373;
+  --color-grid: #e5e5e5;
+}
+
+.dark {
+  --color-chart: #fafafa;
+  --color-chart-muted: #a3a3a3;
+  --color-grid: #262626;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #fff;
+  color: #0a0a0a;
+}
+
+html.dark body {
+  background: #000;
+  color: #fafafa;
+}
+
+::selection {
+  background: #171717;
+  color: #fff;
+}
+
+html.dark ::selection {
+  background: #fafafa;
+  color: #000;
+}

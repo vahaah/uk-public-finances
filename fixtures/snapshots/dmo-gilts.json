@@ -1,0 +1,24 @@
+{
+  "sourceId": "dmo-gilts",
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-28T06:50:00Z",
+  "releaseDate": "2026-10-28T06:50:00Z",
+  "nextRelease": null,
+  "sourceUrl": "https://www.dmo.gov.uk/umbraco/surface/TabularData/GetSalesData",
+  "sourceTitle": "Gilts in issue",
+  "publisher": "UK Debt Management Office",
+  "licence": "Crown copyright. Use is subject to the DMO website terms.",
+  "licenceUrl": "https://www.dmo.gov.uk/help/",
+  "contentHash": "dec57f00963391040221b848e3cfeffb2eb58cca0617ae2af526b077673e4d42",
+  "data": {
+    "portfolio": {
+      "rawTotal": 2923087430.711195,
+      "rawConventional": 2207530292.6288676,
+      "rawIndexLinked": 715557138.0823275,
+      "averageMaturityYears": 13.353780028030203,
+      "indexLinkedShare": 0.24479498305948055,
+      "unitNote": "Figures are the raw GetSalesData fields. Budget does not rescale them. Index-linked share is the index-linked field divided by the portfolio field."
+    },
+    "maturity": null
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "sourceId": "pesa",
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-28T06:45:00.000Z",
+  "releaseDate": "2026-07-16T10:34:00+01:00",
+  "nextRelease": null,
+  "sourceUrl": "https://www.gov.uk/government/statistics/public-expenditure-statistical-analyses-2026",
+  "sourceTitle": "Public Expenditure Statistical Analyses",
+  "publisher": "HM Treasury",
+  "licence": "Open Government Licence v3.0",
+  "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "contentHash": "fa546c7281069a0c7c701febe7f274eea3407a2d5b005abea85717050c3b49ab",
+  "data": {
+    "contentUrl": "https://www.gov.uk/government/statistics/public-expenditure-statistical-analyses-2026",
+    "functions": {
+      "year": "2025-26",
+      "unit": "£ billion",
+      "totalServices": 1227.6,
+      "totalManagedExpenditure": 1360.1,
+      "items": [
+        {
+          "name": "1. General public services",
+          "value": 165.5
+        },
+        {
+          "name": "2. Defence",
+          "value": 65.4
+        },
+        {
+          "name": "3. Public order and safety",
+          "value": 55.7
+        },
+        {
+          "name": "4. Economic affairs",
+          "value": 94
+        },
+        {
+          "name": "5. Environment protection",
+          "value": 19.2
+        },
+        {
+          "name": "6. Housing and community amenities",
+          "value": 22.5
+        },
+        {
+          "name": "7. Health",
+          "value": 257.5
+        },
+        {
+          "name": "8. Recreation, culture and religion",
+          "value": 15.1
+        },
+        {
+          "name": "9. Education",
+          "value": 125.7
+        },
+        {
+          "name": "10. Social protection",
+          "value": 407.3
+        }
+      ]
+    },
+    "departments": {
+      "year": "2025-26",
+      "basis": "Central government own expenditure within DEL, outturn",
+      "unit": "£ million",
+      "total": 489766,
+      "items": [
+        {
+          "name": "Health and Social Care",
+          "value": 213249
+        },
+        {
+          "name": "Education",
+          "value": 57552
+        },
+        {
+          "name": "Home Office",
+          "value": 5380
+        },
+        {
+          "name": "Justice",
+          "value": 13813
+        },
+        {
+          "name": "Law Officers' Departments",
+          "value": 982
+        },
+        {
+          "name": "Defence",
+          "value": 61817
+        },
+        {
+          "name": "Single Intelligence Account",
+          "value": 4932
+        },
+        {
+          "name": "Foreign, Commonwealth and Development Office",
+          "value": 10890
+        },
+        {
+          "name": "MHCLG - Housing and Communities",
+          "value": 2714
+        },
+        {
+          "name": "Culture, Media and Sport",
+          "value": 2174
+        },
+        {
+          "name": "Science, Innovation and Technology",
+          "value": 14959
+        },
+        {
+          "name": "Transport",
+          "value": 23636
+        },
+        {
+          "name": "Energy Security and Net Zero",
+          "value": 12290
+        },
+        {
+          "name": "Environment, Food and Rural Affairs",
+          "value": 5426
+        },
+        {
+          "name": "Business and Trade",
+          "value": 2833
+        },
+        {
+          "name": "Work and Pensions",
+          "value": 12503
+        },
+        {
+          "name": "HM Revenue and Customs",
+          "value": 6727
+        },
+        {
+          "name": "HM Treasury",
+          "value": 1195
+        },
+        {
+          "name": "Cabinet Office",
+          "value": 1187
+        },
+        {
+          "name": "Welsh Government",
+          "value": 13559
+        },
+        {
+          "name": "Northern Ireland Executive",
+          "value": 18605
+        },
+        {
+          "name": "Small and Independent Bodies",
+          "value": 3342
+        }
+      ]
+    },
+    "departmentPlans": {
+      "year": "2028-29",
+      "basis": "Central government own expenditure within DEL, plans",
+      "unit": "£ million",
+      "total": 540283,
+      "items": [
+        {
+          "name": "Health and Social Care",
+          "value": 241819
+        },
+        {
+          "name": "Education",
+          "value": 58453
+        },
+        {
+          "name": "Home Office",
+          "value": 7724
+        },
+        {
+          "name": "Justice",
+          "value": 15554
+        },
+        {
+          "name": "Law Officers' Departments",
+          "value": 1349
+        },
+        {
+          "name": "Defence",
+          "value": 73531
+        },
+        {
+          "name": "Single Intelligence Account",
+          "value": 5351
+        },
+        {
+          "name": "Foreign, Commonwealth and Development Office",
+          "value": 9299
+        },
+        {
+          "name": "MHCLG - Housing and Communities",
+          "value": 3905
+        },
+        {
+          "name": "Culture, Media and Sport",
+          "value": 2631
+        },
+        {
+          "name": "Science, Innovation and Technology",
+          "value": 16674
+        },
+        {
+          "name": "Transport",
+          "value": 22556
+        },
+        {
+          "name": "Energy Security and Net Zero",
+          "value": 11765
+        },
+        {
+          "name": "Environment, Food and Rural Affairs",
+          "value": 5615
+        },
+        {
+          "name": "Business and Trade",
+          "value": 2921
+        },
+        {
+          "name": "Work and Pensions",
+          "value": 14259
+        },
+        {
+          "name": "HM Revenue and Customs",
+          "value": 6909
+        },
+        {
+          "name": "HM Treasury",
+          "value": 483
+        },
+        {
+          "name": "Cabinet Office",
+          "value": 1716
+        },
+        {
+          "name": "Welsh Government",
+          "value": 15284
+        },
+        {
+          "name": "Northern Ireland Executive",
+          "value": 19524
+        },
+        {
+          "name": "Small and Independent Bodies",
+          "value": 2961
+        }
+      ]
+    }
+  }
+}

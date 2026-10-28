@@ -1,0 +1,25 @@
+{
+  "title": "HMRC tax receipts and National Insurance contributions for the UK",
+  "base_path": "/government/statistics/hmrc-tax-and-nics-receipts-for-the-uk",
+  "public_updated_at": "2026-10-21T07:00:02+01:00",
+  "document_type": "national_statistics",
+  "details": {
+    "attachments": [
+      {
+        "title": "HMRC tax receipts and National Insurance contributions for the UK (monthly bulletin)",
+        "url": "/government/statistics/hmrc-tax-and-nics-receipts-for-the-uk/hmrc-tax-receipts-and-national-insurance-contributions-for-the-uk-new-monthly-bulletin"
+      },
+      {
+        "title": "HMRC tax receipts and National Insurance contributions for the UK (annual bulletin)",
+        "url": "/government/statistics/hmrc-tax-and-nics-receipts-for-the-uk/hmrc-tax-receipts-and-national-insurance-contributions-for-the-uk-new-annual-bulletin"
+      },
+      {
+        "title": "HMRC tax receipts and National Insurance contributions for the UK: statistics table",
+        "url": "https://assets.publishing.service.gov.uk/media/6acf86ffc84c8ff1bc8b8172/NS_Table.ods",
+        "content_type": "application/vnd.oasis.opendocument.spreadsheet",
+        "filename": "NS_Table.ods",
+        "file_size": 66302
+      }
+    ]
+  }
+}

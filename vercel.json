@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/ons-psf?slot=release",
+      "schedule": "5 6,7 18-23 * *"
+    },
+    {
+      "path": "/api/cron/daily?slot=daily",
+      "schedule": "30 6,7 * * *"
+    }
+  ]
+}

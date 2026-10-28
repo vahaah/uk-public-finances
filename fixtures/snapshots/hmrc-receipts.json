@@ -1,0 +1,704 @@
+{
+  "sourceId": "hmrc-receipts",
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-28T06:45:00.000Z",
+  "releaseDate": "2026-10-21T07:00:02+01:00",
+  "nextRelease": null,
+  "sourceUrl": "https://www.gov.uk/government/statistics/hmrc-tax-and-nics-receipts-for-the-uk",
+  "sourceTitle": "HMRC tax receipts and National Insurance contributions",
+  "publisher": "HM Revenue & Customs",
+  "licence": "Open Government Licence v3.0",
+  "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "contentHash": "e27593dcc6b8bd9ef2499a98900fbdd4ddaa1629ccc799556792e3de1a4b4d4e",
+  "data": {
+    "contentUrl": "https://www.gov.uk/government/statistics/hmrc-tax-and-nics-receipts-for-the-uk",
+    "attachmentUrl": "https://assets.publishing.service.gov.uk/media/6acf86ffc84c8ff1bc8b8172/NS_Table.ods",
+    "attachmentFilename": "NS_Table.ods",
+    "annual": {
+      "year": "2025-26",
+      "total": 937763,
+      "taxes": [
+        {
+          "name": "Income Tax",
+          "value": 326932
+        },
+        {
+          "name": "Capital Gains Tax",
+          "value": 24310
+        },
+        {
+          "name": "Apprenticeship Levy",
+          "value": 4391
+        },
+        {
+          "name": "National Insurance Contributions",
+          "value": 200829
+        },
+        {
+          "name": "Value Added Tax",
+          "value": 179861
+        },
+        {
+          "name": "Corporation Tax",
+          "value": 95105
+        },
+        {
+          "name": "Bank Levy",
+          "value": 1442
+        },
+        {
+          "name": "Bank Surcharge",
+          "value": 1170
+        },
+        {
+          "name": "Diverted Profits Tax",
+          "value": 604
+        },
+        {
+          "name": "Digital Services Tax",
+          "value": 944
+        },
+        {
+          "name": "Residential Property Developer Tax",
+          "value": 89
+        },
+        {
+          "name": "Energy Profits Levy",
+          "value": 2564
+        },
+        {
+          "name": "Electricity Generator Levy",
+          "value": 41
+        },
+        {
+          "name": "Economic Crime Levy",
+          "value": 21
+        },
+        {
+          "name": "Petroleum Revenue Tax",
+          "value": -443
+        },
+        {
+          "name": "Hydrocarbon Oil (Fuel duties)",
+          "value": 24558
+        },
+        {
+          "name": "Inheritance Tax",
+          "value": 8467
+        },
+        {
+          "name": "Stamp Duty Shares",
+          "value": 4735
+        },
+        {
+          "name": "Stamp Duty Land Tax",
+          "value": 15159
+        },
+        {
+          "name": "Annual Tax on Enveloped Dwellings",
+          "value": 139
+        },
+        {
+          "name": "Tobacco Duties",
+          "value": 7567
+        },
+        {
+          "name": "Spirits Duties",
+          "value": 4069
+        },
+        {
+          "name": "Beer Duties",
+          "value": 3461
+        },
+        {
+          "name": "Wines Duties",
+          "value": 4609
+        },
+        {
+          "name": "Cider Duties",
+          "value": 296
+        },
+        {
+          "name": "Betting & Gaming",
+          "value": 3831
+        },
+        {
+          "name": "Air Passenger Duty",
+          "value": 4618
+        },
+        {
+          "name": "Insurance Premium Tax",
+          "value": 9037
+        },
+        {
+          "name": "Landfill Tax",
+          "value": 623
+        },
+        {
+          "name": "Climate Change Levy",
+          "value": 1790
+        },
+        {
+          "name": "Aggregates Levy",
+          "value": 369
+        },
+        {
+          "name": "Soft Drinks Industry Levy",
+          "value": 354
+        },
+        {
+          "name": "Plastic Packaging Tax",
+          "value": 256
+        },
+        {
+          "name": "Customs Duties",
+          "value": 4972
+        },
+        {
+          "name": "Penalties",
+          "value": 996
+        }
+      ]
+    },
+    "annualHistory": [
+      {
+        "year": "2006-07",
+        "total": 428629
+      },
+      {
+        "year": "2007-08",
+        "total": 456121
+      },
+      {
+        "year": "2008-09",
+        "total": 445531
+      },
+      {
+        "year": "2009-10",
+        "total": 414920
+      },
+      {
+        "year": "2010-11",
+        "total": 453958
+      },
+      {
+        "year": "2011-12",
+        "total": 472035
+      },
+      {
+        "year": "2012-13",
+        "total": 473627
+      },
+      {
+        "year": "2013-14",
+        "total": 492802
+      },
+      {
+        "year": "2014-15",
+        "total": 514058
+      },
+      {
+        "year": "2015-16",
+        "total": 532504
+      },
+      {
+        "year": "2016-17",
+        "total": 567992
+      },
+      {
+        "year": "2017-18",
+        "total": 593324
+      },
+      {
+        "year": "2018-19",
+        "total": 621208
+      },
+      {
+        "year": "2019-20",
+        "total": 633428
+      },
+      {
+        "year": "2020-21",
+        "total": 584212
+      },
+      {
+        "year": "2021-22",
+        "total": 715720
+      },
+      {
+        "year": "2022-23",
+        "total": 787004
+      },
+      {
+        "year": "2023-24",
+        "total": 828584
+      },
+      {
+        "year": "2024-25",
+        "total": 858648
+      },
+      {
+        "year": "2025-26",
+        "total": 937763
+      }
+    ],
+    "monthly": [
+      {
+        "period": "2017-04",
+        "total": 56228
+      },
+      {
+        "period": "2017-05",
+        "total": 42703
+      },
+      {
+        "period": "2017-06",
+        "total": 37848
+      },
+      {
+        "period": "2017-07",
+        "total": 62167
+      },
+      {
+        "period": "2017-08",
+        "total": 44235
+      },
+      {
+        "period": "2017-09",
+        "total": 39285
+      },
+      {
+        "period": "2017-10",
+        "total": 54993
+      },
+      {
+        "period": "2017-11",
+        "total": 43997
+      },
+      {
+        "period": "2017-12",
+        "total": 41895
+      },
+      {
+        "period": "2018-01",
+        "total": 76392
+      },
+      {
+        "period": "2018-02",
+        "total": 51207
+      },
+      {
+        "period": "2018-03",
+        "total": 42374
+      },
+      {
+        "period": "2018-04",
+        "total": 57992
+      },
+      {
+        "period": "2018-05",
+        "total": 45111
+      },
+      {
+        "period": "2018-06",
+        "total": 38734
+      },
+      {
+        "period": "2018-07",
+        "total": 66357
+      },
+      {
+        "period": "2018-08",
+        "total": 47014
+      },
+      {
+        "period": "2018-09",
+        "total": 40652
+      },
+      {
+        "period": "2018-10",
+        "total": 56504
+      },
+      {
+        "period": "2018-11",
+        "total": 47909
+      },
+      {
+        "period": "2018-12",
+        "total": 42735
+      },
+      {
+        "period": "2019-01",
+        "total": 79860
+      },
+      {
+        "period": "2019-02",
+        "total": 54367
+      },
+      {
+        "period": "2019-03",
+        "total": 43972
+      },
+      {
+        "period": "2019-04",
+        "total": 60904
+      },
+      {
+        "period": "2019-05",
+        "total": 45334
+      },
+      {
+        "period": "2019-06",
+        "total": 41681
+      },
+      {
+        "period": "2019-07",
+        "total": 68212
+      },
+      {
+        "period": "2019-08",
+        "total": 48766
+      },
+      {
+        "period": "2019-09",
+        "total": 42966
+      },
+      {
+        "period": "2019-10",
+        "total": 55552
+      },
+      {
+        "period": "2019-11",
+        "total": 47169
+      },
+      {
+        "period": "2019-12",
+        "total": 46426
+      },
+      {
+        "period": "2020-01",
+        "total": 81603
+      },
+      {
+        "period": "2020-02",
+        "total": 53868
+      },
+      {
+        "period": "2020-03",
+        "total": 40946
+      },
+      {
+        "period": "2020-04",
+        "total": 35181
+      },
+      {
+        "period": "2020-05",
+        "total": 26023
+      },
+      {
+        "period": "2020-06",
+        "total": 35809
+      },
+      {
+        "period": "2020-07",
+        "total": 52888
+      },
+      {
+        "period": "2020-08",
+        "total": 45364
+      },
+      {
+        "period": "2020-09",
+        "total": 46895
+      },
+      {
+        "period": "2020-10",
+        "total": 50272
+      },
+      {
+        "period": "2020-11",
+        "total": 48655
+      },
+      {
+        "period": "2020-12",
+        "total": 52309
+      },
+      {
+        "period": "2021-01",
+        "total": 79201
+      },
+      {
+        "period": "2021-02",
+        "total": 54381
+      },
+      {
+        "period": "2021-03",
+        "total": 57236
+      },
+      {
+        "period": "2021-04",
+        "total": 58273
+      },
+      {
+        "period": "2021-05",
+        "total": 48447
+      },
+      {
+        "period": "2021-06",
+        "total": 52038
+      },
+      {
+        "period": "2021-07",
+        "total": 66855
+      },
+      {
+        "period": "2021-08",
+        "total": 53948
+      },
+      {
+        "period": "2021-09",
+        "total": 53804
+      },
+      {
+        "period": "2021-10",
+        "total": 57370
+      },
+      {
+        "period": "2021-11",
+        "total": 55273
+      },
+      {
+        "period": "2021-12",
+        "total": 59349
+      },
+      {
+        "period": "2022-01",
+        "total": 89721
+      },
+      {
+        "period": "2022-02",
+        "total": 61645
+      },
+      {
+        "period": "2022-03",
+        "total": 58996
+      },
+      {
+        "period": "2022-04",
+        "total": 69001
+      },
+      {
+        "period": "2022-05",
+        "total": 53230
+      },
+      {
+        "period": "2022-06",
+        "total": 56560
+      },
+      {
+        "period": "2022-07",
+        "total": 73911
+      },
+      {
+        "period": "2022-08",
+        "total": 58223
+      },
+      {
+        "period": "2022-09",
+        "total": 57944
+      },
+      {
+        "period": "2022-10",
+        "total": 63805
+      },
+      {
+        "period": "2022-11",
+        "total": 58458
+      },
+      {
+        "period": "2022-12",
+        "total": 62732
+      },
+      {
+        "period": "2023-01",
+        "total": 106375
+      },
+      {
+        "period": "2023-02",
+        "total": 63150
+      },
+      {
+        "period": "2023-03",
+        "total": 63616
+      },
+      {
+        "period": "2023-04",
+        "total": 71840
+      },
+      {
+        "period": "2023-05",
+        "total": 57961
+      },
+      {
+        "period": "2023-06",
+        "total": 60876
+      },
+      {
+        "period": "2023-07",
+        "total": 80563
+      },
+      {
+        "period": "2023-08",
+        "total": 61641
+      },
+      {
+        "period": "2023-09",
+        "total": 61845
+      },
+      {
+        "period": "2023-10",
+        "total": 67399
+      },
+      {
+        "period": "2023-11",
+        "total": 59566
+      },
+      {
+        "period": "2023-12",
+        "total": 65540
+      },
+      {
+        "period": "2024-01",
+        "total": 107792
+      },
+      {
+        "period": "2024-02",
+        "total": 66329
+      },
+      {
+        "period": "2024-03",
+        "total": 67232
+      },
+      {
+        "period": "2024-04",
+        "total": 75852
+      },
+      {
+        "period": "2024-05",
+        "total": 58335
+      },
+      {
+        "period": "2024-06",
+        "total": 63893
+      },
+      {
+        "period": "2024-07",
+        "total": 83691
+      },
+      {
+        "period": "2024-08",
+        "total": 60617
+      },
+      {
+        "period": "2024-09",
+        "total": 64008
+      },
+      {
+        "period": "2024-10",
+        "total": 69316
+      },
+      {
+        "period": "2024-11",
+        "total": 61366
+      },
+      {
+        "period": "2024-12",
+        "total": 70162
+      },
+      {
+        "period": "2025-01",
+        "total": 112022
+      },
+      {
+        "period": "2025-02",
+        "total": 68846
+      },
+      {
+        "period": "2025-03",
+        "total": 70541
+      },
+      {
+        "period": "2025-04",
+        "total": 80851
+      },
+      {
+        "period": "2025-05",
+        "total": 62823
+      },
+      {
+        "period": "2025-06",
+        "total": 67110
+      },
+      {
+        "period": "2025-07",
+        "total": 92843
+      },
+      {
+        "period": "2025-08",
+        "total": 63052
+      },
+      {
+        "period": "2025-09",
+        "total": 71201
+      },
+      {
+        "period": "2025-10",
+        "total": 75323
+      },
+      {
+        "period": "2025-11",
+        "total": 64944
+      },
+      {
+        "period": "2025-12",
+        "total": 79235
+      },
+      {
+        "period": "2026-01",
+        "total": 126444
+      },
+      {
+        "period": "2026-02",
+        "total": 75743
+      },
+      {
+        "period": "2026-03",
+        "total": 78194
+      },
+      {
+        "period": "2026-04",
+        "total": 85214
+      },
+      {
+        "period": "2026-05",
+        "total": 65414
+      },
+      {
+        "period": "2026-06",
+        "total": 74055
+      },
+      {
+        "period": "2026-07",
+        "total": 97999
+      },
+      {
+        "period": "2026-08",
+        "total": 68886
+      },
+      {
+        "period": "2026-09",
+        "total": 75778
+      }
+    ]
+  }
+}
