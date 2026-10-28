@@ -10,6 +10,8 @@ export const fiscalRuleSchema = z.object({
   target: z.string().min(1),
   outcome: ruleOutcomeSchema,
   source: z.string().url(),
+  /** £ billion. Null until the reviewed file records a figure. */
+  headroomBn: z.number().finite().nullable().optional(),
 });
 
 export const ruleRegimeSchema = z.object({
@@ -46,4 +48,16 @@ export function outcomeLabel(outcome: RuleOutcome): string {
 
 export function regimesAt(regimes: RuleRegime[], isoDate: string): RuleRegime[] {
   return regimes.filter((regime) => regime.from <= isoDate && (regime.to == null || isoDate < regime.to));
+}
+
+/** Headroom from the reviewed rules file. Each row keeps that rule's source. */
+export function reviewedHeadroom(regimes: RuleRegime[]): { eventDate: string; rule: string; headroomBn: number | null; source: string }[] {
+  return regimes.flatMap((regime) =>
+    regime.rules.map((rule) => ({
+      eventDate: regime.from,
+      rule: rule.name,
+      headroomBn: rule.headroomBn ?? null,
+      source: rule.source,
+    })),
+  );
 }

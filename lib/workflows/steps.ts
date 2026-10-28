@@ -421,15 +421,18 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
     const historicalData = historical
       ? { loaded: true as const, ...(await parseHistoricalForecasts(historical.bytes)) }
       : { loaded: false as const, asOf: null, vintages: [] };
+    const measureEvents = loadSeedEvents().map((event) => ({ name: event.name, date: event.date }));
     const measuresData = measures
-      ? { loaded: true as const, ...(await parseMeasuresWorkbook(measures.bytes)) }
+      ? { loaded: true as const, ...(await parseMeasuresWorkbook(measures.bytes, measureEvents)) }
       : { loaded: false as const, asOf: null, rows: [] };
     const evaluationData = evaluation
       ? { loaded: true as const, ...(await parseEvaluationWorkbook(evaluation.bytes)) }
       : { loaded: false as const, asOf: null, rows: [] };
-    const headroomData = headroom
-      ? { loaded: true as const, ...(await parseHeadroomWorkbook(headroom.bytes)) }
-      : { loaded: false as const, asOf: null, rows: [] };
+    const parsedHeadroom = headroom ? await parseHeadroomWorkbook(headroom.bytes) : { asOf: null, rows: [] };
+    const headroomData =
+      parsedHeadroom.rows.length > 0
+        ? { loaded: true as const, ...parsedHeadroom }
+        : { loaded: false as const, asOf: null, rows: [] };
     const asOf = [historicalData.asOf, measuresData.asOf, evaluationData.asOf, headroomData.asOf].filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
     return buildEnvelope({
       sourceId: "budgets-obr",
