@@ -376,5 +376,5 @@ function text(record: unknown, key: string): string | null {
 
 function isMissing(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  return /not found|404/i.test(message);
+  return /not found|404|does not exist|BlobNotFound/i.test(message);
 }
