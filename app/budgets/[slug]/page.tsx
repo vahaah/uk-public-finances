@@ -9,7 +9,7 @@ import { fiscalYearPlus, type ForecastSeriesId } from "@/lib/budgets/forecasts";
 import { outcomeLabel, regimesAt } from "@/lib/budgets/rules";
 import { loadRuleRegimes, loadSeedEvents } from "@/lib/budgets/seed";
 import { seriesPoints, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
-import { formatBillions, formatDateLong, formatMillions, formatPercent } from "@/lib/format";
+import { formatBillions, formatDateLong, formatMillions, formatMonthYear, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 
@@ -48,7 +48,7 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
   const loaded = obr?.data.historical.loaded === true;
   const label = eventLabel(event);
   const when = event.dateStatus === "verified" ? formatDateLong(event.date) : null;
-  const asOf = loaded ? `OBR data as of ${obr?.data.historical.asOf ? formatDateLong(obr.data.historical.asOf) : "the loaded file"} · loaded ${formatDateLong(obr?.retrievedAt ?? null)}.` : "OBR forecasts not loaded yet.";
+  const asOf = loaded ? `OBR data as of ${obr?.data.historical.asOf ? formatMonthYear(obr.data.historical.asOf) : "the loaded file"} · loaded ${formatDateLong(obr?.retrievedAt ?? null)}.` : "OBR forecasts not loaded yet.";
   const borrowing = loaded
     ? yearAheadComparisons([event], obr?.data.historical.vintages ?? [], ons?.data.series.j5ii?.months ?? [], "psnb")[0]
     : null;

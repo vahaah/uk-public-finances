@@ -453,14 +453,17 @@ export function SpendingVisuals({
   items,
   year,
   prices = null,
+  keepOrder = false,
 }: {
   items: { name: string; value: number }[];
   year?: string;
   prices?: PriceBundle | null;
+  /** Plot items in the order given (the table's sort) instead of by value. */
+  keepOrder?: boolean;
 }) {
   return (
     <Suspense fallback={<div className="h-80" />}>
-      <SpendingVisualsInner items={items} year={year} prices={prices} />
+      <SpendingVisualsInner items={items} year={year} prices={prices} keepOrder={keepOrder} />
     </Suspense>
   );
 }
@@ -469,17 +472,18 @@ function SpendingVisualsInner({
   items,
   year,
   prices,
+  keepOrder,
 }: {
   items: { name: string; value: number }[];
   year?: string;
   prices: PriceBundle | null;
+  keepOrder: boolean;
 }) {
   const theme = useChartTheme();
   const view = usePriceView();
   const scaled = scaleGroup(items.map((item) => item.value), year, "financial", "billion", prices, view);
   const shown = items.map((item, index) => ({ ...item, value: scaled.values[index] ?? item.value }));
-  const data = [...shown]
-    .sort((left, right) => right.value - left.value)
+  const data = (keepOrder ? shown : [...shown].sort((left, right) => right.value - left.value))
     .map((item) => ({
       name: shortFunction(item.name),
       full: shortFunction(item.name),

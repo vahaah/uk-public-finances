@@ -1,6 +1,6 @@
 "use client";
 
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { yearTickValues } from "@/lib/chart-time";
 import { formatBillions } from "@/lib/format";
@@ -22,9 +22,10 @@ export function PorcupineChart({ outturn, vintages }: { outturn: { fy: string; v
   return (
     <div className="h-72">
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
-        <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <LineChart data={rows} margin={{ top: 8, right: 28, left: 0, bottom: 0 }}>
           <XAxis dataKey="fy" ticks={yearTickValues(years)} interval={0} tick={{ fontSize: 12 }} />
-          <YAxis tick={{ fontSize: 12 }} width={48} />
+          <YAxis tick={{ fontSize: 12 }} width={48} domain={[-25, 350]} ticks={[0, 100, 200, 300]} allowDataOverflow={false} />
+          <ReferenceLine y={0} stroke="rgba(0,0,0,0.25)" strokeWidth={1} ifOverflow="extendDomain" />
           <Tooltip
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;

@@ -12,7 +12,18 @@ export type YearAheadComparison = {
   words: string | null;
   direction: "over" | "under" | "matched" | null;
   due: boolean;
+  /** The forecast was made on an older statistical basis than today's outturn, so the difference is not like for like. */
+  basisChanged: boolean;
 };
+
+/**
+ * The first OBR forecast on the current borrowing basis. ONS statistical changes in September 2019
+ * (student loans, public service pensions) raised borrowing by about £20bn a year; the OBR's
+ * restated March 2019 forecast (obr.uk/restated-march-2019-forecast) shows the size. Budget 2020
+ * was the first forecast to include them. Earlier forecasts are compared against latest-basis
+ * outturn with no like-for-like series, so they are labelled and left out of the totals.
+ */
+export const BASIS_CUTOFF = "2020-03-11";
 
 export function yearAheadComparisons(
   events: FiscalEvent[],
@@ -26,12 +37,13 @@ export function yearAheadComparisons(
     const forecast = vintage ? withoutPartYear(event.date, vintage.points).find((point) => point.fy === fy)?.value ?? null : null;
     const outturnValue = series === "psnd_pct" ? marchDebtRatio(outturn, fy) : bulletinOrLevel(series, outturn, fy);
     const due = outturnValue != null;
+    const basisChanged = event.date < BASIS_CUTOFF;
     if (event.obrForecast === "no" || forecast == null || outturnValue == null) {
-      return { event, fy, forecast, outturn: outturnValue, difference: null, words: null, direction: null, due };
+      return { event, fy, forecast, outturn: outturnValue, difference: null, words: null, direction: null, due, basisChanged };
     }
     const difference = forecastDifference(outturnValue, forecast);
     const words = differenceWords(difference, series === "psnd_pct" ? "pp" : "bn");
-    return { event, fy, forecast, outturn: outturnValue, difference, words: words.sentence, direction: words.direction, due };
+    return { event, fy, forecast, outturn: outturnValue, difference, words: words.sentence, direction: words.direction, due, basisChanged };
   });
 }
 

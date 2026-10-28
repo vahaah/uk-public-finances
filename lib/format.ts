@@ -131,3 +131,18 @@ export function previousFinancialYear(year: string): string {
   const start = Number(match[1]) - 1;
   return `${start}-${String(start + 1).slice(2)}`;
 }
+
+/** Month and year only, for sources dated to the month ("March 2026"). */
+export function formatMonthYear(iso: string | null): string {
+  if (!iso) return "an unknown date";
+  const date = new Date(iso.length <= 10 ? `${iso.slice(0, 10)}T12:00:00Z` : iso);
+  if (Number.isNaN(date.getTime())) return "an unknown date";
+  return date.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "Europe/London" });
+}
+
+/** Round to one decimal place before the sign is chosen, so tiny negatives never show as "−£0.0bn". */
+export function roundBn(value: number, digits = 1): number {
+  const factor = 10 ** digits;
+  const rounded = Math.round(value * factor) / factor;
+  return rounded === 0 ? 0 : rounded;
+}

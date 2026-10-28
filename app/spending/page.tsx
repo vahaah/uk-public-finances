@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SpendingFunctions } from "@/components/spending-functions";
 import { CiteShare } from "@/components/cite-share";
 import { DepartmentChart, HistoryChart, SpendingVisuals } from "@/components/charts";
 import { JumpTo } from "@/components/jump-to";
@@ -136,15 +137,7 @@ export default async function SpendingPage() {
           />
         }
       >
-        <SpendingVisuals items={functions.items.filter((item) => item.value > 0)} year={functions.year} prices={bundle} />
-        <DataTable
-          columns={["Function", "£bn", "Share of total"]}
-          rows={functions.items.map((item) => [
-            item.name.replace(/^\d+\.\s*/, ""),
-            formatBillions(item.value),
-            functions.totalServices ? formatPercent((item.value / functions.totalServices) * 100) : "—",
-          ])}
-        />
+        <SpendingFunctions items={functions.items} year={functions.year} total={functions.totalServices ?? null} prices={bundle} />
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame
