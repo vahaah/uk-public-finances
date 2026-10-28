@@ -43,7 +43,11 @@ export default function DataSourcesPage() {
                 const source = SOURCES[id];
                 return (
                   <li key={id} id={id} className="scroll-mt-20 border-t border-neutral-200 px-4 py-3 text-sm first:border-t-0 dark:border-neutral-800">
-                    <p>{source.title}</p>
+                    <p>
+                      <a className="underline decoration-neutral-400 underline-offset-4" href={source.page}>
+                        {source.title}
+                      </a>
+                    </p>
                     <p className="mt-1 text-neutral-700 dark:text-neutral-300">
                       {source.licence}
                       {" · "}

@@ -11,6 +11,7 @@ import {
   websiteJsonLd,
 } from "@/components/blocks";
 import { formatDateLong, formatGbpFromMillions, formatMonth, formatMonthLong, formatPercent, previousFinancialYear } from "@/lib/format";
+import { overviewSummary } from "@/lib/overview-summary";
 import { buildRecords } from "@/lib/records";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
@@ -34,26 +35,26 @@ export default async function HomePage() {
   const month = data.series.j5ii?.latest?.period ?? "";
   const borrowing = data.bulletinSign.borrowingLatest;
   const yearBorrowing = data.bulletinSign.financialYearBorrowing;
-  const previous = data.bulletinSign.previousFinancialYearBorrowing;
   const receipts = data.series.jw2o?.latest;
   const spending = data.series.kx5q?.latest;
   const debt = data.series.kse6?.latest;
   const ratio = data.series.hf6x?.latest;
   const interest = data.series.nmfx?.latest;
-  const deficit = data.bulletinSign.currentBudgetDeficitLatest;
-  const delta =
-    yearBorrowing != null && previous != null ? versusYearEarlier(yearBorrowing - previous) : null;
   const monthLabel = month ? formatMonthLong(month) : "the latest month";
   const monthName = month ? formatMonthLong(month).replace(/ \d{4}$/, "") : "that month";
-  const earlierBorrowing = sameMonthValue(data.series.j5ii?.months, month);
-  const cite =
+  const earlierRaw = sameMonthValue(data.series.j5ii?.months, month);
+  const summary =
     receipts && spending && borrowing != null
-      ? `In ${monthLabel}, the public sector received ${formatGbpFromMillions(receipts.value)} and spent ${formatGbpFromMillions(spending.value)}, so it borrowed ${formatGbpFromMillions(Math.abs(borrowing))}.${
-          earlierBorrowing == null
-            ? ""
-            : ` That is ${formatGbpFromMillions(Math.abs(Math.abs(borrowing) - Math.abs(earlierBorrowing)))} ${Math.abs(borrowing) >= Math.abs(earlierBorrowing) ? "more" : "less"} than in ${monthName} last year.`
-        }`
-      : "The latest UK public sector finances from the ONS.";
+      ? overviewSummary({
+          monthLabel,
+          monthName,
+          receiptsMillions: receipts.value,
+          spendingMillions: spending.value,
+          borrowingBulletinMillions: borrowing,
+          earlierBulletinMillions: earlierRaw == null ? null : -earlierRaw,
+        })
+      : null;
+  const cite = summary?.cite ?? "The latest UK public sector finances from the ONS.";
   const citation = `${cite} Source: ${meta.publisher}, JW2O, KX5Q, J5II, published ${formatDateLong(snapshot.releaseDate)}. Via budget.vahaah.com/, accessed ${formatDateLong(new Date().toISOString())}.`;
   const ytdReceipts = sumFiscal(data.series.jw2o?.months ?? [], month);
   const ytdSpending = sumFiscal(data.series.kx5q?.months ?? [], month);
@@ -63,9 +64,12 @@ export default async function HomePage() {
           periodLabel: monthLabel,
           spendingBn: spending.value / 1000,
           receiptsBn: receipts.value / 1000,
-          borrowingBn: Math.abs(borrowing) / 1000,
-          caption: `Spending minus receipts equals borrowing. Figures are for ${monthLabel}, rounded to £0.1bn, from ONS Public sector finances.`,
-          spoken: `In ${monthLabel}, spending of ${formatGbpFromMillions(spending.value)} minus receipts of ${formatGbpFromMillions(receipts.value)} equals borrowing of ${formatGbpFromMillions(Math.abs(borrowing))}.`,
+          borrowingBn: borrowing / 1000,
+          caption:
+            borrowing < 0
+              ? `Spending minus receipts equals a surplus. Figures are for ${monthLabel}, rounded to £0.1bn, from ONS Public sector finances.`
+              : `Spending minus receipts equals borrowing. Figures are for ${monthLabel}, rounded to £0.1bn, from ONS Public sector finances.`,
+          spoken: summary?.spoken ?? "",
         }
       : null;
   const equationYtd =
@@ -74,9 +78,15 @@ export default async function HomePage() {
           periodLabel: "Year to date",
           spendingBn: ytdSpending / 1000,
           receiptsBn: ytdReceipts / 1000,
-          borrowingBn: Math.abs(yearBorrowing) / 1000,
-          caption: `Spending minus receipts equals borrowing, April to ${formatMonth(month)}.`,
-          spoken: `From April to ${formatMonth(month)}, spending minus receipts equals borrowing.`,
+          borrowingBn: yearBorrowing / 1000,
+          caption:
+            yearBorrowing < 0
+              ? `Spending minus receipts equals a surplus, April to ${formatMonth(month)}.`
+              : `Spending minus receipts equals borrowing, April to ${formatMonth(month)}.`,
+          spoken:
+            yearBorrowing < 0
+              ? `From April to ${formatMonth(month)}, spending minus receipts equals a surplus.`
+              : `From April to ${formatMonth(month)}, spending minus receipts equals borrowing.`,
         }
       : null;
   const interestShare = calendarInterestShare(data.series.nmfx?.years ?? [], data.series.jw2o?.years ?? []);
@@ -217,20 +227,6 @@ export default async function HomePage() {
   );
 }
 
-function versusYearEarlier(gapMillions: number): string {
-  const amount = formatGbpFromMillions(Math.abs(gapMillions));
-  if (gapMillions < 0) return `${amount} less than a year earlier`;
-  if (gapMillions > 0) return `${amount} more than a year earlier`;
-  return "unchanged from a year earlier";
-}
-
-function movement(gapMillions: number, comparedWith: string): string {
-  const amount = formatGbpFromMillions(Math.abs(gapMillions));
-  if (gapMillions < 0) return `▼ ${amount} compared with ${comparedWith}`;
-  if (gapMillions > 0) return `▲ ${amount} compared with ${comparedWith}`;
-  return `Unchanged compared with ${comparedWith}`;
-}
-
 function sameMonthValue(months: { period: string; value: number }[] | undefined, period: string): number | null {
   const match = /^(\d{4})-(\d{2})$/.exec(period);
   if (!match || !months) return null;
@@ -258,17 +254,4 @@ function calendarInterestShare(
   if (!latest) return null;
   const base = byYear.get(latest.period) ?? 0;
   return { year: latest.period, share: (latest.value / base) * 100 };
-}
-
-function monthDelta(
-  months: { period: string; value: number }[] | undefined,
-  period: string | undefined,
-  current: number | undefined,
-): string | null {
-  if (!months || !period || current == null) return null;
-  const match = /^(\d{4})-(\d{2})$/.exec(period);
-  if (!match) return null;
-  const earlier = months.find((point) => point.period === `${Number(match[1]) - 1}-${match[2]}`);
-  if (!earlier) return null;
-  return movement(current - earlier.value, formatMonthLong(earlier.period));
 }

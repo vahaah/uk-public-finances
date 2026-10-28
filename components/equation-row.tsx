@@ -63,6 +63,11 @@ function EquationRowInner({ month, yearToDate }: { month: EquationView; yearToDa
   );
 }
 
+function signedBillions(value: number): string {
+  const text = Math.abs(value).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return value < 0 ? `−£${text}` : `£${text}`;
+}
+
 function chip(on: boolean): string {
   return `h-11 min-w-11 px-3 text-xs ${on ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200"}`;
 }
@@ -72,7 +77,7 @@ function Term({ label, value }: { label: string; value: number }) {
     <div>
       <p className="text-sm text-neutral-800 dark:text-neutral-200">{label}</p>
       <p className="mt-1 font-sans text-4xl font-semibold tabular-nums tracking-tight">
-        £{value.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+        {signedBillions(value)}
         <span className="ml-1 text-[0.6875rem] font-normal">bn</span>
       </p>
     </div>
@@ -88,7 +93,7 @@ function Ledger({ label, value }: { label: string; value: number }) {
     <div className="flex items-baseline justify-between py-2">
       <dt className="text-sm">{label}</dt>
       <dd className="text-xl font-semibold tabular-nums">
-        £{value.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}bn
+        {signedBillions(value)}bn
       </dd>
     </div>
   );
