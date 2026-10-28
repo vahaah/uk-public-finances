@@ -17,6 +17,7 @@ const LABEL: Record<HealthSource["status"], string> = {
   stale: "Out of date",
   missing: "Missing",
   validation_failed: "Check failed",
+  pending: "Pending",
 };
 
 const DOT: Record<HealthSource["status"], string> = {
@@ -24,6 +25,7 @@ const DOT: Record<HealthSource["status"], string> = {
   stale: "bg-amber-700",
   missing: "bg-red-700",
   validation_failed: "bg-red-700",
+  pending: "bg-amber-700",
 };
 
 export default async function DataHealthPage() {
@@ -33,7 +35,7 @@ export default async function DataHealthPage() {
       total[source.status] += 1;
       return total;
     },
-    { ok: 0, stale: 0, missing: 0, validation_failed: 0 },
+    { ok: 0, stale: 0, missing: 0, validation_failed: 0, pending: 0 },
   );
   const ordered = [...health.sources].sort((left, right) => rank(left.status) - rank(right.status));
   return (
@@ -71,6 +73,7 @@ export default async function DataHealthPage() {
 function rank(status: HealthSource["status"]): number {
   if (status === "validation_failed") return 0;
   if (status === "missing") return 1;
-  if (status === "stale") return 2;
-  return 3;
+  if (status === "pending") return 2;
+  if (status === "stale") return 3;
+  return 4;
 }

@@ -47,6 +47,7 @@ const REQUIRED_ONS = ["j5ii", "jw2o", "kx5q", "jw2t", "kse6", "hf6x", "cpoa", "n
 
 export const onsDataSchema = z.object({
   series: z.record(
+    z.string(),
     z.object({
       cdid: z.string(),
       title: z.string(),
@@ -336,7 +337,8 @@ export type AnySnapshot = { [K in SourceId]: SnapshotOf<K> }[SourceId];
 
 export const healthSourceSchema = z.object({
   source: z.enum(SOURCE_IDS),
-  status: z.enum(["ok", "stale", "validation_failed", "missing"]),
+  status: z.enum(["ok", "stale", "validation_failed", "missing", "pending"]),
+  fallbackReason: z.string().nullable(),
   critical: z.boolean(),
   releaseDate: z.string().nullable(),
   retrievedAt: z.string().nullable(),

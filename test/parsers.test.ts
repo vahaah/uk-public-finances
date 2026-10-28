@@ -134,7 +134,7 @@ describe("publish decision and health", () => {
     const health = await loadHealth(new Date("2026-10-28T12:00:00.000Z"));
     expect(health.ok).toBe(true);
     expect(health.sources.find((source) => source.source === "ons-psf")?.status).toBe("ok");
-    expect(health.sources.find((source) => source.source === "obr-databank")?.status).toBe("missing");
+    expect(health.sources.find((source) => source.source === "obr-databank")?.status).toBe("pending");
   });
 });
 

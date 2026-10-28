@@ -6,9 +6,11 @@ import { protectBuild } from "@/lib/workflows/guard";
 import {
   GOVUK_PATHS,
   pickHmrcReceiptsWorkbook,
+  pickIncomeTaxPublication,
   pickIncomeTaxWorkbook,
   pickPesaChapters,
   pickSearchHit,
+  type GovukCollection,
   type GovukContent,
   type GovukSearchHit,
 } from "@/lib/govuk";
@@ -20,7 +22,7 @@ import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
 import { snapshotSchemas, type AnySnapshot, type SourceId } from "@/lib/schema";
-import { buildEnvelope, decidePublish } from "@/lib/snapshot";
+import { buildEnvelope, decidePublish, shouldWriteSnapshot } from "@/lib/snapshot";
 import { readSnapshot } from "@/lib/store";
 import { REVALIDATE_PATHS, USER_AGENT } from "@/lib/site";
 
@@ -40,6 +42,15 @@ export async function recordValidationFailure(sourceId: SourceId, error: string)
 export async function clearValidationFailure(sourceId: SourceId): Promise<void> {
   "use step";
   await writeHealth(sourceId, null, false);
+}
+
+export async function recordPending(sourceId: SourceId): Promise<void> {
+  "use step";
+  await writeJson(
+    `health/${sourceId}.json`,
+    { validationError: null, usingLastGood: false, pending: true, at: new Date().toISOString() },
+    true,
+  );
 }
 
 export async function publishSnapshot(sourceId: SourceId, snapshot: unknown): Promise<void> {
@@ -156,14 +167,11 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
 
 export async function runIncomeTax(force: boolean): Promise<Record<string, unknown>> {
   "use step";
-  const hit = await findContent(
-    "Income Tax liabilities statistics",
-    { filter_organisations: "hm-revenue-customs" },
-    (candidate) =>
-      (candidate.link ?? "").startsWith(GOVUK_PATHS.incomeTaxPrefix) &&
-      /^Income Tax liabilities statistics:/i.test(candidate.title ?? ""),
-  );
-  const content = await getJson(`https://www.gov.uk/api/content${hit.link}`);
+  const collection = (await getJson(
+    `https://www.gov.uk/api/content${GOVUK_PATHS.incomeTaxCollection}`,
+  )) as GovukContent & GovukCollection;
+  const publication = pickIncomeTaxPublication(collection.links?.documents ?? []);
+  const content = await getJson(`https://www.gov.uk/api/content${publication.base_path}`);
   const workbook = pickIncomeTaxWorkbook(content as GovukContent);
   const releaseDate = content.public_updated_at ?? null;
   const bytes = await getBytes(workbook.url ?? "");
@@ -173,9 +181,9 @@ export async function runIncomeTax(force: boolean): Promise<Record<string, unkno
       retrievedAt: new Date().toISOString(),
       releaseDate,
       nextRelease: null,
-      sourceUrl: `https://www.gov.uk${hit.link}`,
+      sourceUrl: `https://www.gov.uk${publication.base_path}`,
       data: parseIncomeTax(bytes, {
-        contentUrl: `https://www.gov.uk${hit.link}`,
+        contentUrl: `https://www.gov.uk${publication.base_path}`,
         attachmentUrl: workbook.url ?? "",
         attachmentFilename: workbook.filename ?? "",
       }),
@@ -230,7 +238,7 @@ export async function runObr(force: boolean): Promise<Record<string, unknown>> {
     }
   }
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return { status: "missing", detail: blocked ? "obr-blocked" : "obr-link-not-found" };
+    return { status: "pending", detail: blocked ? "obr-download-blocked" : "obr-link-not-found" };
   }
   try {
     const blob = await readManualObr();
@@ -247,7 +255,10 @@ export async function runObr(force: boolean): Promise<Record<string, unknown>> {
     );
   } catch (error) {
     if (isMissing(error)) {
-      return { status: "missing", detail: blocked ? "obr-blocked-no-manual-upload" : "obr-no-manual-upload" };
+      return {
+        status: "pending",
+        detail: blocked ? "obr-download-blocked-no-manual-upload" : "obr-download-failed-no-manual-upload",
+      };
     }
     throw error;
   }
@@ -281,7 +292,8 @@ async function finish(
 export async function commitSnapshot(snapshot: AnySnapshot): Promise<Record<string, unknown>> {
   "use step";
   const current = await readSnapshot(snapshot.sourceId);
-  if (current.snapshot?.contentHash === snapshot.contentHash) {
+  const sameHash = current.snapshot?.contentHash === snapshot.contentHash;
+  if (!shouldWriteSnapshot(current.origin, sameHash)) {
     return { status: "unchanged", releaseDate: snapshot.releaseDate };
   }
   if (current.snapshot && droppedTooFar(snapshotRows(current.snapshot), snapshotRows(snapshot))) {

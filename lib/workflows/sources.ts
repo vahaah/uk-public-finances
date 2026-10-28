@@ -1,4 +1,5 @@
 import {
+  recordPending,
   recordValidationFailure,
   revalidateDashboard,
   runBoe,
@@ -18,6 +19,7 @@ type Runner = (force: boolean) => Promise<Record<string, unknown>>;
 async function settle(sourceId: SourceId, run: Runner, force: boolean): Promise<Record<string, unknown>> {
   try {
     const result = await run(force);
+    if (result.status === "pending") await recordPending(sourceId);
     if (result.status === "updated") await revalidateDashboard();
     return result;
   } catch (error) {

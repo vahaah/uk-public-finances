@@ -19,7 +19,7 @@ Budget is a Next.js 16 App Router site. Pages render snapshot JSON. They do not 
 
 ## Cron
 
-`/api/cron/ons-psf` runs in a 20-minute window around 07:05 Europe/London on the 18th–23rd. `/api/cron/daily` runs in a 20-minute window around 07:30 Europe/London. Vercel cron is UTC, so both candidate hours are scheduled. `evaluateSlot` returns a reason whenever it skips, and a run is deduped per London date and slot. `?force=1` skips the window. The bearer token is compared with `timingSafeEqual`. Overwritten Blob files (`latest.json`, `health/*.json`, `cron/*.json`) use `cacheControlMaxAge: 60` and are read with `cache: "no-store"`. A failed check keeps the newest earlier Blob version that still validates, then the fixture. The borrowing sign is explained only on `/methodology`. Derived figures are CC BY 4.0; upstream licences stay on the source.
+`/api/cron/ons-psf` runs in a 20-minute window around 07:05 Europe/London on the 18th–23rd. `/api/cron/daily` runs in a 20-minute window around 07:30 Europe/London. Vercel cron is UTC, so both candidate hours are scheduled. `evaluateSlot` returns a reason whenever it skips, and a run is deduped per London date and slot. `?force=1` skips the window. The bearer token is compared with `timingSafeEqual`. Overwritten Blob files (`latest.json`, `health/*.json`, `cron/*.json`) use `cacheControlMaxAge: 60`. Pages read them with `next.revalidate` of 60 seconds. The cron route reads its marker with `cache: "no-store"`. A failed check keeps the newest earlier Blob version that still validates, then the fixture. The borrowing sign is explained only on `/methodology`. Derived figures are CC BY 4.0; upstream licences stay on the source.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
