@@ -16,10 +16,11 @@ import {
   YAxis,
 } from "recharts";
 
+import { ChartTooltip } from "@/components/chart-tooltip";
+import { PriceControls, RANGES, usePriceView } from "@/components/prices";
 import { yearLabel, yearTickValues } from "@/lib/chart-time";
 import { formatAxis, formatBillions, formatMonth, formatPercent, HMRC_MILLION, niceTicks } from "@/lib/format";
-import { adjustSeries, sliceRange, type PriceBundle } from "@/lib/prices";
-import { PriceControls, RANGES, usePriceView } from "@/components/prices";
+import { adjustSeries, chartBaseYear, sliceRange, todayPricesLine, type MoneyFrequency, type PriceBundle } from "@/lib/prices";
 
 const ranges = RANGES;
 
@@ -79,7 +80,7 @@ function BorrowingChartInner({
   const source = view.freq === "year" ? years : view.freq === "quarter" ? quarters : months;
   const signed = source.map((point) => ({ period: point.period, value: -point.value }));
   const frequency = view.freq === "year" ? "calendar" : view.freq === "quarter" ? "quarter" : "month";
-  const baseYear = view.base && /^\d{4}$/.test(view.base) ? Number(view.base) : 2025;
+  const baseYear = chartBaseYear(view.base);
   const adjusted = prices
     ? adjustSeries({ points: signed, frequency, mode: view.mode, baseYear, unit: "million", prices })
     : {
@@ -103,16 +104,36 @@ function BorrowingChartInner({
             <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.borrowing))} />
             <Tooltip
               cursor={{ fill: theme.cursor }}
-              content={({ active, payload, label }) => (
-                <ChartTooltip
-                  active={active}
-                  label={formatPeriod(String(label ?? ""))}
-                  rows={(payload ?? []).map((item) => ({
-                    name: "Borrowing",
-                    value: adjusted.unit === "percent" ? formatPercent(Number(item.value), 2) : `£${formatAxis(Number(item.value))}bn`,
-                  }))}
-                />
-              )}
+              content={({ active, payload, label }) => {
+                const period = String(label ?? "");
+                const nominal = signed.find((point) => point.period === period)?.value;
+                const line =
+                  prices && nominal != null && adjusted.unit === "money"
+                    ? todayPricesLine({
+                        nominal,
+                        period,
+                        frequency,
+                        unit: "million",
+                        prices,
+                        mode: view.mode,
+                        baseYear,
+                        latestPeriod: signed.at(-1)?.period ?? "",
+                        money: true,
+                      })
+                    : null;
+                return (
+                  <ChartTooltip
+                    active={active}
+                    label={formatPeriod(period)}
+                    rows={(payload ?? []).map((item) => ({
+                      name: "Borrowing",
+                      value: adjusted.unit === "percent" ? formatPercent(Number(item.value), 2) : `£${formatAxis(Number(item.value))}bn`,
+                      today: line?.text,
+                      deflator: line?.deflator,
+                    }))}
+                  />
+                );
+              }}
             />
             <Bar dataKey="borrowing" isAnimationActive={false}>
               {plotted.map((point) => (
@@ -123,7 +144,7 @@ function BorrowingChartInner({
         </ResponsiveContainer>
       </div>
       <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-        {adjusted.unit === "percent" ? "% of GDP." : "£bn. Bars above zero are borrowing; below zero, a surplus."} {priceCaption(view.mode, baseYear)}
+        {adjusted.unit === "percent" ? "% of GDP." : "£bn. Bars above zero are borrowing; below zero, a surplus."} {priceCaption(view.mode, baseYear, frequency)}
         {adjusted.note ? ` ${adjusted.note}` : ""}
       </p>
     </div>
@@ -165,8 +186,9 @@ function CumulativeChartInner({
 }) {
   const theme = useChartTheme();
   const view = usePriceView();
-  const baseYear = view.base && /^\d{4}$/.test(view.base) ? Number(view.base) : 2025;
+  const baseYear = chartBaseYear(view.base);
   const mode = view.mode === "gdp" ? "nominal" : view.mode;
+  const latestPeriod = months.at(-1)?.period ?? "";
   const adjusted = prices
     ? adjustSeries({
         points: months.map((point) => ({ period: point.period, value: -point.cumulative })),
@@ -180,6 +202,10 @@ function CumulativeChartInner({
   const byPeriod = new Map(adjusted.points.map((point) => [point.period, point.value]));
   const data = months.map((point) => ({
     period: formatMonth(point.period),
+    rawPeriod: point.period,
+    thisRaw: -point.cumulative,
+    previousPeriod: shiftYear(point.period, -1),
+    previousRaw: point.previousCumulative == null ? null : -point.previousCumulative,
     thisYear: Number(((byPeriod.get(point.period) ?? 0) / 1000).toFixed(1)),
     lastYear: point.previousCumulative == null ? null : Number((-(point.previousCumulative / 1000)).toFixed(1)),
   }));
@@ -198,7 +224,37 @@ function CumulativeChartInner({
               <ChartTooltip
                 active={active}
                 label={String(label ?? "")}
-                rows={(payload ?? []).map((item) => ({ name: String(item.name), value: `£${formatAxis(Number(item.value))}bn` }))}
+                rows={(payload ?? []).map((item) => {
+                  const source = item.payload as {
+                    rawPeriod?: string;
+                    thisRaw?: number;
+                    previousPeriod?: string;
+                    previousRaw?: number | null;
+                  };
+                  const earlier = item.dataKey === "lastYear";
+                  const nominal = earlier ? source.previousRaw : source.thisRaw;
+                  const period = earlier ? source.previousPeriod : source.rawPeriod;
+                  const line =
+                    prices && nominal != null && period
+                      ? todayPricesLine({
+                          nominal,
+                          period,
+                          frequency: "month",
+                          unit: "million",
+                          prices,
+                          mode,
+                          baseYear,
+                          latestPeriod,
+                          money: true,
+                        })
+                      : null;
+                  return {
+                    name: String(item.name),
+                    value: `£${formatAxis(Number(item.value))}bn`,
+                    today: line?.text,
+                    deflator: line?.deflator,
+                  };
+                })}
               />
             )}
           />
@@ -211,7 +267,7 @@ function CumulativeChartInner({
       </ResponsiveContainer>
       </div>
       <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-        £bn, running total. In real terms, only {thisYear} is adjusted. A share of GDP is not shown for part of a year. {priceCaption(mode, baseYear)}
+        £bn, running total. In real terms, only {thisYear} is adjusted. A share of GDP is not shown for part of a year. {priceCaption(mode, baseYear, "month")}
         {adjusted.note ? ` ${adjusted.note}` : ""}
       </p>
     </div>
@@ -261,7 +317,7 @@ function HistoryChartInner({
 }) {
   const theme = useChartTheme();
   const view = usePriceView();
-  const baseYear = view.base && /^\d{4}$/.test(view.base) ? Number(view.base) : 2025;
+  const baseYear = chartBaseYear(view.base);
   const mode = !gdp && view.mode === "gdp" ? "nominal" : view.mode;
   const adjusted = prices
     ? adjustSeries({ points, frequency, mode, baseYear, unit, prices })
@@ -282,23 +338,43 @@ function HistoryChartInner({
             <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.value))} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
-              content={({ active, payload, label }) => (
-                <ChartTooltip
-                  active={active}
-                  label={formatPeriod(String(label ?? ""))}
-                  rows={(payload ?? []).map(() => ({
-                    name,
-                    value: adjusted.unit === "percent" ? formatPercent(Number(payload?.[0]?.value), 2) : `£${formatAxis(Number(payload?.[0]?.value))}bn`,
-                  }))}
-                />
-              )}
+              content={({ active, payload, label }) => {
+                const period = String(label ?? "");
+                const nominal = points.find((point) => point.period === period)?.value;
+                const line =
+                  prices && nominal != null && adjusted.unit === "money"
+                    ? todayPricesLine({
+                        nominal,
+                        period,
+                        frequency,
+                        unit,
+                        prices,
+                        mode,
+                        baseYear,
+                        latestPeriod: points.at(-1)?.period ?? "",
+                        money: true,
+                      })
+                    : null;
+                return (
+                  <ChartTooltip
+                    active={active}
+                    label={formatPeriod(period)}
+                    rows={(payload ?? []).map(() => ({
+                      name,
+                      value: adjusted.unit === "percent" ? formatPercent(Number(payload?.[0]?.value), 2) : `£${formatAxis(Number(payload?.[0]?.value))}bn`,
+                      today: line?.text,
+                      deflator: line?.deflator,
+                    }))}
+                  />
+                );
+              }}
             />
             <Line type="linear" dataKey="value" name={name} stroke={theme.bar} dot={false} activeDot={{ r: 3 }} strokeWidth={2} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
       <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-        {adjusted.unit === "percent" ? "% of GDP." : "£bn."} {priceCaption(mode, baseYear)}
+        {adjusted.unit === "percent" ? "% of GDP." : "£bn."} {priceCaption(mode, baseYear, frequency)}
         {adjusted.note ? ` ${adjusted.note}` : ""}
       </p>
     </div>
@@ -629,7 +705,7 @@ function scaleGroup(
   prices: PriceBundle | null,
   view: { mode: "nominal" | "real" | "gdp"; base: string | null },
 ): { values: number[]; unit: "money" | "percent"; note: string | null; mode: "nominal" | "real" | "gdp"; baseYear: number } {
-  const baseYear = view.base && /^\d{4}$/.test(view.base) ? Number(view.base) : 2025;
+  const baseYear = chartBaseYear(view.base);
   if (!prices || !period || view.mode === "nominal") {
     return { values, unit: "money", note: null, mode: "nominal", baseYear };
   }
@@ -647,33 +723,19 @@ function scaleGroup(
   return { values: adjusted.points.map((point) => point.value), unit: adjusted.unit, note: adjusted.note, mode: view.mode, baseYear };
 }
 
-function priceCaption(mode: "nominal" | "real" | "gdp", baseYear: number): string {
+function priceCaption(mode: "nominal" | "real" | "gdp", baseYear: number, frequency?: MoneyFrequency): string {
   if (mode === "real") return `£bn at ${baseYear} prices, adjusted with the GDP deflator.`;
   if (mode === "gdp") return "Share of GDP at current prices.";
-  return "Not adjusted for inflation.";
+  if (!frequency) return "Not adjusted for inflation.";
+  const series = frequency === "calendar" ? "MNF2" : "L8GG";
+  const basis = frequency === "calendar" ? "calendar years" : frequency === "financial" ? "financial years" : frequency === "quarter" ? "quarters" : "months";
+  return `Not adjusted for inflation. The tooltip shows earlier ${basis} in ${baseYear} prices (GDP deflator ${series}).`;
 }
 
-
-function ChartTooltip({
-  active,
-  label,
-  rows,
-}: {
-  active?: boolean;
-  label?: string;
-  rows: { name: string; value: string }[];
-}) {
-  if (!active || rows.length === 0) return null;
-  return (
-    <div className="rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs shadow-sm tabular-nums dark:border-neutral-800 dark:bg-black">
-      {label ? <p>{label}</p> : null}
-      {rows.map((row) => (
-        <p key={row.name}>
-          {row.name} {row.value}
-        </p>
-      ))}
-    </div>
-  );
+function shiftYear(period: string, delta: number): string {
+  const match = /^(\d{4})(.*)$/.exec(period);
+  if (!match) return period;
+  return `${Number(match[1]) + delta}${match[2]}`;
 }
 
 function CategoryBars({

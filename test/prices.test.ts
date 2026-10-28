@@ -4,11 +4,16 @@ import { describe, expect, it } from "vitest";
 
 import { parsePriceDirectory } from "@/lib/parsers/prices";
 import {
+  adjustSeries,
+  chartBaseYear,
   equivalentValue,
   financialYearMean,
   financialYearSum,
+  priceBundle,
   rebase,
   rebaseInputSchema,
+  todayPricesLine,
+  type MoneyFrequency,
 } from "@/lib/prices";
 import { priceDataSchema } from "@/lib/schema";
 
@@ -61,5 +66,114 @@ describe("rebasing", () => {
     expect(prices.d7bt.months[0]?.period).toBe("1988-01");
     expect(prices.l522.years[0]?.period).toBe("1988");
     expect(prices.chaw.years[0]?.period).toBe("1987");
+  });
+});
+
+describe("today's prices tooltip", () => {
+  const bundle = priceBundle(prices);
+  const cases: { frequency: MoneyFrequency; period: string; latest: string; deflator: "MNF2" | "L8GG" }[] = [
+    { frequency: "calendar", period: "2016", latest: "2025", deflator: "MNF2" },
+    { frequency: "financial", period: "2016-17", latest: "2025-26", deflator: "L8GG" },
+    { frequency: "quarter", period: "2016-Q2", latest: "2026-Q2", deflator: "L8GG" },
+    { frequency: "month", period: "2016-06", latest: "2026-09", deflator: "L8GG" },
+  ];
+
+  it("matches the real-terms adjustment for each frequency", () => {
+    for (const sample of cases) {
+      const nominal = 80_000;
+      const real = adjustSeries({
+        points: [{ period: sample.period, value: nominal }],
+        frequency: sample.frequency,
+        mode: "real",
+        baseYear: 2025,
+        unit: "million",
+        prices: bundle,
+      });
+      const line = todayPricesLine({
+        nominal,
+        period: sample.period,
+        frequency: sample.frequency,
+        unit: "million",
+        prices: bundle,
+        mode: "nominal",
+        baseYear: chartBaseYear(null),
+        latestPeriod: sample.latest,
+        money: true,
+      });
+      expect(real.points).toHaveLength(1);
+      expect(line?.valueBn).toBe(Number(((real.points[0]?.value ?? 0) / 1000).toFixed(1)));
+      expect(line?.deflator).toBe(sample.deflator);
+      expect(line?.text).toBe(`≈ £${line?.valueBn.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}bn in 2025 prices`);
+    }
+  });
+
+  it("uses the same ratio for amounts stored in £ billion", () => {
+    const millions = todayPricesLine({
+      nominal: 80_000,
+      period: "2016-17",
+      frequency: "financial",
+      unit: "million",
+      prices: bundle,
+      mode: "nominal",
+      baseYear: 2025,
+      latestPeriod: "2025-26",
+      money: true,
+    });
+    const billions = todayPricesLine({
+      nominal: 80,
+      period: "2016-17",
+      frequency: "financial",
+      unit: "billion",
+      prices: bundle,
+      mode: "nominal",
+      baseYear: 2025,
+      latestPeriod: "2025-26",
+      money: true,
+    });
+    expect(billions?.valueBn).toBe(millions?.valueBn);
+  });
+
+  it("keeps the sign of a surplus", () => {
+    const line = todayPricesLine({
+      nominal: -20_000,
+      period: "2016",
+      frequency: "calendar",
+      unit: "million",
+      prices: bundle,
+      mode: "nominal",
+      baseYear: 2025,
+      latestPeriod: "2025",
+      money: true,
+    });
+    const real = adjustSeries({
+      points: [{ period: "2016", value: -20_000 }],
+      frequency: "calendar",
+      mode: "real",
+      baseYear: 2025,
+      unit: "million",
+      prices: bundle,
+    });
+    expect(line?.valueBn).toBe(Number(((real.points[0]?.value ?? 0) / 1000).toFixed(1)));
+    expect(line?.valueBn).toBeLessThan(0);
+    expect(line?.text.startsWith("≈ −£")).toBe(true);
+  });
+
+  it("omits real terms, shares of GDP, non-money series, the latest period, and a missing index", () => {
+    const base = {
+      nominal: 80_000,
+      period: "2016-06",
+      frequency: "month" as const,
+      unit: "million" as const,
+      prices: bundle,
+      baseYear: 2025,
+      latestPeriod: "2026-09",
+      money: true,
+      mode: "nominal" as const,
+    };
+    expect(todayPricesLine({ ...base, mode: "real" })).toBeNull();
+    expect(todayPricesLine({ ...base, mode: "gdp" })).toBeNull();
+    expect(todayPricesLine({ ...base, money: false })).toBeNull();
+    expect(todayPricesLine({ ...base, period: "2026-09", latestPeriod: "2026-09" })).toBeNull();
+    expect(todayPricesLine({ ...base, period: "1900-01" })).toBeNull();
   });
 });
