@@ -110,6 +110,15 @@ export async function parseHistoricalForecasts(buffer: Buffer): Promise<{ asOf: 
   return { asOf, vintages };
 }
 
+/**
+ * The OBR measures database appends footnote numbers to some descriptions with no space:
+ * "Erasmus+ in 20274", "from April 20243", "Transformation Fund1". Strip one trailing digit
+ * only after a 4-digit year (19xx/20xx) or directly after a lowercase letter. "Pillar 2" and "2024" stay.
+ */
+export function stripFootnoteMarker(name: string): string {
+  return name.replace(/(^|\D)((?:19|20)\d{2})\d$/, "$1$2").replace(/([a-z])\d$/, "$1");
+}
+
 export async function parseMeasuresWorkbook(buffer: Buffer, events: MeasureEvent[] = []): Promise<{ asOf: string | null; rows: MeasureRow[] }> {
   const sheets = await readXlsx(buffer, 80);
   const rows: MeasureRow[] = [];
@@ -124,7 +133,7 @@ export async function parseMeasuresWorkbook(buffer: Buffer, events: MeasureEvent
       .map((cell, index) => ({ index, fy: fiscalYearLabel(cell) }))
       .filter((column): column is { index: number; fy: string } => column.fy != null);
     for (const row of grid.slice(3)) {
-      const measure = text(row[nameCol]);
+      const measure = stripFootnoteMarker(text(row[nameCol]));
       if (!measure) continue;
       const eventLabel = eventCol >= 0 ? text(row[eventCol]) : "";
       const eventDate = eventLabel ? measureEventDate(eventLabel, events) : null;
