@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DebtRatioChart, YieldChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { CiteShare } from "@/components/cite-share";
-import { formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent, formatRelease } from "@/lib/format";
+import { formatBillions, formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent, formatRelease } from "@/lib/format";
 import { reconcileSignedDisplay } from "@/lib/display-rounding";
 import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
@@ -87,7 +87,7 @@ export default async function DebtPage() {
             Borrowing is what the government needs in one period. Debt is the total owed. Debt usually rises by about the amount borrowed, but it also changes for other reasons, such as loans the government makes and the value of its cash and assets.
           </p>
           <p className="mt-3 text-sm tabular-nums">
-            Debt at {formatMonthLong(balance.anchor)} £{balance.start}bn + borrowing £{balance.borrowing}bn + other changes £{balance.other}bn = debt now £{balance.now}bn.
+            Debt at {formatMonthLong(balance.anchor)} {formatBillions(balance.start)} + borrowing {formatBillions(balance.borrowing)} + other changes {formatBillions(balance.other)} = debt now {formatBillions(balance.now)}.
           </p>
           <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300" title="The difference between the change in debt and borrowing over the same period. It includes lending, cash movements and valuation changes.">
             Other changes (balancing figure). ONS annual borrowing, receipts and GDP are calendar years. This sum uses the monthly stock and borrowing since the end of the previous financial year.

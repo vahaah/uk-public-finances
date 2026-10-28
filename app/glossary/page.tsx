@@ -40,15 +40,21 @@ export default function GlossaryPage() {
         ))}
       </nav>
       <dl className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
-        {GLOSSARY.map((entry) => (
-          <div key={entry.id} id={entry.id} className="scroll-mt-20 py-4">
-            <span id={`letter-${entry.term[0]?.toUpperCase()}`} className="sr-only">
-              {entry.term[0]}
-            </span>
-            <dt className="text-sm font-medium">{entry.term}</dt>
-            <dd className="mt-1 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{entry.body}</dd>
-          </div>
-        ))}
+        {GLOSSARY.map((entry, index) => {
+          const letter = entry.term[0]?.toUpperCase() ?? "";
+          const firstOfLetter = GLOSSARY.findIndex((item) => (item.term[0]?.toUpperCase() ?? "") === letter) === index;
+          return (
+            <div key={entry.id} id={entry.id} className="scroll-mt-20 py-4">
+              {firstOfLetter ? (
+                <span id={`letter-${letter}`} className="sr-only">
+                  {letter}
+                </span>
+              ) : null}
+              <dt className="text-sm font-medium">{entry.term}</dt>
+              <dd className="mt-1 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{entry.body}</dd>
+            </div>
+          );
+        })}
       </dl>
     </>
   );
