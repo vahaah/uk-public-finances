@@ -1,0 +1,129 @@
+{
+  "title": "Public Expenditure Statistical Analyses 2026",
+  "base_path": "/government/statistics/public-expenditure-statistical-analyses-2026",
+  "public_updated_at": "2026-07-16T10:34:00+01:00",
+  "document_type": "national_statistics",
+  "details": {
+    "attachments": [
+      {
+        "title": "Public Expenditure Analyses 2026",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5771e2822fbe6b8245c99f/PESA_2026.pdf",
+        "content_type": "application/pdf",
+        "filename": "PESA_2026.pdf",
+        "file_size": 3685550
+      },
+      {
+        "title": "Public Expenditure Analyses 2026",
+        "url": "https://assets.publishing.service.gov.uk/media/6a608addf869f6a53d0c89ef/PESA_2026_Accessible.pdf",
+        "content_type": "application/pdf",
+        "filename": "PESA_2026_Accessible.pdf",
+        "file_size": 3525843
+      },
+      {
+        "title": "PESA 2026 Chapter 1 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a57728b822fbe6b8245c9a1/PESA_2026_CP_Chapter_1_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_1_tables.xlsx",
+        "file_size": 119498
+      },
+      {
+        "title": "PESA 2026 Chapter 2 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5772a5822fbe6b8245c9a3/PESA_2026_CP_Chapter_2_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_2_tables.xlsx",
+        "file_size": 37674
+      },
+      {
+        "title": "PESA 2026 Chapter 3 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5772bf9e631544544136fe/PESA_2026_CP_Chapter_3_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_3_tables.xlsx",
+        "file_size": 76918
+      },
+      {
+        "title": "PESA 2026 Chapter 4 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5772e09e63154454413700/PESA_2026_CP_Chapter_4_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_4_tables.xlsx",
+        "file_size": 69092
+      },
+      {
+        "title": "PESA 2026 Chapter 5 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5772f59e63154454413701/PESA_2026_CP_Chapter_5_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_5_tables.xlsx",
+        "file_size": 72078
+      },
+      {
+        "title": "PESA 2026 Chapter 6 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a57730c9e63154454413703/PESA_2026_CP_Chapter_6_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_6_tables.xlsx",
+        "file_size": 57001
+      },
+      {
+        "title": "PESA 2026 Chapter 7 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5773282f6185941a9a6570/July_PSS_2026_Chapter_7.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "July_PSS_2026_Chapter_7.xlsx",
+        "file_size": 51038
+      },
+      {
+        "title": "PESA 2026 Chapter 8 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5773412cbe5d1c179a6548/PESA_2026_CP_Chapter_8_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_8_tables.xlsx",
+        "file_size": 42846
+      },
+      {
+        "title": "PESA 2026 Chapter 9 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5773582cbe5d1c179a6549/PESA_2026_CP_Chapter_9_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_9_tables.xlsx",
+        "file_size": 296894
+      },
+      {
+        "title": "PESA 2026 Chapter 10 Tables",
+        "url": "https://assets.publishing.service.gov.uk/media/6a57736c6d6d5c7e2845c9d6/PESA_2026_CP_Chapter_10_tables.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Chapter_10_tables.xlsx",
+        "file_size": 185050
+      },
+      {
+        "title": "PESA 2026 Annex C Table",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5773892cbe5d1c179a654a/PESA_2026_CP_Annex_C.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Annex_C.xlsx",
+        "file_size": 16459
+      },
+      {
+        "title": "PESA 2026 Annex D Table",
+        "url": "https://assets.publishing.service.gov.uk/media/6a57739d6d6d5c7e2845c9d7/PESA_2026_CP_Annex_D.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Annex_D.xlsx",
+        "file_size": 16051
+      },
+      {
+        "title": "PESA 2026 Annex E Table",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5773af2f6185941a9a6571/PESA_2026_CP_Annex_E.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Annex_E.xlsx",
+        "file_size": 16393
+      },
+      {
+        "title": "PESA 2026 Annex G Table: NHS",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5773c22cbe5d1c179a654b/July_PSS_2026_Annex_G_NHS.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "July_PSS_2026_Annex_G_NHS.xlsx",
+        "file_size": 11830
+      },
+      {
+        "title": "PESA 2026 Annex G Table: R and D",
+        "url": "https://assets.publishing.service.gov.uk/media/6a5773d96d6d5c7e2845c9d8/PESA_2026_CP_Annex_G_Table_R_D.xlsx",
+        "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "filename": "PESA_2026_CP_Annex_G_Table_R_D.xlsx",
+        "file_size": 12609
+      }
+    ]
+  }
+}

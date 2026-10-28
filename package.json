@@ -1,0 +1,46 @@
+{
+  "name": "uk-public-finances",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "fixtures": "tsx scripts/build-snapshots.ts",
+    "publish-check": "tsx scripts/publish-check.ts",
+    "indexnow": "tsx scripts/indexnow.ts"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.0.0",
+    "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.2.5",
+    "fflate": "^0.8.2",
+    "geist": "^1.5.1",
+    "next": "^16.4.3",
+    "nuqs": "^2.6.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.10.1",
+    "workflow": "^4.2.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@tailwindcss/postcss": "^4.1.16",
+    "@types/node": "^22.19.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "^9.38.0",
+    "eslint-config-next": "^16.4.3",
+    "tailwindcss": "^4.1.16",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

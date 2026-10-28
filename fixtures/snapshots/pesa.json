@@ -1,0 +1,2101 @@
+{
+  "sourceId": "pesa",
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-28T06:45:00.000Z",
+  "releaseDate": "2026-07-16T10:34:00+01:00",
+  "nextRelease": null,
+  "sourceUrl": "https://www.gov.uk/government/statistics/public-expenditure-statistical-analyses-2026",
+  "sourceTitle": "Public Expenditure Statistical Analyses",
+  "publisher": "HM Treasury",
+  "licence": "Open Government Licence v3.0",
+  "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "contentHash": "a8e2d43c1617286d56b6b521d60475cf80b714d5d106f224c53e311f5da657b3",
+  "data": {
+    "contentUrl": "https://www.gov.uk/government/statistics/public-expenditure-statistical-analyses-2026",
+    "functions": {
+      "year": "2025-26",
+      "unit": "£ billion",
+      "totalServices": 1227.6,
+      "totalManagedExpenditure": 1360.1,
+      "items": [
+        {
+          "name": "1. General public services",
+          "value": 165.5
+        },
+        {
+          "name": "2. Defence",
+          "value": 65.4
+        },
+        {
+          "name": "3. Public order and safety",
+          "value": 55.7
+        },
+        {
+          "name": "4. Economic affairs",
+          "value": 94
+        },
+        {
+          "name": "5. Environment protection",
+          "value": 19.2
+        },
+        {
+          "name": "6. Housing and community amenities",
+          "value": 22.5
+        },
+        {
+          "name": "7. Health",
+          "value": 257.5
+        },
+        {
+          "name": "8. Recreation, culture and religion",
+          "value": 15.1
+        },
+        {
+          "name": "9. Education",
+          "value": 125.7
+        },
+        {
+          "name": "10. Social protection",
+          "value": 407.3
+        }
+      ]
+    },
+    "departments": {
+      "year": "2025-26",
+      "basis": "Central government own expenditure within DEL, outturn",
+      "unit": "£ million",
+      "total": 489766,
+      "items": [
+        {
+          "name": "Health and Social Care",
+          "value": 213249
+        },
+        {
+          "name": "Education",
+          "value": 57552
+        },
+        {
+          "name": "Home Office",
+          "value": 5380
+        },
+        {
+          "name": "Justice",
+          "value": 13813
+        },
+        {
+          "name": "Law Officers' Departments",
+          "value": 982
+        },
+        {
+          "name": "Defence",
+          "value": 61817
+        },
+        {
+          "name": "Single Intelligence Account",
+          "value": 4932
+        },
+        {
+          "name": "Foreign, Commonwealth and Development Office",
+          "value": 10890
+        },
+        {
+          "name": "MHCLG - Housing and Communities",
+          "value": 2714
+        },
+        {
+          "name": "Culture, Media and Sport",
+          "value": 2174
+        },
+        {
+          "name": "Science, Innovation and Technology",
+          "value": 14959
+        },
+        {
+          "name": "Transport",
+          "value": 23636
+        },
+        {
+          "name": "Energy Security and Net Zero",
+          "value": 12290
+        },
+        {
+          "name": "Environment, Food and Rural Affairs",
+          "value": 5426
+        },
+        {
+          "name": "Business and Trade",
+          "value": 2833
+        },
+        {
+          "name": "Work and Pensions",
+          "value": 12503
+        },
+        {
+          "name": "HM Revenue and Customs",
+          "value": 6727
+        },
+        {
+          "name": "HM Treasury",
+          "value": 1195
+        },
+        {
+          "name": "Cabinet Office",
+          "value": 1187
+        },
+        {
+          "name": "Welsh Government",
+          "value": 13559
+        },
+        {
+          "name": "Northern Ireland Executive",
+          "value": 18605
+        },
+        {
+          "name": "Small and Independent Bodies",
+          "value": 3342
+        }
+      ]
+    },
+    "departmentPlans": {
+      "year": "2028-29",
+      "basis": "Central government own expenditure within DEL, plans",
+      "unit": "£ million",
+      "total": 540283,
+      "items": [
+        {
+          "name": "Health and Social Care",
+          "value": 241819
+        },
+        {
+          "name": "Education",
+          "value": 58453
+        },
+        {
+          "name": "Home Office",
+          "value": 7724
+        },
+        {
+          "name": "Justice",
+          "value": 15554
+        },
+        {
+          "name": "Law Officers' Departments",
+          "value": 1349
+        },
+        {
+          "name": "Defence",
+          "value": 73531
+        },
+        {
+          "name": "Single Intelligence Account",
+          "value": 5351
+        },
+        {
+          "name": "Foreign, Commonwealth and Development Office",
+          "value": 9299
+        },
+        {
+          "name": "MHCLG - Housing and Communities",
+          "value": 3905
+        },
+        {
+          "name": "Culture, Media and Sport",
+          "value": 2631
+        },
+        {
+          "name": "Science, Innovation and Technology",
+          "value": 16674
+        },
+        {
+          "name": "Transport",
+          "value": 22556
+        },
+        {
+          "name": "Energy Security and Net Zero",
+          "value": 11765
+        },
+        {
+          "name": "Environment, Food and Rural Affairs",
+          "value": 5615
+        },
+        {
+          "name": "Business and Trade",
+          "value": 2921
+        },
+        {
+          "name": "Work and Pensions",
+          "value": 14259
+        },
+        {
+          "name": "HM Revenue and Customs",
+          "value": 6909
+        },
+        {
+          "name": "HM Treasury",
+          "value": 483
+        },
+        {
+          "name": "Cabinet Office",
+          "value": 1716
+        },
+        {
+          "name": "Welsh Government",
+          "value": 15284
+        },
+        {
+          "name": "Northern Ireland Executive",
+          "value": 19524
+        },
+        {
+          "name": "Small and Independent Bodies",
+          "value": 2961
+        }
+      ]
+    },
+    "functionHistory": [
+      {
+        "year": "2003-04",
+        "totalServices": 449,
+        "totalManagedExpenditure": 494.4,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 48.7
+          },
+          {
+            "name": "2. Defence",
+            "value": 28.8
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 26.4
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 33
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 6.2
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 6.8
+          },
+          {
+            "name": "7. Health",
+            "value": 74.9
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 9.7
+          },
+          {
+            "name": "9. Education",
+            "value": 61
+          },
+          {
+            "name": "10. Social protection",
+            "value": 155.6
+          }
+        ]
+      },
+      {
+        "year": "2004-05",
+        "totalServices": 482.1,
+        "totalManagedExpenditure": 534.9,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 54
+          },
+          {
+            "name": "2. Defence",
+            "value": 29.8
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 28.5
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 33.5
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 7
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 8.1
+          },
+          {
+            "name": "7. Health",
+            "value": 82.9
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 10
+          },
+          {
+            "name": "9. Education",
+            "value": 65.1
+          },
+          {
+            "name": "10. Social protection",
+            "value": 164.1
+          }
+        ]
+      },
+      {
+        "year": "2005-06",
+        "totalServices": 513.6,
+        "totalManagedExpenditure": 565.1,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 58
+          },
+          {
+            "name": "2. Defence",
+            "value": 31
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 29.3
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 35.2
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 8.5
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 10.8
+          },
+          {
+            "name": "7. Health",
+            "value": 89.8
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 10.8
+          },
+          {
+            "name": "9. Education",
+            "value": 69.8
+          },
+          {
+            "name": "10. Social protection",
+            "value": 171
+          }
+        ]
+      },
+      {
+        "year": "2006-07",
+        "totalServices": 536.9,
+        "totalManagedExpenditure": 592.4,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 61.6
+          },
+          {
+            "name": "2. Defence",
+            "value": 32.2
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 30.4
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 37.4
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 9.4
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 11.6
+          },
+          {
+            "name": "7. Health",
+            "value": 94.7
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 11.4
+          },
+          {
+            "name": "9. Education",
+            "value": 73
+          },
+          {
+            "name": "10. Social protection",
+            "value": 177
+          }
+        ]
+      },
+      {
+        "year": "2007-08",
+        "totalServices": 569.8,
+        "totalManagedExpenditure": 629.2,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 65.6
+          },
+          {
+            "name": "2. Defence",
+            "value": 33.7
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 31.7
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 37.3
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 9.6
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 13.1
+          },
+          {
+            "name": "7. Health",
+            "value": 101.1
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 11.9
+          },
+          {
+            "name": "9. Education",
+            "value": 78.7
+          },
+          {
+            "name": "10. Social protection",
+            "value": 188.6
+          }
+        ]
+      },
+      {
+        "year": "2008-09",
+        "totalServices": 618.7,
+        "totalManagedExpenditure": 685.8,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 69.4
+          },
+          {
+            "name": "2. Defence",
+            "value": 36.8
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 33.7
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 49.6
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 9.2
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 15.4
+          },
+          {
+            "name": "7. Health",
+            "value": 108.7
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 12.4
+          },
+          {
+            "name": "9. Education",
+            "value": 83
+          },
+          {
+            "name": "10. Social protection",
+            "value": 203.4
+          }
+        ]
+      },
+      {
+        "year": "2009-10",
+        "totalServices": 654.9,
+        "totalManagedExpenditure": 720.3,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 65.2
+          },
+          {
+            "name": "2. Defence",
+            "value": 37.7
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 34.1
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 48.6
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 10.4
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 16.4
+          },
+          {
+            "name": "7. Health",
+            "value": 116.9
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 13.2
+          },
+          {
+            "name": "9. Education",
+            "value": 88.5
+          },
+          {
+            "name": "10. Social protection",
+            "value": 223
+          }
+        ]
+      },
+      {
+        "year": "2010-11",
+        "totalServices": 675.2,
+        "totalManagedExpenditure": 743,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 77.9
+          },
+          {
+            "name": "2. Defence",
+            "value": 39.3
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 33.1
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 39.9
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 10.9
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 13.4
+          },
+          {
+            "name": "7. Health",
+            "value": 119.9
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 13
+          },
+          {
+            "name": "9. Education",
+            "value": 91.5
+          },
+          {
+            "name": "10. Social protection",
+            "value": 230.4
+          }
+        ]
+      },
+      {
+        "year": "2011-12",
+        "totalServices": 678,
+        "totalManagedExpenditure": 745.5,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 79.3
+          },
+          {
+            "name": "2. Defence",
+            "value": 38.7
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 32.1
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 37.7
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 10.5
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 10.3
+          },
+          {
+            "name": "7. Health",
+            "value": 121.3
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 12.5
+          },
+          {
+            "name": "9. Education",
+            "value": 86.5
+          },
+          {
+            "name": "10. Social protection",
+            "value": 244.8
+          }
+        ]
+      },
+      {
+        "year": "2012-13",
+        "totalServices": 681,
+        "totalManagedExpenditure": 759.2,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 74.8
+          },
+          {
+            "name": "2. Defence",
+            "value": 36.3
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 31.3
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 36.6
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 10.7
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 10.1
+          },
+          {
+            "name": "7. Health",
+            "value": 124.3
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 12.7
+          },
+          {
+            "name": "9. Education",
+            "value": 84.1
+          },
+          {
+            "name": "10. Social protection",
+            "value": 253.4
+          }
+        ]
+      },
+      {
+        "year": "2013-14",
+        "totalServices": 692,
+        "totalManagedExpenditure": 764.6,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 76.9
+          },
+          {
+            "name": "2. Defence",
+            "value": 36.4
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 29.6
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 40.8
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 11.2
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 10
+          },
+          {
+            "name": "7. Health",
+            "value": 129.4
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 11.6
+          },
+          {
+            "name": "9. Education",
+            "value": 84.7
+          },
+          {
+            "name": "10. Social protection",
+            "value": 254.2
+          }
+        ]
+      },
+      {
+        "year": "2014-15",
+        "totalServices": 704.5,
+        "totalManagedExpenditure": 786.2,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 75.7
+          },
+          {
+            "name": "2. Defence",
+            "value": 36.7
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 30.2
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 41
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 11.6
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 10.4
+          },
+          {
+            "name": "7. Health",
+            "value": 134.1
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 12.4
+          },
+          {
+            "name": "9. Education",
+            "value": 85.1
+          },
+          {
+            "name": "10. Social protection",
+            "value": 261.1
+          }
+        ]
+      },
+      {
+        "year": "2015-16",
+        "totalServices": 719,
+        "totalManagedExpenditure": 793.7,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 76.4
+          },
+          {
+            "name": "2. Defence",
+            "value": 36.6
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 30.2
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 46.9
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 11.6
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 9.9
+          },
+          {
+            "name": "7. Health",
+            "value": 138.5
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 11.4
+          },
+          {
+            "name": "9. Education",
+            "value": 84.9
+          },
+          {
+            "name": "10. Social protection",
+            "value": 264.9
+          }
+        ]
+      },
+      {
+        "year": "2016-17",
+        "totalServices": 727.2,
+        "totalManagedExpenditure": 811.4,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 80.2
+          },
+          {
+            "name": "2. Defence",
+            "value": 37.1
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 30.1
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 49.1
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 11.1
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 10.4
+          },
+          {
+            "name": "7. Health",
+            "value": 142.6
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 11.6
+          },
+          {
+            "name": "9. Education",
+            "value": 84.9
+          },
+          {
+            "name": "10. Social protection",
+            "value": 265.4
+          }
+        ]
+      },
+      {
+        "year": "2017-18",
+        "totalServices": 749.9,
+        "totalManagedExpenditure": 838.8,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 84.4
+          },
+          {
+            "name": "2. Defence",
+            "value": 38.7
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 31.5
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 53
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 11.8
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 11.5
+          },
+          {
+            "name": "7. Health",
+            "value": 147.3
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 11.5
+          },
+          {
+            "name": "9. Education",
+            "value": 86.1
+          },
+          {
+            "name": "10. Social protection",
+            "value": 268.7
+          }
+        ]
+      },
+      {
+        "year": "2018-19",
+        "totalServices": 772.5,
+        "totalManagedExpenditure": 856.1,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 80.9
+          },
+          {
+            "name": "2. Defence",
+            "value": 40.2
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 32.4
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 60.7
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 11.1
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 12.2
+          },
+          {
+            "name": "7. Health",
+            "value": 152.9
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 11.4
+          },
+          {
+            "name": "9. Education",
+            "value": 88.1
+          },
+          {
+            "name": "10. Social protection",
+            "value": 274.8
+          }
+        ]
+      },
+      {
+        "year": "2019-20",
+        "totalServices": 799.4,
+        "totalManagedExpenditure": 884.9,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 81.4
+          },
+          {
+            "name": "2. Defence",
+            "value": 42.2
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 34.5
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 66.6
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 11.8
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 14.3
+          },
+          {
+            "name": "7. Health",
+            "value": 164.1
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 12.3
+          },
+          {
+            "name": "9. Education",
+            "value": 90.6
+          },
+          {
+            "name": "10. Social protection",
+            "value": 275.8
+          }
+        ]
+      },
+      {
+        "year": "2020-21",
+        "totalServices": 1011.4,
+        "totalManagedExpenditure": 1102.9,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 72
+          },
+          {
+            "name": "2. Defence",
+            "value": 44.6
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 38.9
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 196.3
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 13
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 13.7
+          },
+          {
+            "name": "7. Health",
+            "value": 218.6
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 12.6
+          },
+          {
+            "name": "9. Education",
+            "value": 95.5
+          },
+          {
+            "name": "10. Social protection",
+            "value": 299.3
+          }
+        ]
+      },
+      {
+        "year": "2021-22",
+        "totalServices": 951.9,
+        "totalManagedExpenditure": 1040.9,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 109.2
+          },
+          {
+            "name": "2. Defence",
+            "value": 48.7
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 39.8
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 97.7
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 13.8
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 15.3
+          },
+          {
+            "name": "7. Health",
+            "value": 216.2
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 12.8
+          },
+          {
+            "name": "9. Education",
+            "value": 100.1
+          },
+          {
+            "name": "10. Social protection",
+            "value": 300.3
+          }
+        ]
+      },
+      {
+        "year": "2022-23",
+        "totalServices": 1077,
+        "totalManagedExpenditure": 1160.7,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 166.2
+          },
+          {
+            "name": "2. Defence",
+            "value": 55.5
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 44.2
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 124.5
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 14.4
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 17.4
+          },
+          {
+            "name": "7. Health",
+            "value": 212.7
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 14.5
+          },
+          {
+            "name": "9. Education",
+            "value": 107.3
+          },
+          {
+            "name": "10. Social protection",
+            "value": 322.2
+          }
+        ]
+      },
+      {
+        "year": "2023-24",
+        "totalServices": 1115,
+        "totalManagedExpenditure": 1230.8,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 163.8
+          },
+          {
+            "name": "2. Defence",
+            "value": 56.8
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 48.7
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 94.4
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 16
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 20.9
+          },
+          {
+            "name": "7. Health",
+            "value": 222
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 13
+          },
+          {
+            "name": "9. Education",
+            "value": 114.2
+          },
+          {
+            "name": "10. Social protection",
+            "value": 365.2
+          }
+        ]
+      },
+      {
+        "year": "2024-25",
+        "totalServices": 1166.5,
+        "totalManagedExpenditure": 1290,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 160.2
+          },
+          {
+            "name": "2. Defence",
+            "value": 63.7
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 51.8
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 88
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 17.3
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 21.7
+          },
+          {
+            "name": "7. Health",
+            "value": 242.4
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 13.6
+          },
+          {
+            "name": "9. Education",
+            "value": 123
+          },
+          {
+            "name": "10. Social protection",
+            "value": 386.3
+          }
+        ]
+      },
+      {
+        "year": "2025-26",
+        "totalServices": 1227.6,
+        "totalManagedExpenditure": 1360.1,
+        "items": [
+          {
+            "name": "1. General public services",
+            "value": 165.5
+          },
+          {
+            "name": "2. Defence",
+            "value": 65.4
+          },
+          {
+            "name": "3. Public order and safety",
+            "value": 55.7
+          },
+          {
+            "name": "4. Economic affairs",
+            "value": 94
+          },
+          {
+            "name": "5. Environment protection",
+            "value": 19.2
+          },
+          {
+            "name": "6. Housing and community amenities",
+            "value": 22.5
+          },
+          {
+            "name": "7. Health",
+            "value": 257.5
+          },
+          {
+            "name": "8. Recreation, culture and religion",
+            "value": 15.1
+          },
+          {
+            "name": "9. Education",
+            "value": 125.7
+          },
+          {
+            "name": "10. Social protection",
+            "value": 407.3
+          }
+        ]
+      }
+    ],
+    "departmentHistory": [
+      {
+        "year": "2021-22",
+        "basis": "outturn",
+        "total": 399870,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 180718
+          },
+          {
+            "name": "Education",
+            "value": 38766
+          },
+          {
+            "name": "Home Office",
+            "value": 4252
+          },
+          {
+            "name": "Justice",
+            "value": 9891
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 682
+          },
+          {
+            "name": "Defence",
+            "value": 45908
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 3356
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 9138
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 2912
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 2160
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 10066
+          },
+          {
+            "name": "Transport",
+            "value": 23326
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 11160
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 4975
+          },
+          {
+            "name": "Business and Trade",
+            "value": 2486
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 11267
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 6185
+          },
+          {
+            "name": "HM Treasury",
+            "value": 433
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 1183
+          },
+          {
+            "name": "Welsh Government",
+            "value": 12739
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 15502
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 2764
+          }
+        ]
+      },
+      {
+        "year": "2022-23",
+        "basis": "outturn",
+        "total": 414579,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 178447
+          },
+          {
+            "name": "Education",
+            "value": 41927
+          },
+          {
+            "name": "Home Office",
+            "value": 5651
+          },
+          {
+            "name": "Justice",
+            "value": 10451
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 771
+          },
+          {
+            "name": "Defence",
+            "value": 52825
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 3796
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 9239
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 2867
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 2230
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 11262
+          },
+          {
+            "name": "Transport",
+            "value": 23906
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 17026
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 5471
+          },
+          {
+            "name": "Business and Trade",
+            "value": 1137
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 10379
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 6607
+          },
+          {
+            "name": "HM Treasury",
+            "value": 324
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 978
+          },
+          {
+            "name": "Welsh Government",
+            "value": 11387
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 15211
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 2686
+          }
+        ]
+      },
+      {
+        "year": "2023-24",
+        "basis": "outturn",
+        "total": 427908,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 184562
+          },
+          {
+            "name": "Education",
+            "value": 48522
+          },
+          {
+            "name": "Home Office",
+            "value": 7259
+          },
+          {
+            "name": "Justice",
+            "value": 11626
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 880
+          },
+          {
+            "name": "Defence",
+            "value": 53951
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 4172
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 11053
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 1024
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 1835
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 12952
+          },
+          {
+            "name": "Transport",
+            "value": 24854
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 6139
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 6060
+          },
+          {
+            "name": "Business and Trade",
+            "value": 2194
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 10882
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 6694
+          },
+          {
+            "name": "HM Treasury",
+            "value": 382
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 1142
+          },
+          {
+            "name": "Welsh Government",
+            "value": 12445
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 16457
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 2823
+          }
+        ]
+      },
+      {
+        "year": "2024-25",
+        "basis": "outturn",
+        "total": 461885,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 200753
+          },
+          {
+            "name": "Education",
+            "value": 54405
+          },
+          {
+            "name": "Home Office",
+            "value": 6283
+          },
+          {
+            "name": "Justice",
+            "value": 12407
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 936
+          },
+          {
+            "name": "Defence",
+            "value": 60059
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 4461
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 10920
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 2835
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 1837
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 13726
+          },
+          {
+            "name": "Transport",
+            "value": 24175
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 7803
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 6674
+          },
+          {
+            "name": "Business and Trade",
+            "value": 1885
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 11696
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 5866
+          },
+          {
+            "name": "HM Treasury",
+            "value": 1099
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 973
+          },
+          {
+            "name": "Welsh Government",
+            "value": 12779
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 17176
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 3139
+          }
+        ]
+      },
+      {
+        "year": "2025-26",
+        "basis": "outturn",
+        "total": 489766,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 213249
+          },
+          {
+            "name": "Education",
+            "value": 57552
+          },
+          {
+            "name": "Home Office",
+            "value": 5380
+          },
+          {
+            "name": "Justice",
+            "value": 13813
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 982
+          },
+          {
+            "name": "Defence",
+            "value": 61817
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 4932
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 10890
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 2714
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 2174
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 14959
+          },
+          {
+            "name": "Transport",
+            "value": 23636
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 12290
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 5426
+          },
+          {
+            "name": "Business and Trade",
+            "value": 2833
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 12503
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 6727
+          },
+          {
+            "name": "HM Treasury",
+            "value": 1195
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 1187
+          },
+          {
+            "name": "Welsh Government",
+            "value": 13559
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 18605
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 3342
+          }
+        ]
+      },
+      {
+        "year": "2026-27",
+        "basis": "plans",
+        "total": 514612,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 222558
+          },
+          {
+            "name": "Education",
+            "value": 59800
+          },
+          {
+            "name": "Home Office",
+            "value": 8495
+          },
+          {
+            "name": "Justice",
+            "value": 15056
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 1192
+          },
+          {
+            "name": "Defence",
+            "value": 65106
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 5539
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 9429
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 4337
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 2184
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 16118
+          },
+          {
+            "name": "Transport",
+            "value": 24950
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 9541
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 6118
+          },
+          {
+            "name": "Business and Trade",
+            "value": 2912
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 13333
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 7611
+          },
+          {
+            "name": "HM Treasury",
+            "value": 1259
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 1777
+          },
+          {
+            "name": "Welsh Government",
+            "value": 14931
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 18768
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 3597
+          }
+        ]
+      },
+      {
+        "year": "2027-28",
+        "basis": "plans",
+        "total": 526544,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 231179
+          },
+          {
+            "name": "Education",
+            "value": 58994
+          },
+          {
+            "name": "Home Office",
+            "value": 7775
+          },
+          {
+            "name": "Justice",
+            "value": 15302
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 1160
+          },
+          {
+            "name": "Defence",
+            "value": 70977
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 5136
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 8652
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 3712
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 2241
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 16576
+          },
+          {
+            "name": "Transport",
+            "value": 24091
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 10453
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 5699
+          },
+          {
+            "name": "Business and Trade",
+            "value": 2945
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 14788
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 7401
+          },
+          {
+            "name": "HM Treasury",
+            "value": 503
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 2049
+          },
+          {
+            "name": "Welsh Government",
+            "value": 14836
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 19041
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 3034
+          }
+        ]
+      },
+      {
+        "year": "2028-29",
+        "basis": "plans",
+        "total": 540283,
+        "items": [
+          {
+            "name": "Health and Social Care",
+            "value": 241819
+          },
+          {
+            "name": "Education",
+            "value": 58453
+          },
+          {
+            "name": "Home Office",
+            "value": 7724
+          },
+          {
+            "name": "Justice",
+            "value": 15554
+          },
+          {
+            "name": "Law Officers' Departments",
+            "value": 1349
+          },
+          {
+            "name": "Defence",
+            "value": 73531
+          },
+          {
+            "name": "Single Intelligence Account",
+            "value": 5351
+          },
+          {
+            "name": "Foreign, Commonwealth and Development Office",
+            "value": 9299
+          },
+          {
+            "name": "MHCLG - Housing and Communities",
+            "value": 3905
+          },
+          {
+            "name": "Culture, Media and Sport",
+            "value": 2631
+          },
+          {
+            "name": "Science, Innovation and Technology",
+            "value": 16674
+          },
+          {
+            "name": "Transport",
+            "value": 22556
+          },
+          {
+            "name": "Energy Security and Net Zero",
+            "value": 11765
+          },
+          {
+            "name": "Environment, Food and Rural Affairs",
+            "value": 5615
+          },
+          {
+            "name": "Business and Trade",
+            "value": 2921
+          },
+          {
+            "name": "Work and Pensions",
+            "value": 14259
+          },
+          {
+            "name": "HM Revenue and Customs",
+            "value": 6909
+          },
+          {
+            "name": "HM Treasury",
+            "value": 483
+          },
+          {
+            "name": "Cabinet Office",
+            "value": 1716
+          },
+          {
+            "name": "Welsh Government",
+            "value": 15284
+          },
+          {
+            "name": "Northern Ireland Executive",
+            "value": 19524
+          },
+          {
+            "name": "Small and Independent Bodies",
+            "value": 2961
+          }
+        ]
+      }
+    ]
+  }
+}

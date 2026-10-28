@@ -1,0 +1,48 @@
+{
+  "sourceId": "hmrc-income-tax",
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-28T06:45:00.000Z",
+  "releaseDate": "2026-07-15T09:30:00+01:00",
+  "nextRelease": null,
+  "sourceUrl": "https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2023-to-2024-to-tax-year-2026-to-2027",
+  "sourceTitle": "Income Tax liabilities statistics",
+  "publisher": "HM Revenue & Customs",
+  "licence": "Open Government Licence v3.0",
+  "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "contentHash": "c7aed19bace83371ae0a69b9afc2bea1e5e111fed983998f78583ba0382bff3b",
+  "data": {
+    "contentUrl": "https://www.gov.uk/government/statistics/income-tax-liabilities-statistics-tax-year-2023-to-2024-to-tax-year-2026-to-2027",
+    "attachmentUrl": "https://assets.publishing.service.gov.uk/media/6a5a49b47eb057103bd946a4/Collated_Income_Tax_liabilities_statistics_tables_-_2.1_to_2.6.ods",
+    "attachmentFilename": "Collated_Income_Tax_liabilities_statistics_tables_-_2.1_to_2.6.ods",
+    "payers": {
+      "yearLabel": "2026 to 2027",
+      "projected": true,
+      "unit": "thousands",
+      "total": 40800,
+      "bands": [
+        {
+          "name": "Savers",
+          "value": 415
+        },
+        {
+          "name": "Basic",
+          "value": 31400
+        },
+        {
+          "name": "Higher",
+          "value": 7700
+        },
+        {
+          "name": "Additional",
+          "value": 1290
+        }
+      ]
+    },
+    "shares": {
+      "yearLabel": "2026 to 2027",
+      "top1Percent": 26.6,
+      "top10Percent": 58.4,
+      "totalTaxBillion": 347
+    }
+  }
+}
