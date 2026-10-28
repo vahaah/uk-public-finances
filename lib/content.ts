@@ -88,24 +88,24 @@ export const FAQ: FaqItem[] = [
   {
     question: "How much is the UK borrowing?",
     answer:
-      "The latest monthly figure and the financial year to date are on the borrowing page, from the ONS public sector finances release named there.",
+      "The latest monthly figure and the total for the financial year so far are on the borrowing page, with the ONS release they come from.",
     links: [{ href: "/borrowing", label: "Borrowing" }],
   },
   {
     question: "How much is the UK national debt?",
     answer:
-      "Public sector net debt, in pounds and as a share of GDP, is on the debt page. The ONS marks the latest month as provisional in its bulletin.",
+      "Public sector net debt, in pounds and as a share of GDP, is on the debt page. The latest month is provisional and may be revised.",
     links: [{ href: "/debt", label: "Debt and gilts" }],
   },
   {
     question: "Where do the numbers come from?",
     answer:
-      "Each chart names its publisher, table and release date. Monthly borrowing, receipts, spending, debt and debt interest come from the Office for National Statistics. Receipts by tax come from HM Revenue & Customs. Spending by function and department comes from HM Treasury's Public Expenditure Statistical Analyses. Bank Rate and gilt yields come from the Bank of England. Income taxpayer numbers come from HMRC's Income Tax liabilities statistics. Gilts in issue come from the UK Debt Management Office. Forecasts come from the Office for Budget Responsibility when that file is available.",
+      "Each chart names its publisher, table and release date. Monthly borrowing, receipts, spending, debt and debt interest come from the Office for National Statistics. Receipts by tax come from HM Revenue & Customs. Spending by function and department comes from HM Treasury's Public Expenditure Statistical Analyses. Bank Rate and gilt yields come from the Bank of England. Income taxpayer numbers come from HMRC's Income Tax liabilities statistics. Gilts in issue come from the UK Debt Management Office. Forecasts come from the Office for Budget Responsibility, when available.",
   },
   {
-    question: "Why do HMRC receipts differ from the receipts on the overview?",
+    question: "Why do HMRC receipts differ from ONS receipts?",
     answer:
-      "The overview shows ONS public sector current receipts for one month, mostly on an accrued basis. The tax and receipts page shows cash HMRC received in a financial year. They cover different organisations and different timings.",
+      "The ONS counts most receipts when they are due, across the whole public sector. HMRC counts cash when it arrives, for the taxes it collects. So the totals differ.",
     links: [
       { href: "/receipts", label: "Tax and receipts" },
       { href: "/", label: "Overview" },
@@ -119,7 +119,7 @@ export const FAQ: FaqItem[] = [
   {
     question: "What is the difference between the deficit and the debt?",
     answer:
-      "The deficit is how much the public sector borrows in a period. The debt is the stock owed, net of liquid assets. Borrowing over time adds to the debt.",
+      "The deficit is how much the public sector borrows in a period. The debt is the total owed, minus cash and other liquid assets. Borrowing over time adds to the debt.",
     links: [
       { href: "/borrowing", label: "Borrowing" },
       { href: "/debt", label: "Debt and gilts" },
@@ -128,7 +128,7 @@ export const FAQ: FaqItem[] = [
   {
     question: "Why are there no OBR forecasts?",
     answer:
-      "The forecast vintage is pending. This site could not download the OBR public finances databank automatically. Until a vintage is loaded, the forecasts page shows ONS outturn only.",
+      "The latest OBR forecast has not been added yet. Until it is, the forecasts page shows ONS figures only.",
     links: [{ href: "/forecasts", label: "Forecasts" }],
   },
   {
@@ -139,6 +139,6 @@ export const FAQ: FaqItem[] = [
   {
     question: "Can I reuse a figure?",
     answer:
-      "ONS, HMRC, HM Treasury and OBR statistics are available under the Open Government Licence v3.0. Bank of England and Debt Management Office figures keep their own terms, linked from each source line. Sums, shares and the borrowing presentation on this site are available under CC BY 4.0. Credit the original publisher, and this site if you use a derived figure.",
+      "ONS, HMRC, HM Treasury and OBR statistics are available under the Open Government Licence v3.0. Bank of England and Debt Management Office figures keep their own terms, linked from each source line. Figures this site calculates are available under CC BY 4.0. Credit the original publisher, and this site if you use a derived figure.",
   },
 ];

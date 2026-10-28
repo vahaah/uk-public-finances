@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
 
 export const metadata = pageMeta({
   title: "Frequently asked questions",
-  description: "Where the figures on this site come from, how often they update and how you can use them.",
+  description: "How much the UK borrows and owes, where the figures come from, how often they update and how to reuse them.",
   path: "/faq",
 });
 
@@ -33,10 +33,10 @@ export default function FaqPage() {
         lede="Where the figures come from, when they update and how to reuse them."
       />
       <div className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
-        {FAQ.map((item) => (
-          <section key={item.question} className="py-4">
-            <h2 className="text-sm font-medium">{item.question}</h2>
-            <p className="mt-2 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{item.answer}</p>
+        {FAQ.map((item, index) => (
+          <details key={item.question} className="py-1" open={index === 0}>
+            <summary className="cursor-pointer py-3 text-sm font-medium">{item.question}</summary>
+            <p className="pb-3 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{item.answer}</p>
             {item.links && item.links.length > 0 ? (
               <p className="mt-2 text-sm">
                 {item.links.map((link, index) => (
@@ -49,7 +49,7 @@ export default function FaqPage() {
                 ))}
               </p>
             ) : null}
-          </section>
+          </details>
         ))}
       </div>
     </>

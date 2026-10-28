@@ -9,7 +9,7 @@ import { SOURCES } from "@/lib/site";
 export const metadata = pageMeta({
   title: "How many people pay income tax in the UK?",
   description:
-    "Number of UK income tax payers by marginal rate and the share of income tax paid by the top 1% and top 10%, from HMRC income tax liabilities statistics.",
+    "How many people in the UK pay income tax at each rate, and the share paid by the top 1% and top 10%. HMRC projections for 2026-27.",
   path: "/taxpayers",
 });
 
@@ -63,31 +63,48 @@ export default async function TaxpayersPage() {
       />
       {payers.projected ? (
         <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-neutral-300 px-3 py-1 text-xs dark:border-neutral-700">
-          <span aria-hidden="true">◐</span> Projection
+          <span aria-hidden="true">◐</span> Projection: HMRC estimate for {year}
         </p>
       ) : null}
       <div className="mb-3 grid gap-3 sm:grid-cols-3">
-        <Stat label={`Share of income tax paid by the top 1%, tax year ${year}`} value={shares.top1Percent == null ? "Not available" : formatPercent(shares.top1Percent)} detail="Top 1% of income taxpayers by income. Indicative projection." />
-        <Stat label={`Share of income tax paid by the top 10%, tax year ${year}`} value={shares.top10Percent == null ? "Not available" : formatPercent(shares.top10Percent)} detail="Top 10% of income taxpayers by income." />
-        <Stat label={`Total income tax liabilities, tax year ${year}`} value={shares.totalTaxBillion == null ? "Not available" : formatBillions(shares.totalTaxBillion)} detail="Income tax owed for the year, which differs from cash received." />
+        <Stat label="Share of income tax paid by the top 1%" value={shares.top1Percent == null ? "Not available" : formatPercent(shares.top1Percent)} detail="Top 1% of income taxpayers, ranked by income. HMRC marks this projection as indicative." />
+        <Stat label="Share of income tax paid by the top 10%" value={shares.top10Percent == null ? "Not available" : formatPercent(shares.top10Percent)} detail="Top 10% of income taxpayers, ranked by income." />
+        <Stat label="Total income tax liabilities" value={shares.totalTaxBillion == null ? "Not available" : formatBillions(shares.totalTaxBillion)} detail="Tax owed for the year. Differs from cash received." />
       </div>
       <ChartFrame
-        title={`Income taxpayers by marginal rate, tax year ${year}`}
+        title={`Income taxpayers by highest rate paid, tax year ${year}`}
         source={<SourceNote publisher={meta.publisher} title="Income Tax liabilities statistics" url={snapshot.data.attachmentUrl} releaseDate={snapshot.releaseDate} licenceUrl={meta.licenceUrl} sourceId="hmrc-income-tax" />}
       >
-        <div className="flex h-8 overflow-hidden rounded-sm" aria-hidden="true">
-          {payers.bands.map((band, index) => (
-            <div
-              key={band.name}
-              style={{ width: `${payers.total ? (band.value / payers.total) * 100 : 0}%`, background: ["#1d4ed8", "#047857", "#b45309", "#6d28d9"][index % 4] }}
-              title={`${band.name} ${formatPercent(payers.total ? (band.value / payers.total) * 100 : 0)}`}
-            />
-          ))}
+        <div className="flex h-10 items-stretch overflow-hidden rounded-sm">
+          {payers.bands.map((band, index) => {
+            const share = payers.total ? (band.value / payers.total) * 100 : 0;
+            const outside = share < 4;
+            return (
+              <div
+                key={band.name}
+                className="relative bg-blue-700 dark:bg-blue-300"
+                style={{ width: `${share}%`, opacity: [0.9, 0.75, 0.6, 0.45][index] ?? 0.45 }}
+                title={`${bandLabel(band.name)} ${formatPercent(share)}`}
+              >
+                {outside ? null : (
+                  <span className="absolute inset-0 flex items-center justify-center px-1 text-[11px] text-white dark:text-neutral-950">
+                    {bandLabel(band.name)} {formatPercent(share)}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
+        <p className="mt-2 text-xs text-neutral-800 dark:text-neutral-200">
+          {payers.bands
+            .filter((band) => (payers.total ? (band.value / payers.total) * 100 : 0) < 4)
+            .map((band) => `${bandLabel(band.name)} ${formatPercent(payers.total ? (band.value / payers.total) * 100 : 0)}`)
+            .join(" · ")}
+        </p>
         <DataTable
-          columns={["Marginal rate", "Taxpayers, thousands", "Share"]}
+          columns={["Highest rate paid", "Taxpayers (thousands)", "Share"]}
           rows={payers.bands.map((band) => [
-            band.name,
+            bandLabel(band.name),
             band.value.toLocaleString("en-GB"),
             formatPercent(payers.total ? (band.value / payers.total) * 100 : 0),
           ])}
@@ -95,4 +112,9 @@ export default async function TaxpayersPage() {
       </ChartFrame>
     </>
   );
+}
+
+function bandLabel(name: string): string {
+  if (name === "Savers") return "Savers rate";
+  return name.endsWith("rate") ? name : `${name} rate`;
 }

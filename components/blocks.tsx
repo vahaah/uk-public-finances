@@ -42,6 +42,8 @@ export function Stat({
   href,
   wide,
   stale,
+  delta,
+  sparkline,
 }: {
   label: string;
   value: string;
@@ -49,13 +51,17 @@ export function Stat({
   href?: string;
   wide?: boolean;
   stale?: string | null;
+  delta?: string | null;
+  sparkline?: ReactNode;
 }) {
   const body = (
     <div
-      className={`flex h-full flex-col border border-neutral-200 p-6 dark:border-neutral-800 ${wide ? "md:col-span-2" : ""} ${stale ? "border-l-2 border-l-amber-700 pl-3" : ""}`}
+      className={`flex h-full flex-col border border-neutral-200 p-6 dark:border-neutral-800 ${wide ? "md:col-span-2 md:row-span-2" : ""} ${stale ? "border-l-2 border-l-amber-700 pl-3" : ""}`}
     >
-      <p className="text-sm text-neutral-800 dark:text-neutral-200">{label}</p>
+      <p className="line-clamp-2 text-sm text-neutral-800 dark:text-neutral-200">{label}</p>
       <p className="mt-2 font-sans text-3xl font-semibold tabular-nums tracking-tight">{value}</p>
+      {delta ? <p className="mt-2 text-sm tabular-nums text-neutral-900 dark:text-neutral-100">{delta}</p> : null}
+      {sparkline}
       <p className="mt-2 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{detail}</p>
       {stale ? <p className="mt-2 text-sm text-amber-800 dark:text-amber-300">Not updated · as of {stale}</p> : null}
     </div>
@@ -100,11 +106,11 @@ export function SourceNote({
       </a>
       {" · "}
       <Link className="underline decoration-neutral-500 underline-offset-4" href={sourceId ? `/data-sources#${sourceId}` : "/data-sources"}>
-        This source
+        Source data
       </Link>
       {" · "}
       <Link className="underline decoration-neutral-500 underline-offset-4" href="/methodology">
-        How figures are checked
+        Methodology
       </Link>
       {extra ? ` · ${extra}` : null}
     </p>
@@ -134,6 +140,27 @@ export function ChartFrame({
       </div>
       {source}
     </section>
+  );
+}
+
+export function Sparkline({ values }: { values: number[] }) {
+  const slice = values.slice(-24);
+  if (slice.length < 2) return null;
+  const min = Math.min(...slice);
+  const max = Math.max(...slice);
+  const width = 180;
+  const height = 56;
+  const points = slice
+    .map((value, index) => {
+      const x = (index / (slice.length - 1)) * width;
+      const y = height - ((value - min) / (max - min || 1)) * (height - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="mt-4 h-14 w-44 text-blue-700 dark:text-blue-300" aria-hidden="true">
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2" />
+    </svg>
   );
 }
 
@@ -169,14 +196,14 @@ export function DataTable({ columns, rows }: { columns: string[]; rows: (string 
   );
 }
 
-export function EmptySource({ name, pending }: { name: string; pending?: boolean }) {
+export function EmptySource({ name, pending, detail }: { name: string; pending?: boolean; detail?: string }) {
   return (
     <div className="border border-dashed border-neutral-300 p-6 text-sm text-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
-      <p className="font-medium">{pending ? `${name} pending` : `${name} is not available`}</p>
+      <p className="font-medium">{pending ? `${name} is not available yet` : `${name} is not available`}</p>
       <p className="mt-2">
-        Nothing is shown in place of a missing figure.{" "}
+        {detail ?? "Nothing is shown in place of a missing figure."}{" "}
         <Link className="underline decoration-neutral-500 underline-offset-4" href="/data-health">
-          Data health
+          See Data health.
         </Link>
       </p>
     </div>

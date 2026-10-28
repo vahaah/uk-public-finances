@@ -10,7 +10,7 @@ import { SOURCES } from "@/lib/site";
 export const metadata = pageMeta({
   title: "UK national debt, debt interest and gilts",
   description:
-    "UK public sector net debt in pounds and as a share of GDP, debt interest, Bank Rate, the 10-year gilt yield and gilts in issue. From the ONS, the Bank of England and the DMO.",
+    "UK national debt in pounds and as a share of GDP, debt interest, Bank Rate, gilt yields and gilts in issue. From the ONS, Bank of England and DMO.",
   path: "/debt",
 });
 
@@ -73,11 +73,11 @@ export default async function DebtPage() {
             detail="Public sector net debt, excluding public sector banks. Provisional."
           />
           <Stat
-            label="Net debt as a share of GDP"
+            label={month ? `Net debt at end of ${formatMonthLong(month)}, share of GDP` : "Net debt as a share of GDP"}
             value={ons.data.series.hf6x?.latest ? `${formatPercent(ons.data.series.hf6x.latest.value)} of GDP` : "Not available"}
             detail={
               ons.data.series.cpoa?.latest
-                ? `Excluding the Bank of England as well: ${formatPercent(ons.data.series.cpoa.latest.value)} of GDP.`
+                ? `${formatPercent(ons.data.series.cpoa.latest.value)} of GDP if the Bank of England is also excluded.`
                 : "Excluding public sector banks."
             }
           />
@@ -86,7 +86,7 @@ export default async function DebtPage() {
             value={interest ? formatGbpFromMillions(interest.value) : "Not available"}
             detail={
               exUplift && uplift
-                ? `Central government net interest payable. Of this, ${formatGbpFromMillions(exUplift.value)} is interest and ${formatGbpFromMillions(uplift.value)} is the inflation uplift on index-linked gilts.`
+                ? `Of this, ${formatGbpFromMillions(exUplift.value)} is interest and ${formatGbpFromMillions(uplift.value)} is inflation uplift on index-linked gilts.`
                 : "Central government net interest payable."
             }
           />
@@ -97,8 +97,8 @@ export default async function DebtPage() {
       {ons ? (
         <div className="mt-3">
           <ChartFrame
-            title="Public sector net debt excluding public sector banks, % of GDP"
-            subtitle="Percentage of GDP."
+            title="Public sector net debt as a share of GDP"
+            subtitle="% of GDP. Excludes public sector banks. Axis does not start at zero."
             source={
               <SourceNote
                 publisher={SOURCES["ons-psf"].publisher}
@@ -118,7 +118,7 @@ export default async function DebtPage() {
         <div className="mt-3">
           <ChartFrame
             title="Bank Rate and the 10-year gilt yield"
-            subtitle="Percent."
+            subtitle="%."
             stale={stale}
             source={
               <SourceNote
@@ -128,7 +128,7 @@ export default async function DebtPage() {
                 releaseDate={boe.releaseDate}
                 licenceUrl={SOURCES["boe-yields"].licenceUrl}
                 sourceId="boe-yields"
-                extra={`Latest Bank Rate: ${formatDateLong(boe.data.series.IUDBEDR.latest?.date ?? null)}. Latest gilt yield: ${formatDateLong(boe.data.series.IUDMNPY.latest?.date ?? null)}.`}
+                extra={`Latest values: Bank Rate ${formatDateLong(boe.data.series.IUDBEDR.latest?.date ?? null)}, gilt yield ${formatDateLong(boe.data.series.IUDMNPY.latest?.date ?? null)}.`}
               />
             }
           >
@@ -152,24 +152,29 @@ export default async function DebtPage() {
                 releaseDate={dmo?.releaseDate ?? null}
                 licenceUrl={SOURCES["dmo-gilts"].licenceUrl}
                 sourceId="dmo-gilts"
-                extra="Values are the DMO fields as published. This site does not rescale them, because the unit is not stated in the feed."
+                extra="Values are as the DMO publishes them. The DMO does not state the unit, so they are not rescaled."
               />
             }
           >
             <DataTable
-              columns={["Measure", "Published value"]}
+              columns={["Measure", "Value as published by the DMO"]}
               rows={[
-                ["Total uplifted nominal portfolio", portfolio.rawTotal.toLocaleString("en-GB", { maximumFractionDigits: 1 })],
+                ["All gilts, nominal value including inflation uplift", portfolio.rawTotal.toLocaleString("en-GB", { maximumFractionDigits: 1 })],
                 ["Conventional gilts", portfolio.rawConventional.toLocaleString("en-GB", { maximumFractionDigits: 1 })],
                 ["Index-linked gilts", portfolio.rawIndexLinked.toLocaleString("en-GB", { maximumFractionDigits: 1 })],
+              ]}
+            />
+            <DataTable
+              columns={["Measure", "Value"]}
+              rows={[
                 ["Index-linked share of total", formatPercent(portfolio.indexLinkedShare * 100)],
-                ["Average time to maturity, years", portfolio.averageMaturityYears.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })],
+                ["Average years to maturity", portfolio.averageMaturityYears.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })],
                 ["Conventional portfolio yield", portfolio.conventionalYield == null ? "—" : formatPercent(portfolio.conventionalYield)],
                 ["Index-linked portfolio yield", portfolio.indexLinkedYield == null ? "—" : formatPercent(portfolio.indexLinkedYield)],
               ]}
             />
             <div className="mt-4">
-              <EmptySource name="A breakdown of gilts by maturity" />
+              <EmptySource name="A breakdown by maturity" detail="A breakdown by maturity is not available yet." />
             </div>
           </ChartFrame>
         ) : (

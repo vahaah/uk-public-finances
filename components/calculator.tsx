@@ -12,7 +12,7 @@ type IndexId = (typeof INDEXES)[number];
 const COPY: Record<IndexId, { label: string; fit: string }> = {
   mnf2: {
     label: "GDP deflator, calendar year",
-    fit: "Use this for a calendar year of public spending or tax. It is ONS series MNF2, the calendar-year GDP deflator at market prices. HM Treasury uses it for calendar-year spending comparisons.",
+    fit: "Best for comparing public spending or tax across calendar years. ONS series MNF2.",
   },
   l8gg: {
     label: "GDP deflator, financial year",
@@ -28,7 +28,7 @@ const COPY: Record<IndexId, { label: string; fit: string }> = {
   },
   chaw: {
     label: "RPI",
-    fit: "Use this only where a contract, including existing index-linked gilts, specifies RPI. It is ONS series CHAW, January 1987=100. It is not the measure for a new comparison of public spending.",
+    fit: "RPI is used for index-linked gilts and some older contracts. ONS series CHAW.",
   },
 };
 
@@ -94,7 +94,7 @@ function CalculatorInner({
           <p className="text-sm leading-6">
             <span className="font-sans text-3xl font-semibold tabular-nums tracking-tight">{pounds(result.value)}</span>
             <span className="mt-2 block">
-              {pounds(amount)} in {from} is {pounds(result.value)} in {to} prices. The index moves from {result.indexFrom.toLocaleString("en-GB")} to {result.indexTo.toLocaleString("en-GB")}.
+              {pounds(amount)} in {from} is worth {pounds(result.value)} in {to} prices. The index {result.indexTo >= result.indexFrom ? "rose" : "fell"} from {result.indexFrom.toLocaleString("en-GB")} to {result.indexTo.toLocaleString("en-GB")}.
             </span>
           </p>
         ) : (
@@ -128,7 +128,7 @@ function YearSelect({
         value={years.includes(value) ? value : ""}
         onChange={(event) => onChange(event.target.value)}
       >
-        <option value="">Choose</option>
+        <option value="">Choose a year</option>
         {years.map((year) => (
           <option key={year} value={year}>
             {year}

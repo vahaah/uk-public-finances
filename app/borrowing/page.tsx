@@ -1,6 +1,6 @@
 import { BorrowingChart, CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
-import { formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
+import { formatGbpFromMillions, formatMonth, formatMonthLong, previousFinancialYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -9,7 +9,7 @@ import { SOURCES } from "@/lib/site";
 export const metadata = pageMeta({
   title: "UK government borrowing and the deficit",
   description:
-    "Monthly UK public sector net borrowing and the financial year to date against a year earlier. The next ONS release date is shown. Source: ONS.",
+    "Monthly UK government borrowing, and the financial year so far against the same months last year. From the ONS, with the next release date.",
   path: "/borrowing",
 });
 
@@ -73,7 +73,7 @@ export default async function BorrowingPage() {
           </>
         }
       />
-      <ChartFrame title="Public sector net borrowing by month" subtitle="£ billion. Bars above zero are borrowing." source={source}>
+      <ChartFrame title="Public sector net borrowing by month" subtitle="£bn. Bars above zero are borrowing; below zero, a surplus." source={source}>
         <BorrowingChart
           months={snapshot.data.series.j5ii?.months ?? []}
           quarters={snapshot.data.series.j5ii?.quarters ?? []}
@@ -82,11 +82,17 @@ export default async function BorrowingPage() {
         />
       </ChartFrame>
       <div className="mt-3">
-        <ChartFrame title={fy ? `Borrowing so far in ${fy.year}` : "Borrowing so far"} subtitle="£ billion, running total." source={source}>
-          {fy ? <CumulativeChart months={fy.months} prices={bundle} /> : null}
+        <ChartFrame
+          title={fy ? `Borrowing so far in ${fy.year} against ${previousFinancialYear(fy.year)}` : "Borrowing so far"}
+          subtitle={`£bn, running total. In real terms, only ${fy?.year ?? "this year"} is adjusted. A share of GDP is not shown for part of a year.`}
+          source={source}
+        >
+          {fy ? (
+            <CumulativeChart months={fy.months} prices={bundle} thisYear={fy.year} lastYear={previousFinancialYear(fy.year)} />
+          ) : null}
           {fy ? (
             <DataTable
-              columns={["Month", `${fy.year} to date, £bn`, "A year earlier, £bn"]}
+              columns={["Month", `${fy.year}, £bn`, `${previousFinancialYear(fy.year)}, £bn`]}
               rows={fy.months.map((row) => [
                 formatMonth(row.period),
                 formatGbpFromMillions(-row.cumulative),

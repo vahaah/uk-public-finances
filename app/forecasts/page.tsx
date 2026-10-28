@@ -1,21 +1,28 @@
+import { CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "OBR public finance forecasts vs outturn",
+  title: "OBR forecasts against outturn",
   description:
-    "ONS borrowing for the financial year so far, with the Office for Budget Responsibility forecast vintage marked pending until a databank file is loaded.",
+    "UK borrowing so far this financial year from the ONS, alongside the Office for Budget Responsibility forecast when it is available.",
   path: "/forecasts",
 });
 
 export default async function ForecastsPage() {
-  const onsLoaded = await readSnapshot("ons-psf");
-  const obrLoaded = await readSnapshot("obr-databank");
+  const [onsLoaded, obrLoaded, priceLoaded] = await Promise.all([
+    readSnapshot("ons-psf"),
+    readSnapshot("obr-databank"),
+    readSnapshot("ons-prices"),
+  ]);
   const ons = takeSnapshot("ons-psf", onsLoaded.snapshot);
   const obr = takeSnapshot("obr-databank", obrLoaded.snapshot);
+  const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
+  const bundle = prices ? priceBundle(prices.data) : null;
   const meta = SOURCES["obr-databank"];
   const onsMeta = SOURCES["ons-psf"];
   return (
@@ -49,17 +56,20 @@ export default async function ForecastsPage() {
         title="OBR forecasts against outturn"
         lede="Outturn is what the ONS has recorded so far: public sector net borrowing for the financial year to date. A forecast is the Office for Budget Responsibility's projection for the full year, so a part-year outturn is not directly comparable with it."
       />
-      <EmptySource name="OBR forecast" pending />
-      <p className="mt-3 text-sm text-neutral-800 dark:text-neutral-200">Forecast vintage: pending. No OBR public finances databank has been loaded.</p>
+      <EmptySource
+        name="The OBR forecast"
+        pending
+        detail="Until it is, this page shows ONS figures only."
+      />
       <div className="mt-6">
         {ons?.data.financialYear ? (
           <ChartFrame
-            title={`Borrowing so far in ${ons.data.financialYear.year}, April to ${formatMonthLong(ons.data.financialYear.through)}`}
-            subtitle="£ billion, running total."
+            title={`Borrowing so far in ${ons.data.financialYear.year}, April to ${formatMonth(ons.data.financialYear.through).replace(/ \d{4}$/, "")}`}
+            subtitle="£bn, running total."
             source={
               <SourceNote
                 publisher={onsMeta.publisher}
-                title="Public sector net borrowing excluding public sector banks (J5II), summed from April"
+                title="Public sector net borrowing excluding public sector banks (J5II), running total from April"
                 url={ons.sourceUrl}
                 releaseDate={ons.releaseDate}
                 licenceUrl={onsMeta.licenceUrl}
@@ -67,6 +77,12 @@ export default async function ForecastsPage() {
               />
             }
           >
+            <CumulativeChart
+              months={ons.data.financialYear.months}
+              thisYear={ons.data.financialYear.year}
+              compare={false}
+              prices={bundle}
+            />
             <DataTable
               columns={["Month", "Running total, £bn"]}
               rows={ons.data.financialYear.months.map((row) => [formatMonth(row.period), formatGbpFromMillions(-row.cumulative)])}

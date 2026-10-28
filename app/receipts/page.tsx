@@ -2,16 +2,16 @@ import Link from "next/link";
 
 import { HistoryChart, ReceiptsChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
-import { formatGbpFromMillions, formatMonth, formatPercent } from "@/lib/format";
+import { formatGbpFromMillions, formatMonth, formatReceiptBn, formatReceiptShare } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "Where UK tax comes from: HMRC receipts by tax",
+  title: "UK tax receipts by tax: HMRC figures",
   description:
-    "How much tax HMRC collected and from which taxes: income tax, National Insurance, VAT, corporation tax and more, by year and month. Source: HMRC.",
+    "How much tax HMRC collects, by tax and by month: income tax, National Insurance, VAT, corporation tax and more. Cash receipts, from HMRC.",
   path: "/receipts",
 });
 
@@ -64,7 +64,7 @@ export default async function ReceiptsPage() {
       />
       <ChartFrame
         title={`Receipts by tax, ${annual.year}`}
-        subtitle="£ billion. The chart shows the ten largest taxes and groups the rest as Other."
+        subtitle="£bn. The ten largest taxes, with the rest grouped as Other."
         source={
           <SourceNote
             publisher={meta.publisher}
@@ -78,14 +78,21 @@ export default async function ReceiptsPage() {
       >
         <ReceiptsChart taxes={annual.taxes} year={annual.year} prices={bundle} />
         <DataTable
-          columns={["Tax", "£bn", "Share"]}
-          rows={rows.map((tax) => [tax.name, formatGbpFromMillions(tax.value), formatPercent((tax.value / annual.total) * 100)])}
+          columns={["Tax", "£bn", "Share of total"]}
+          rows={rows.slice(0, 10).map((tax) => [tax.name, receiptCell(tax.value), formatReceiptShare(tax.value, annual.total)])}
         />
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer font-medium">All {rows.length} taxes</summary>
+          <DataTable
+            columns={["Tax", "£bn", "Share of total"]}
+            rows={rows.map((tax) => [tax.name, receiptCell(tax.value), formatReceiptShare(tax.value, annual.total)])}
+          />
+        </details>
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame
           title="HMRC receipts by financial year"
-          subtitle="Cash HMRC received. The range and price controls follow the address bar."
+          subtitle="£bn. Cash received by HMRC in each financial year."
           source={
             <SourceNote
               publisher={meta.publisher}
@@ -108,8 +115,8 @@ export default async function ReceiptsPage() {
       </div>
       <div className="mt-3">
         <ChartFrame
-          title="Total HMRC receipts by month, last 18 months"
-          subtitle="£ million."
+          title="Total HMRC receipts by month"
+          subtitle="£bn on the chart, £m in the table. Not adjusted for inflation."
           source={
             <SourceNote
               publisher={meta.publisher}
@@ -129,12 +136,21 @@ export default async function ReceiptsPage() {
             gdp={false}
             name="HMRC receipts"
           />
-          <DataTable
-            columns={["Month", "£m"]}
-            rows={monthly.slice(-18).map((row) => [formatMonth(row.period), row.total.toLocaleString("en-GB")])}
-          />
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer font-medium">Show table</summary>
+            <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">Last 18 months, £m. Source figures are £ million, so 75,778 is £75.8bn.</p>
+            <DataTable
+              columns={["Month", "£m"]}
+              rows={monthly.slice(-18).map((row) => [formatMonth(row.period), row.total.toLocaleString("en-GB", { maximumFractionDigits: 0 })])}
+            />
+          </details>
         </ChartFrame>
       </div>
     </>
   );
+}
+
+function receiptCell(millions: number): string {
+  const money = formatReceiptBn(millions);
+  return millions < 0 && Math.abs(millions) >= 50 ? `${money}, net repayment` : money;
 }
