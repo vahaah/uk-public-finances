@@ -276,7 +276,9 @@ function CumulativeChartInner({
       </ResponsiveContainer>
       </div>
       <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-        £bn, running total. In real terms, only {thisYear} is adjusted. A share of GDP is not shown for part of a year. {priceCaption(mode, baseYear, "month")}
+        {mode === "real"
+          ? `£bn, running total since April. The ${thisYear} line is in ${baseYear} prices, adjusted with the GDP deflator.${compare ? ` The ${lastYear} line is not adjusted.` : ""} A share of GDP is not shown for part of a year.`
+          : `£bn, running total since April. Not adjusted for inflation. The tooltip also shows each figure in ${baseYear} prices (GDP deflator L8GG). A share of GDP is not shown for part of a year.`}
         {adjusted.note ? ` ${adjusted.note}` : ""}
       </p>
     </div>

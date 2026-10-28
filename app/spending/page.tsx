@@ -103,7 +103,7 @@ export default async function SpendingPage() {
         <h2 className="text-sm font-medium">Which functions grew fastest in real terms?</h2>
         <p className="mt-1 text-sm text-neutral-800 dark:text-neutral-200">
           {growth[0]
-            ? `Real terms removes the effect of rising prices, so years can be compared fairly. Figures are shown at ${growth[0].baseYear} prices using the financial-year GDP deflator.`
+            ? `Real terms removes the effect of rising prices, so years can be compared fairly. Growth since ${growth[0].from} is worked out after adjusting for inflation with the financial-year GDP deflator (L8GG).`
             : "Real terms removes the effect of rising prices, so years can be compared fairly."}
         </p>
         <p className="mt-2 text-sm text-neutral-800 dark:text-neutral-200">

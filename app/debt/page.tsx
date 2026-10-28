@@ -191,16 +191,16 @@ export default async function DebtPage() {
                 releaseDate={dmo?.releaseDate ?? null}
                 licenceUrl={SOURCES["dmo-gilts"].licenceUrl}
                 sourceId="dmo-gilts"
-                extra="Values are as the DMO publishes them. The DMO does not state the unit, so they are not rescaled."
+                extra="The DMO publishes these values in £ thousands. They are shown here in £bn."
               />
             }
           >
             <DataTable
-              columns={["Measure", "Value as published by the DMO"]}
+              columns={["Measure", "£bn"]}
               rows={[
-                ["All gilts, nominal value including inflation uplift", portfolio.rawTotal.toLocaleString("en-GB", { maximumFractionDigits: 1 })],
-                ["Conventional gilts", portfolio.rawConventional.toLocaleString("en-GB", { maximumFractionDigits: 1 })],
-                ["Index-linked gilts", portfolio.rawIndexLinked.toLocaleString("en-GB", { maximumFractionDigits: 1 })],
+                ["All gilts, nominal value including inflation uplift", formatBillions(portfolio.rawTotal / 1e6)],
+                ["Conventional gilts", formatBillions(portfolio.rawConventional / 1e6)],
+                ["Index-linked gilts", formatBillions(portfolio.rawIndexLinked / 1e6)],
               ]}
             />
             <DataTable

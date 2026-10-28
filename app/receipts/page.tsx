@@ -157,7 +157,7 @@ export default async function ReceiptsPage() {
       <div id="by-month" className="mt-3 scroll-mt-28">
         <ChartFrame
           title="Total HMRC receipts by month"
-          subtitle="£bn on the chart, £m in the table. Not adjusted for inflation. Receipts are not spread evenly across the year. Self assessment income tax is mostly paid in January and July, so those months are higher every year."
+          subtitle="The chart shows £bn and the table shows £m. Not adjusted for inflation. Receipts are not spread evenly across the year. Self assessment income tax is mostly paid in January and July, so those months are higher every year."
           source={
             <SourceNote
               publisher={meta.publisher}

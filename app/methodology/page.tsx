@@ -104,7 +104,7 @@ export default function MethodologyPage() {
         <section id="not-estimated">
           <h2 className="text-base font-medium text-neutral-950 dark:text-white">What this site does not estimate</h2>
           <p className="mt-2">
-            There is no forecast until the OBR&apos;s public finances data has been read. Gilt totals are shown as the DMO publishes them; the DMO does not state a unit, so they are not rescaled. A breakdown of gilts by maturity is not available yet. Departmental plans are the plan columns in PESA table 6.1. They are not OBR forecasts. HMRC&apos;s 2026-27 income tax payer counts are HMRC&apos;s projection, based on the 2023-24 Survey of Personal Incomes and the OBR&apos;s March 2026 Economic and fiscal outlook.
+            There is no forecast until the OBR&apos;s public finances data has been read. Gilt totals are published by the DMO in £ thousands and shown here in £bn. A breakdown of gilts by maturity is not available yet. Departmental plans are the plan columns in PESA table 6.1. They are not OBR forecasts. HMRC&apos;s 2026-27 income tax payer counts are HMRC&apos;s projection, based on the 2023-24 Survey of Personal Incomes and the OBR&apos;s March 2026 Economic and fiscal outlook.
           </p>
         </section>
         <section id="licence">
