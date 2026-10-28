@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import ExcelJS from "exceljs";
+import { strFromU8, unzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 
 import { pickHmrcReceiptsWorkbook, pickPesaChapters, pickSearchHit } from "@/lib/govuk";
@@ -157,6 +158,36 @@ describe("OBR workbook and gilt buckets", () => {
       { year: "2024-25", outturn: 120, forecast: null },
       { year: "2026-27", outturn: null, forecast: 90 },
     ]);
+  });
+
+  it("writes the extended data bar that calls uuid", async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Bars");
+    sheet.addRow([1]);
+    sheet.addRow([3]);
+    sheet.addConditionalFormatting({
+      ref: "A1:A2",
+      rules: [
+        {
+          type: "dataBar",
+          priority: 1,
+          gradient: false,
+          cfvo: [
+            { type: "num", value: 0 },
+            { type: "num", value: 3 },
+          ],
+        },
+      ],
+    });
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+    const xml = Object.entries(unzipSync(new Uint8Array(buffer)))
+      .filter(([name]) => name.endsWith(".xml"))
+      .map(([, bytes]) => strFromU8(bytes))
+      .join("\n");
+    expect(xml).toMatch(/id="\{[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}\}"/);
+    const again = new ExcelJS.Workbook();
+    await again.xlsx.load(buffer);
+    expect(again.getWorksheet("Bars")?.getCell("A2").value).toBe(3);
   });
 
   it("buckets nominal amounts by redemption date", () => {
