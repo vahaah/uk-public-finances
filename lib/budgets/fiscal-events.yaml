@@ -4,7 +4,7 @@
 events:
   - slug: 2010-06-emergency-budget
     date: 2010-06-22
-    name: Emergency Budget
+    name: Emergency Budget 2010
     type: emergency
     chancellor: George Osborne
     government: "Con-LD coalition"
@@ -14,7 +14,8 @@ events:
     dateStatus: verified
   - slug: 2010-11-obr-outlook
     date: 2010-11-29
-    name: Economic and fiscal outlook
+    name: Economic and fiscal outlook November 2010
+    shortName: OBR outlook November 2010
     type: forecast-only
     chancellor: George Osborne
     government: "Con-LD coalition"
@@ -256,7 +257,7 @@ events:
     dateStatus: verified
   - slug: 2022-09-growth-plan
     date: 2022-09-23
-    name: Growth Plan
+    name: Growth Plan 2022
     type: growth-plan
     chancellor: Kwasi Kwarteng
     government: Conservative
@@ -344,3 +345,14 @@ events:
     weight: full
     govukPath: /government/publications/march-2026-economic-and-fiscal-outlook
     dateStatus: verified
+  - slug: 2026-10-budget
+    date: 2026-10-28
+    name: Budget 2026
+    type: budget
+    chancellor: John Healey
+    government: Labour
+    obrForecast: "yes"
+    weight: full
+    govukPath: /government/publications/budget-2026-document
+    dateStatus: verified
+    status: pending

@@ -56,7 +56,7 @@ export default async function ReceiptsPage() {
       />
       <PageIntro
         kicker="HMRC tax receipts"
-        title="Where does the government's money come from?"
+        title="Where does the UK government's money come from?"
         lede={
           <>
             <p>

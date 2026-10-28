@@ -100,6 +100,12 @@ export function Footer() {
           llms-full.txt
         </a>
         <span>UK public finances from official statistics</span>
+        <span>
+          Made by{" "}
+          <a href="https://vahaah.com" rel="author" className="underline decoration-neutral-400 underline-offset-4">
+            Alex Vakhitov
+          </a>
+        </span>
       </div>
     </footer>
   );
