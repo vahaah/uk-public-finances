@@ -1,6 +1,14 @@
 import { z } from "zod";
 
+import { formatBillions } from "@/lib/format";
 import type { priceDataSchema } from "@/lib/schema";
+
+/** Same fallback the Real terms control uses when the URL has no base year. */
+export const DEFAULT_PRICE_BASE_YEAR = 2025;
+
+export function chartBaseYear(selected: string | null | undefined): number {
+  return selected && /^\d{4}$/.test(selected) ? Number(selected) : DEFAULT_PRICE_BASE_YEAR;
+}
 
 const positive = z.number().finite().positive();
 
@@ -228,6 +236,42 @@ export function equivalentValue(input: {
     return { ok: false, reason: "The amount or the index value cannot be used.", first: span?.first ?? null, last: span?.last ?? null };
   }
   return { ok: true, value: rebase(parsed.data.nominal, parsed.data.indexThen, parsed.data.indexBase), indexFrom: from.value, indexTo: to.value };
+}
+
+export type DeflatorId = "MNF2" | "L8GG";
+
+/**
+ * Nominal amount in the latest base year's prices, using the same index as Real terms.
+ * Calendar years use MNF2. Months, quarters and financial years use L8GG.
+ * Null when the chart is not nominal money, the period is the latest one, or the index has no observation.
+ */
+export function todayPricesLine(input: {
+  nominal: number;
+  period: string;
+  frequency: MoneyFrequency;
+  unit: "million" | "billion";
+  prices: PriceBundle;
+  mode: PriceMode;
+  baseYear: number;
+  latestPeriod: string;
+  money: boolean;
+}): { text: string; deflator: DeflatorId; baseYear: number; valueBn: number } | null {
+  if (!input.money || input.mode !== "nominal") return null;
+  if (input.period === "" || input.period === input.latestPeriod) return null;
+  if (!Number.isFinite(input.nominal)) return null;
+  const base = baseIndex(input.frequency, input.baseYear, input.prices);
+  const indexThen = indexAt(input.frequency, input.period, input.prices);
+  if (base == null || indexThen == null || base <= 0 || indexThen <= 0) return null;
+  const rebased = rebase(input.nominal, indexThen, base);
+  const scale = input.unit === "million" ? 1000 : 1;
+  const valueBn = Number((rebased / scale).toFixed(1));
+  const deflator: DeflatorId = input.frequency === "calendar" ? "MNF2" : "L8GG";
+  return {
+    text: `≈ ${formatBillions(valueBn)} in ${input.baseYear} prices`,
+    deflator,
+    baseYear: input.baseYear,
+    valueBn,
+  };
 }
 
 export function priceBundle(data: z.infer<typeof priceDataSchema>): PriceBundle {

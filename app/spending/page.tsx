@@ -94,6 +94,7 @@ export default async function SpendingPage() {
           <FunctionMixChart
             pounds={functionMix(functionHistory, false)}
             shares={functionMix(functionHistory, true)}
+            prices={bundle}
           />
         </ChartFrame>
       </div>

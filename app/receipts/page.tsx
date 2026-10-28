@@ -96,7 +96,7 @@ export default async function ReceiptsPage() {
             />
           }
         >
-          <ReceiptMixChart pounds={receiptMix(snapshot.data.annualHistory, false)} shares={receiptMix(snapshot.data.annualHistory, true)} />
+          <ReceiptMixChart pounds={receiptMix(snapshot.data.annualHistory, false)} shares={receiptMix(snapshot.data.annualHistory, true)} prices={bundle} />
         </ChartFrame>
       </div>
       <div id="by-tax" className="mt-3 scroll-mt-28">

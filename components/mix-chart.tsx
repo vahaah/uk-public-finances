@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import { ChartTooltip } from "@/components/chart-tooltip";
 import { yearTickValues } from "@/lib/chart-time";
 import { formatAxis } from "@/lib/format";
 import { TAX_GROUPS, TAX_LABELS, type MixRow, type TaxGroup } from "@/lib/mix";
+import { chartBaseYear, todayPricesLine, type PriceBundle } from "@/lib/prices";
 
 const TAX_COLOR: Record<TaxGroup, string> = {
   income: "var(--chart-tax-income)",
@@ -25,7 +27,7 @@ const FUNCTION_COLORS = [
   "var(--chart-fn-other)",
 ];
 
-export function ReceiptMixChart({ pounds, shares }: { pounds: MixRow[]; shares: MixRow[] }) {
+export function ReceiptMixChart({ pounds, shares, prices = null }: { pounds: MixRow[]; shares: MixRow[]; prices?: PriceBundle | null }) {
   const [asShare, setAsShare] = useState(false);
   const data = asShare ? shares : pounds;
   return (
@@ -37,6 +39,7 @@ export function ReceiptMixChart({ pounds, shares }: { pounds: MixRow[]; shares: 
       label={(key) => TAX_LABELS[key as TaxGroup]}
       color={(key, index) => TAX_COLOR[key as TaxGroup] ?? FUNCTION_COLORS[index] ?? FUNCTION_COLORS[0]}
       unit={asShare ? "%" : "bn"}
+      prices={prices}
     />
   );
 }
@@ -44,9 +47,11 @@ export function ReceiptMixChart({ pounds, shares }: { pounds: MixRow[]; shares: 
 export function FunctionMixChart({
   pounds,
   shares,
+  prices = null,
 }: {
   pounds: { year: string; series: { key: string; label: string; value: number }[] }[];
   shares: { year: string; series: { key: string; label: string; value: number }[] }[];
+  prices?: PriceBundle | null;
 }) {
   const [asShare, setAsShare] = useState(false);
   const source = asShare ? shares : pounds;
@@ -65,6 +70,7 @@ export function FunctionMixChart({
       label={(key) => key}
       color={(_key, index) => FUNCTION_COLORS[index % FUNCTION_COLORS.length] ?? FUNCTION_COLORS[0]}
       unit={asShare ? "%" : "bn"}
+      prices={prices}
     />
   );
 }
@@ -77,6 +83,7 @@ function MixFrame({
   label,
   color,
   unit,
+  prices,
 }: {
   asShare: boolean;
   onToggle: () => void;
@@ -85,8 +92,11 @@ function MixFrame({
   label: (key: string) => string;
   color: (key: string, index: number) => string;
   unit: "%" | "bn";
+  prices: PriceBundle | null;
 }) {
   const ticks = yearTickValues(rows.map((row) => String(row.year)));
+  const latestPeriod = String(rows.at(-1)?.year ?? "");
+  const baseYear = chartBaseYear(null);
   return (
     <div>
       <button
@@ -104,19 +114,37 @@ function MixFrame({
             <XAxis dataKey="year" ticks={ticks} interval={0} tick={{ fontSize: 13, fill: "currentColor" }} />
             <YAxis tick={{ fontSize: 13, fill: "currentColor" }} width={48} tickFormatter={formatAxis} />
             <Tooltip
-              content={({ active, payload, label: axisLabel }) =>
-                active ? (
-                  <div className="rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs dark:border-neutral-800 dark:bg-black">
-                    <p>{axisLabel}</p>
-                    {(payload ?? []).map((item) => (
-                      <p key={String(item.dataKey)}>
-                        {label(String(item.dataKey))} {formatAxis(Number(item.value))}
-                        {unit}
-                      </p>
-                    ))}
-                  </div>
-                ) : null
-              }
+              content={({ active, payload, label: axisLabel }) => {
+                const period = String(axisLabel ?? "");
+                return (
+                  <ChartTooltip
+                    active={active}
+                    label={period}
+                    rows={(payload ?? []).map((item) => {
+                      const line =
+                        prices && !asShare
+                          ? todayPricesLine({
+                              nominal: Number(item.value),
+                              period,
+                              frequency: "financial",
+                              unit: "billion",
+                              prices,
+                              mode: "nominal",
+                              baseYear,
+                              latestPeriod,
+                              money: true,
+                            })
+                          : null;
+                      return {
+                        name: label(String(item.dataKey)),
+                        value: `${formatAxis(Number(item.value))}${unit}`,
+                        today: line?.text,
+                        deflator: line?.deflator,
+                      };
+                    })}
+                  />
+                );
+              }}
             />
             {keys.map((key, index) => (
               <Area
@@ -132,6 +160,11 @@ function MixFrame({
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      {!asShare && prices ? (
+        <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
+          Earlier years in the tooltip are in {baseYear} prices (GDP deflator L8GG).
+        </p>
+      ) : null}
       <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
         {keys.map((key, index) => (
           <li key={key} className="inline-flex items-center gap-1">
