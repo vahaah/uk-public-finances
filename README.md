@@ -38,3 +38,11 @@ ONS public sector finances (September 2026 release), HMRC receipts, PESA 2026 ch
 - Gilt maturity ladder. Report D1A's export URL was blocked by the DMO bot check from this environment. The portfolio total, conventional/index-linked split and average maturity are in the snapshot. The workflow still requests `GetSalesData` on each run.
 
 J5II and JW2T are negative in the ONS download when the bulletin says borrowing or a deficit. Charts use the negation. See [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## Releases
+
+Production deploys from `main` on Vercel (project `uk-public-finances`, team Comonad, https://budget.vahaah.com). PRs get preview deployments.
+
+To cut a release: `git tag vX.Y.Z && git push origin vX.Y.Z`. The `release` workflow creates a GitHub Release with generated notes.
+
+After a release that changes pages, run the `indexnow` workflow (Actions → indexnow → Run workflow; tick "all" for the first submission).
