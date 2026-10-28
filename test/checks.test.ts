@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { evaluateSlot } from "@/lib/clock";
+import { shouldWriteSnapshot } from "@/lib/snapshot";
 import { pickHmrcReceiptsWorkbook, pickIncomeTaxPublication, pickSearchHit } from "@/lib/govuk";
 import { parseCsvLine } from "@/lib/parsers/boe";
 import { droppedTooFar } from "@/lib/quality";
@@ -75,7 +76,8 @@ describe("health age", () => {
     expect(onsAged?.origin).toBe("fixture");
     expect(onsAged?.releaseDate).toBe("2026-10-20T23:00:00.000Z");
     expect(aged.ok).toBe(true);
-    expect(aged.sources.find((source) => source.source === "obr-databank")?.status).toBe("missing");
+    expect(aged.sources.find((source) => source.source === "obr-databank")?.status).toBe("pending");
+    expect(aged.ok).toBe(true);
   });
 });
 
@@ -107,6 +109,15 @@ describe("income tax discovery", () => {
         },
       ]),
     ).toThrow(/liabilities statistics/);
+  });
+});
+
+describe("blob publish", () => {
+  it("copies a fixture-matching snapshot into Blob and skips a second write", () => {
+    expect(shouldWriteSnapshot("fixture", true)).toBe(true);
+    expect(shouldWriteSnapshot("none", true)).toBe(true);
+    expect(shouldWriteSnapshot("blob", true)).toBe(false);
+    expect(shouldWriteSnapshot("blob", false)).toBe(true);
   });
 });
 

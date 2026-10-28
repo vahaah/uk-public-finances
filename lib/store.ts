@@ -25,32 +25,48 @@ export async function readSnapshot(sourceId: SourceId): Promise<{
   snapshot: AnySnapshot | null;
   origin: "blob" | "fixture" | "none";
   validationError: string | null;
+  fallbackReason: string | null;
 }> {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const latest = await readLatest(sourceId);
-    if (latest.snapshot) return { ...latest, origin: "blob" };
-    const earlier = await readNewestValidVersion(sourceId);
-    if (earlier) {
-      return {
-        snapshot: earlier,
-        origin: "blob",
-        validationError: latest.validationError ?? "latest.json failed; using an earlier Blob version",
-      };
-    }
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
     const fixture = readFixture(sourceId);
+    const fallbackReason = fixture ? "BLOB_READ_WRITE_TOKEN is not set" : null;
+    return { snapshot: fixture, origin: fixture ? "fixture" : "none", validationError: null, fallbackReason };
+  }
+  const latest = await readLatest(sourceId);
+  if (latest.snapshot) return { ...latest, origin: "blob", fallbackReason: null };
+  let earlier: AnySnapshot | null = null;
+  let listError: string | null = null;
+  try {
+    earlier = await readNewestValidVersion(sourceId);
+  } catch (error) {
+    listError = error instanceof Error ? error.message : "Blob list failed";
+  }
+  if (earlier) {
     return {
-      snapshot: fixture,
-      origin: fixture ? "fixture" : "none",
-      validationError: latest.validationError,
+      snapshot: earlier,
+      origin: "blob",
+      validationError: latest.validationError ?? "latest.json failed; using an earlier Blob version",
+      fallbackReason: null,
     };
   }
   const fixture = readFixture(sourceId);
-  return { snapshot: fixture, origin: fixture ? "fixture" : "none", validationError: null };
+  const fallbackReason = [
+    latest.validationError ? `latest.json rejected: ${latest.validationError}` : "latest.json is missing",
+    listError ? `list failed: ${listError}` : "no earlier Blob version validated",
+  ].join("; ");
+  logFallback(sourceId, fallbackReason);
+  return {
+    snapshot: fixture,
+    origin: fixture ? "fixture" : "none",
+    validationError: latest.validationError,
+    fallbackReason,
+  };
 }
 
 export async function readJournal(sourceId: SourceId): Promise<{
   validationError: string | null;
   usingLastGood: boolean;
+  pending: boolean;
 } | null> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   try {
@@ -58,6 +74,7 @@ export async function readJournal(sourceId: SourceId): Promise<{
     return {
       validationError: typeof body.validationError === "string" ? body.validationError : null,
       usingLastGood: body.usingLastGood === true,
+      pending: body.pending === true,
     };
   } catch {
     return null;
@@ -72,7 +89,9 @@ export async function loadHealth(now = new Date()): Promise<HealthReport> {
     sources.push(toHealthSource(source, loaded, journal, now));
   }
   const report = {
-    ok: sources.every((source) => source.status !== "validation_failed" && !(source.critical && source.status === "missing")),
+    ok: sources.every(
+      (source) => source.status !== "validation_failed" && !(source.critical && source.status === "missing"),
+    ),
     checkedAt: now.toISOString(),
     sources,
   };
@@ -85,20 +104,22 @@ function toHealthSource(
   journal: Awaited<ReturnType<typeof readJournal>>,
   now: Date,
 ): HealthSource {
-  const critical = CRITICAL_SOURCES.includes(source);
-  const validationError = journal?.validationError ?? loaded.validationError;
+  const critical = source === "obr-databank" ? false : CRITICAL_SOURCES.includes(source);
+  const validationError = journal?.pending ? null : (journal?.validationError ?? loaded.validationError);
   const usingLastGood = journal?.usingLastGood === true || (validationError != null && loaded.snapshot != null);
   if (!loaded.snapshot) {
+    const pending = source === "obr-databank" && (journal?.pending === true || validationError == null);
     return {
       source,
-      status: validationError ? "validation_failed" : "missing",
+      status: pending ? "pending" : validationError ? "validation_failed" : "missing",
       critical,
       releaseDate: null,
       retrievedAt: null,
       origin: "none",
-      validationError,
+      validationError: pending ? null : validationError,
       usingLastGood: false,
       stale: false,
+      fallbackReason: loaded.fallbackReason,
     };
   }
   const reference = loaded.snapshot.releaseDate ?? loaded.snapshot.retrievedAt;
@@ -117,7 +138,12 @@ function toHealthSource(
     validationError: status === "validation_failed" ? validationError : null,
     usingLastGood: status === "validation_failed",
     stale,
+    fallbackReason: loaded.fallbackReason,
   };
+}
+
+function logFallback(sourceId: SourceId, reason: string): void {
+  console.warn(`snapshot ${sourceId} fell back: ${reason}`);
 }
 
 async function readLatest(sourceId: SourceId): Promise<{

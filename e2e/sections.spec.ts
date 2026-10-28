@@ -49,7 +49,7 @@ test("health endpoint reports fixture sources", async ({ request }) => {
   expect(ons.validationError).toBeNull();
   expect(["ok", "stale"]).toContain(ons.status);
   const obr = body.sources.find((source: { source: string }) => source.source === "obr-databank");
-  expect(obr.status).toBe("missing");
+  expect(obr.status).toBe("pending");
   expect(obr.origin).toBe("none");
 });
 

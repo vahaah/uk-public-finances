@@ -33,6 +33,11 @@ export type PublishDecision<T> =
   | { action: "keep-last-good"; error: string };
 
 /** A failed zod parse must not replace the last good snapshot. */
+/** A matching hash skips the write only when Blob already holds that snapshot. A fixture match still has to be copied up. */
+export function shouldWriteSnapshot(origin: "blob" | "fixture" | "none", sameHash: boolean): boolean {
+  return !(origin === "blob" && sameHash);
+}
+
 export function decidePublish<T>(
   result: { ok: true; snapshot: T } | { ok: false; error: string },
 ): PublishDecision<T> {
