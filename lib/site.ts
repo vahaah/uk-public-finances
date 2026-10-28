@@ -27,6 +27,7 @@ export const FOOTER = [
   { href: "/glossary", label: "Glossary" },
   { href: "/faq", label: "FAQ" },
   { href: "/old-money", label: "Old money" },
+  { href: "/records", label: "Records" },
   { href: "/api", label: "API" },
 ] as const;
 

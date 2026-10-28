@@ -16,6 +16,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { yearLabel, yearTickValues } from "@/lib/chart-time";
 import { formatAxis, formatBillions, formatMonth, formatPercent, HMRC_MILLION, niceTicks } from "@/lib/format";
 import { adjustSeries, sliceRange, type PriceBundle } from "@/lib/prices";
 import { PriceControls, RANGES, usePriceView } from "@/components/prices";
@@ -98,7 +99,7 @@ function BorrowingChartInner({
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <BarChart data={plotted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval="preserveStartEnd" tickFormatter={yearTick} />
+            <XAxis dataKey="period" ticks={yearTickValues(plotted.map((point) => point.period))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
             <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.borrowing))} />
             <Tooltip
               cursor={{ fill: theme.cursor }}
@@ -277,7 +278,7 @@ function HistoryChartInner({
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <LineChart data={plotted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} minTickGap={24} interval="preserveStartEnd" tickFormatter={yearTick} />
+            <XAxis dataKey="period" ticks={yearTickValues(plotted.map((point) => point.period))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
             <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.value))} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
@@ -508,7 +509,7 @@ function YieldChartInner({
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <LineChart data={data} margin={{ top: 28, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 12, fill: theme.tick }} minTickGap={48} interval="preserveStartEnd" tickFormatter={(value) => String(value).slice(0, 4)} />
+            <XAxis dataKey="date" ticks={yearTickValues(data.map((point) => point.date))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
             <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={36} tickFormatter={(value) => `${formatAxis(Number(value))}`} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
@@ -549,7 +550,7 @@ function DebtRatioChartInner({ points }: { points: { period: string; value: numb
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} minTickGap={32} interval="preserveStartEnd" tickFormatter={yearTick} />
+            <XAxis dataKey="period" ticks={yearTickValues(data.map((point) => point.period))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
             <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={36} domain={["auto", "auto"]} tickFormatter={formatAxis} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
@@ -652,10 +653,6 @@ function priceCaption(mode: "nominal" | "real" | "gdp", baseYear: number): strin
   return "Not adjusted for inflation.";
 }
 
-function yearTick(period: string): string {
-  const match = /^(\d{4})/.exec(period);
-  return match?.[1] ?? formatPeriod(period);
-}
 
 function ChartTooltip({
   active,

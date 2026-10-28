@@ -1,8 +1,13 @@
 import Link from "next/link";
 
+import { CiteShare } from "@/components/cite-share";
 import { DepartmentChart, HistoryChart, SpendingVisuals } from "@/components/charts";
+import { JumpTo } from "@/components/jump-to";
+import { FunctionMixChart } from "@/components/mix-chart";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatBillions, formatGbpFromMillions, formatPercent } from "@/lib/format";
+import { functionMix, realFunctionGrowth } from "@/lib/mix";
+import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -23,6 +28,7 @@ export default async function SpendingPage() {
   const meta = SOURCES.pesa;
   if (!snapshot) return <EmptySource name="PESA spending" />;
   const { functions, departments, departmentPlans, functionHistory } = snapshot.data;
+  const growth = bundle ? realFunctionGrowth(functionHistory, bundle.deflatorQuarters) : [];
   return (
     <>
       <JsonLd data={breadcrumbJsonLd("What the UK government spends", "/spending")} />
@@ -39,9 +45,17 @@ export default async function SpendingPage() {
         })}
       />
       <Breadcrumb current="Spending" />
+      <JumpTo
+        links={[
+          { href: "#mix", label: "Mix over time" },
+          { href: "#functions", label: "By function" },
+          { href: "#growth", label: "Real growth" },
+          { href: "#departments", label: "Departments" },
+        ]}
+      />
       <PageIntro
         kicker="HM Treasury PESA"
-        title="What the UK government spends"
+        title="What does the government spend money on?"
         lede={
           <>
             <p>
@@ -57,6 +71,54 @@ export default async function SpendingPage() {
           </>
         }
       />
+      <CiteShare
+        sentence={spendingCite(functions, growth)}
+        citation={`${spendingCite(functions, growth)} Source: ${meta.publisher}, PESA, published ${snapshot.releaseDate ?? ""}. Via budget.vahaah.com/spending.`}
+        url={`${SITE_URL}/spending`}
+      />
+      <div id="mix" className="mt-6 scroll-mt-28">
+        <ChartFrame
+          title="Spending on services over time"
+          subtitle="Shares of spending on services by function. Switch to 100% to compare the mix. Real terms removes the effect of rising prices, so years can be compared fairly."
+          source={
+            <SourceNote
+              publisher={meta.publisher}
+              title="Public Expenditure Statistical Analyses (PESA), table 4.2"
+              url={snapshot.sourceUrl}
+              releaseDate={snapshot.releaseDate}
+              licenceUrl={meta.licenceUrl}
+              sourceId="pesa"
+            />
+          }
+        >
+          <FunctionMixChart
+            pounds={functionMix(functionHistory, false)}
+            shares={functionMix(functionHistory, true)}
+          />
+        </ChartFrame>
+      </div>
+      <div id="growth" className="mt-3 scroll-mt-28 border border-neutral-200 p-6 dark:border-neutral-800">
+        <h2 className="text-sm font-medium">Which functions grew fastest in real terms?</h2>
+        <p className="mt-1 text-sm text-neutral-800 dark:text-neutral-200">
+          {growth[0]
+            ? `Real terms removes the effect of rising prices, so years can be compared fairly. Figures are shown at ${growth[0].baseYear} prices using the financial-year GDP deflator.`
+            : "Real terms removes the effect of rising prices, so years can be compared fairly."}
+        </p>
+        <p className="mt-2 text-sm text-neutral-800 dark:text-neutral-200">
+          Debt interest sits inside general public services in HM Treasury&apos;s figures. Departmental budgets (DEL) are set in advance at spending reviews. Annually managed spending (AME), such as pensions and debt interest, depends on demand and is forecast each year.
+        </p>
+        <ol className="mt-4 space-y-2 text-sm">
+          {growth.slice(0, 6).map((row, index) => (
+            <li key={row.name} className="flex justify-between gap-3">
+              <span className={index < 3 ? "font-medium" : ""}>{row.name}</span>
+              <span className="tabular-nums">
+                {row.change < 0 ? "fallen" : "grown"} {formatPercent(Math.abs(row.change))} since {row.from}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div id="functions" className="mt-3 scroll-mt-28">
       <ChartFrame
         title={`Spending on services by function, ${functions.year}`}
         subtitle="£bn."
@@ -108,7 +170,8 @@ export default async function SpendingPage() {
           />
         </ChartFrame>
       </div>
-      <div className="mt-3">
+      </div>
+      <div id="departments" className="mt-3 scroll-mt-28">
         <ChartFrame
           title="Departmental budgets (DEL) by department"
           subtitle="£bn. Central government spending within departmental expenditure limits."
@@ -132,4 +195,21 @@ export default async function SpendingPage() {
       </div>
     </>
   );
+}
+
+function spendingCite(
+  functions: { year: string; totalServices: number | null; items: { name: string; value: number }[] },
+  growth: { name: string; from: string; change: number }[],
+): string {
+  const top = [...functions.items].filter((item) => item.value > 0).sort((left, right) => right.value - left.value)[0];
+  if (!top || functions.totalServices == null) return `Spending on services in ${functions.year}.`;
+  const name = top.name.replace(/^\d+\.\s*/, "");
+  const share = formatPercent((top.value / functions.totalServices) * 100);
+  const grown = growth.find((row) => row.name === name);
+  const change = grown
+    ? grown.change < 0
+      ? ` It has fallen ${formatPercent(Math.abs(grown.change))} in real terms since ${grown.from}.`
+      : ` It has grown ${formatPercent(grown.change)} in real terms since ${grown.from}.`
+    : "";
+  return `${name} was the largest area of spending on services in ${functions.year}, at ${formatBillions(top.value)} (${share}).${change}`;
 }

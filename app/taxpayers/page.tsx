@@ -40,7 +40,7 @@ export default async function TaxpayersPage() {
       <Breadcrumb current="Income taxpayers" />
       <PageIntro
         kicker="HMRC income tax"
-        title="UK income taxpayers and tax bands"
+        title="Who pays income tax?"
         lede={
           <>
             <p>

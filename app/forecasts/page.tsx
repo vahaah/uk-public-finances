@@ -53,7 +53,7 @@ export default async function ForecastsPage() {
       <Breadcrumb current="Forecasts" />
       <PageIntro
         kicker="Office for Budget Responsibility"
-        title="OBR forecasts against outturn"
+        title="Is borrowing on track with the OBR's forecast?"
         lede="Outturn is what the ONS has recorded so far: public sector net borrowing for the financial year to date. A forecast is the Office for Budget Responsibility's projection for the full year, so a part-year outturn is not directly comparable with it."
       />
       <EmptySource

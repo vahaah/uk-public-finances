@@ -30,7 +30,7 @@ export default async function OldMoneyPage() {
       <Breadcrumb current="Old money vs new" />
       <PageIntro
         kicker="Prices"
-        title="Old money vs new"
+        title="What is an old amount worth today?"
         lede="Enter an amount and two years. The result uses only the published index values for those years. It does not fill a gap. The GDP deflator is the measure for public spending. CPI and CPIH are household prices. RPI is for index-linked gilts and contracts that still use it."
       />
       <OldMoneyCalculator
