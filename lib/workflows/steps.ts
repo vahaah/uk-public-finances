@@ -1,8 +1,8 @@
 import { head, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 
-import { parseBoeCsv } from "@/lib/parsers/boe";
-import { parseDmoSales } from "@/lib/parsers/dmo";
+import { boeSnapshot, dmoSnapshot } from "@/lib/workflows/builds";
+import { protectBuild } from "@/lib/workflows/guard";
 import {
   GOVUK_PATHS,
   pickHmrcReceiptsWorkbook,
@@ -157,18 +157,8 @@ export async function runBoe(force: boolean): Promise<Record<string, unknown>> {
   const url =
     "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDBEDR,IUDMNPY&UsingCodes=Y&CSVF=TN&Datefrom=01/Jan/2016&Dateto=now";
   const csv = await getText(url);
-  const data = parseBoeCsv(csv);
-  const latest = data.series.IUDBEDR.latest?.date ?? null;
-  return finish("boe-yields", () =>
-    buildEnvelope({
-      sourceId: "boe-yields",
-      retrievedAt: new Date().toISOString(),
-      releaseDate: latest,
-      nextRelease: null,
-      sourceUrl: "https://www.bankofengland.co.uk/boeapps/database/",
-      data,
-    }),
-  );
+  const retrievedAt = new Date().toISOString();
+  return finish("boe-yields", () => boeSnapshot(csv, retrievedAt));
 }
 
 export async function runDmo(force: boolean): Promise<Record<string, unknown>> {
@@ -179,18 +169,9 @@ export async function runDmo(force: boolean): Promise<Record<string, unknown>> {
   if (!response.ok) {
     throw new Error(`DMO GetSalesData returned ${response.status}`);
   }
-  const body = (await response.json()) as unknown;
-  const data = parseDmoSales(body);
-  return finish("dmo-gilts", () =>
-    buildEnvelope({
-      sourceId: "dmo-gilts",
-      retrievedAt: new Date().toISOString(),
-      releaseDate: new Date().toISOString(),
-      nextRelease: null,
-      sourceUrl: "https://www.dmo.gov.uk/umbraco/surface/TabularData/GetSalesData",
-      data,
-    }),
-  );
+  const raw = await response.text();
+  const retrievedAt = new Date().toISOString();
+  return finish("dmo-gilts", () => dmoSnapshot(raw, retrievedAt));
 }
 
 export async function runObr(force: boolean): Promise<Record<string, unknown>> {
@@ -246,7 +227,9 @@ async function finish(
   build: () => Promise<unknown> | unknown,
 ): Promise<Record<string, unknown>> {
   try {
-    const snapshot = await build();
+    const built = await protectBuild(build, (message) => writeHealth(sourceId, message, true));
+    if (!built.ok) return { status: "validation_failed", error: built.error };
+    const snapshot = built.value;
     const schema = snapshotSchemas[sourceId];
     const parsed = schema.safeParse(snapshot);
     const decision = decidePublish(

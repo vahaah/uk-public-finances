@@ -5,7 +5,7 @@
   "releaseDate": "2026-10-23",
   "nextRelease": null,
   "sourceUrl": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&SeriesCodes=IUDBEDR,IUDMNPY&UsingCodes=Y",
-  "sourceTitle": "Bank Rate and 10-year nominal par yield",
+  "sourceTitle": "Bank Rate and 10-year nominal par gilt yield",
   "publisher": "Bank of England",
   "licence": "Bank of England terms of use",
   "licenceUrl": "https://www.bankofengland.co.uk/legal/terms-and-conditions",

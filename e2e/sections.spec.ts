@@ -42,8 +42,14 @@ test("health endpoint reports fixture sources", async ({ request }) => {
   expect(response.ok()).toBeTruthy();
   const body = await response.json();
   expect(body.ok).toBe(true);
-  expect(body.sources.find((source: { source: string }) => source.source === "ons-psf").status).toBe("ok");
-  expect(body.sources.find((source: { source: string }) => source.source === "obr-databank").status).toBe("missing");
+  const ons = body.sources.find((source: { source: string }) => source.source === "ons-psf");
+  expect(ons.origin).toBe("fixture");
+  expect(ons.releaseDate).toBe("2026-10-20T23:00:00.000Z");
+  expect(ons.validationError).toBeNull();
+  expect(["ok", "stale"]).toContain(ons.status);
+  const obr = body.sources.find((source: { source: string }) => source.source === "obr-databank");
+  expect(obr.status).toBe("missing");
+  expect(obr.origin).toBe("none");
 });
 
 test("robots allows snapshots and AI crawlers", async ({ request }) => {

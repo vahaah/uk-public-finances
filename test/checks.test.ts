@@ -1,12 +1,16 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { evaluateSlot } from "@/lib/clock";
-import { parseCsvLine } from "@/lib/parsers/boe";
 import { pickHmrcReceiptsWorkbook, pickSearchHit } from "@/lib/govuk";
+import { parseCsvLine } from "@/lib/parsers/boe";
 import { droppedTooFar } from "@/lib/quality";
 import { hmrcDataSchema } from "@/lib/schema";
-import { firstValidSnapshot } from "@/lib/store";
-import { readFileSync } from "node:fs";
+import { firstValidSnapshot, loadHealth } from "@/lib/store";
+import { boeSnapshot, dmoSnapshot } from "@/lib/workflows/builds";
+import { protectBuild } from "@/lib/workflows/guard";
 
 describe("cron window", () => {
   it("runs inside the London window and refuses the UTC twin and a second run the same day", () => {
@@ -25,6 +29,53 @@ describe("cron window", () => {
     });
     expect(again.run).toBe(false);
     expect(again.reason).toMatch(/Already ran/);
+  });
+});
+
+describe("parse failures are journaled", () => {
+  it("records a malformed Bank of England CSV and DMO payload instead of throwing", async () => {
+    const journal: string[] = [];
+    const record = async (message: string) => {
+      journal.push(message);
+    };
+    const boe = await protectBuild(() => boeSnapshot("DATE,OTHER\n01 Jan 2024,1", "2026-10-28T00:00:00.000Z"), record);
+    const dmo = await protectBuild(() => dmoSnapshot('{"LastUpdated":"2026-10-28"}', "2026-10-28T00:00:00.000Z"), record);
+    const broken = await protectBuild(() => dmoSnapshot("not-json", "2026-10-28T00:00:00.000Z"), record);
+    expect(boe.ok).toBe(false);
+    expect(dmo.ok).toBe(false);
+    expect(broken.ok).toBe(false);
+    if (!boe.ok) expect(boe.error).toMatch(/IUDBEDR/);
+    if (!dmo.ok) expect(dmo.error).toMatch(/portfolio fields/);
+    if (!broken.ok) expect(broken.error).toMatch(/JSON/);
+    expect(journal).toEqual([boe.ok ? "" : boe.error, dmo.ok ? "" : dmo.error, broken.ok ? "" : broken.error]);
+  });
+
+  it("keeps the BoE and DMO parsers inside finish", () => {
+    const source = readFileSync(path.join(process.cwd(), "lib/workflows/steps.ts"), "utf8");
+    const boe = source.slice(source.indexOf("export async function runBoe"), source.indexOf("export async function runDmo"));
+    const dmo = source.slice(source.indexOf("export async function runDmo"), source.indexOf("export async function runObr"));
+    expect(boe).not.toContain("parseBoeCsv");
+    expect(boe.indexOf("boeSnapshot(")).toBeGreaterThan(boe.indexOf("return finish("));
+    expect(dmo).not.toContain("parseDmoSales");
+    expect(dmo).not.toContain("response.json");
+    expect(dmo.indexOf("dmoSnapshot(")).toBeGreaterThan(dmo.indexOf("return finish("));
+  });
+});
+
+describe("health age", () => {
+  it("keeps a fixture available after it ages past the stale window", async () => {
+    const fresh = await loadHealth(new Date("2026-10-28T12:00:00.000Z"));
+    const onsFresh = fresh.sources.find((source) => source.source === "ons-psf");
+    expect(onsFresh?.origin).toBe("fixture");
+    expect(onsFresh?.status).toBe("ok");
+    expect(fresh.ok).toBe(true);
+    const aged = await loadHealth(new Date("2026-12-20T12:00:00.000Z"));
+    const onsAged = aged.sources.find((source) => source.source === "ons-psf");
+    expect(onsAged?.status).toBe("stale");
+    expect(onsAged?.origin).toBe("fixture");
+    expect(onsAged?.releaseDate).toBe("2026-10-20T23:00:00.000Z");
+    expect(aged.ok).toBe(true);
+    expect(aged.sources.find((source) => source.source === "obr-databank")?.status).toBe("missing");
   });
 });
 
