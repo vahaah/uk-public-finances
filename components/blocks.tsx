@@ -23,12 +23,20 @@ export function PageIntro({
   );
 }
 
-export function Breadcrumb({ current }: { current: string }) {
+export function Breadcrumb({ current, parents = [] }: { current: string; parents?: { href: string; label: string }[] }) {
   return (
     <nav aria-label="Breadcrumb" className="mb-4 text-xs text-neutral-700 dark:text-neutral-300">
       <Link href="/" className="underline decoration-neutral-400 underline-offset-4">
         UK public finances
       </Link>
+      {parents.map((parent) => (
+        <span key={parent.href}>
+          <span aria-hidden="true"> › </span>
+          <Link href={parent.href} className="underline decoration-neutral-400 underline-offset-4">
+            {parent.label}
+          </Link>
+        </span>
+      ))}
       <span aria-hidden="true"> › </span>
       <span>{current}</span>
     </nav>

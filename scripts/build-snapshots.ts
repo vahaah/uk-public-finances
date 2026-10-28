@@ -7,6 +7,7 @@ import { parseHmrcReceipts } from "@/lib/parsers/hmrc";
 import { parseOnsDirectory } from "@/lib/parsers/ons";
 import { parsePriceDirectory } from "@/lib/parsers/prices";
 import { parsePesa } from "@/lib/parsers/pesa";
+import { loadSeedEvents } from "@/lib/budgets/seed";
 import { parseIncomeTax } from "@/lib/parsers/taxpayers";
 import { snapshotSchemas, type SourceId } from "@/lib/schema";
 import { buildEnvelope } from "@/lib/snapshot";
@@ -117,6 +118,29 @@ async function main(): Promise<void> {
   const lastUpdated = typeof (sales.body as { LastUpdated?: string }).LastUpdated === "string"
     ? (sales.body as { LastUpdated: string }).LastUpdated
     : sales.capturedAt;
+  write("budgets-events", buildEnvelope({
+    sourceId: "budgets-events",
+    retrievedAt: FIXTURE_RETRIEVED_AT,
+    releaseDate: null,
+    nextRelease: null,
+    sourceUrl: "https://www.gov.uk/api/search.json",
+    data: { events: loadSeedEvents(), checkedAt: null },
+  }));
+  write("budgets-obr", buildEnvelope({
+    sourceId: "budgets-obr",
+    retrievedAt: FIXTURE_RETRIEVED_AT,
+    releaseDate: null,
+    nextRelease: null,
+    sourceUrl: "https://obr.uk/data/",
+    sourceTitle: "OBR files uploaded to Blob",
+    data: {
+      historical: { loaded: false, asOf: null, vintages: [] },
+      measures: { loaded: false, asOf: null, rows: [] },
+      evaluation: { loaded: false, asOf: null, rows: [] },
+      headroom: { loaded: false, asOf: null, rows: [] },
+    },
+  }));
+
   write("dmo-gilts", buildEnvelope({
     sourceId: "dmo-gilts",
     retrievedAt: lastUpdated,

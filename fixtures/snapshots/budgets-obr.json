@@ -1,0 +1,35 @@
+{
+  "sourceId": "budgets-obr",
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-28T06:45:00.000Z",
+  "releaseDate": null,
+  "nextRelease": null,
+  "sourceUrl": "https://obr.uk/data/",
+  "sourceTitle": "OBR files uploaded to Blob",
+  "publisher": "Office for Budget Responsibility",
+  "licence": "Open Government Licence v3.0",
+  "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "contentHash": "9f2b695fb2e63d1e7ea67779735415cf0a505948f2ad96d9a4d3a94ab4dd1e71",
+  "data": {
+    "historical": {
+      "loaded": false,
+      "asOf": null,
+      "vintages": []
+    },
+    "measures": {
+      "loaded": false,
+      "asOf": null,
+      "rows": []
+    },
+    "evaluation": {
+      "loaded": false,
+      "asOf": null,
+      "rows": []
+    },
+    "headroom": {
+      "loaded": false,
+      "asOf": null,
+      "rows": []
+    }
+  }
+}

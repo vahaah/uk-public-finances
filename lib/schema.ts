@@ -9,6 +9,8 @@ export const SOURCE_IDS = [
   "boe-yields",
   "hmrc-income-tax",
   "obr-databank",
+  "budgets-events",
+  "budgets-obr",
 ] as const;
 
 export type SourceId = (typeof SOURCE_IDS)[number];
@@ -288,6 +290,80 @@ export const priceDataSchema = z
     }
   });
 
+const fiscalDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+export const budgetsEventsDataSchema = z.object({
+  events: z.array(
+    z.object({
+      slug: z.string().min(1),
+      date: fiscalDate,
+      name: z.string().min(1),
+      type: z.enum(["budget", "statement", "emergency", "growth-plan", "forecast-only", "spending-review"]),
+      chancellor: z.string().min(1),
+      government: z.string().min(1),
+      obrForecast: z.enum(["yes", "no", "unknown"]),
+      weight: z.enum(["full", "light"]),
+      govukPath: z.string().nullable(),
+      dateStatus: z.enum(["verified", "unverified", "discovered", "mismatch"]),
+      status: z.enum(["listed", "pending"]),
+      observedDate: fiscalDate.nullable(),
+    }),
+  ).min(1),
+  checkedAt: z.string().nullable(),
+});
+
+const vintageSchema = z.object({
+  date: fiscalDate,
+  precision: z.enum(["day", "month"]),
+  series: z.enum(["psnb", "receipts", "tme", "psnd_pct"]),
+  points: z.array(z.object({ fy: fiscalYear, value: finite })),
+});
+
+export const budgetsObrDataSchema = z.object({
+  historical: z.object({
+    loaded: z.boolean(),
+    asOf: z.string().nullable(),
+    vintages: z.array(vintageSchema),
+  }),
+  measures: z.object({
+    loaded: z.boolean(),
+    asOf: z.string().nullable(),
+    rows: z.array(
+      z.object({
+        eventDate: fiscalDate.nullable(),
+        name: z.string(),
+        category: z.string(),
+        year3: finite.nullable(),
+      }),
+    ),
+  }),
+  evaluation: z.object({
+    loaded: z.boolean(),
+    asOf: z.string().nullable(),
+    rows: z.array(
+      z.object({
+        eventDate: fiscalDate.nullable(),
+        fy: fiscalYear,
+        series: z.string(),
+        policy: finite.nullable(),
+        economy: finite.nullable(),
+        other: finite.nullable(),
+      }),
+    ),
+  }),
+  headroom: z.object({
+    loaded: z.boolean(),
+    asOf: z.string().nullable(),
+    rows: z.array(
+      z.object({
+        eventDate: fiscalDate.nullable(),
+        rule: z.string(),
+        headroomBn: finite.nullable(),
+      }),
+    ),
+  }),
+});
+
 export const obrDataSchema = z.object({
   origin: z.enum(["obr", "blob-manual"]),
   round: z.string().nullable(),
@@ -330,6 +406,8 @@ export const snapshotSchemas = {
   "boe-yields": envelope(boeDataSchema),
   "hmrc-income-tax": envelope(incomeTaxDataSchema),
   "obr-databank": envelope(obrDataSchema),
+  "budgets-events": envelope(budgetsEventsDataSchema),
+  "budgets-obr": envelope(budgetsObrDataSchema),
 } as const;
 
 export type SnapshotOf<T extends SourceId> = z.infer<(typeof snapshotSchemas)[T]>;

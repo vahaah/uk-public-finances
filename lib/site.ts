@@ -18,6 +18,7 @@ export const NAV = [
   { href: "/debt", label: "Debt and gilts" },
   { href: "/taxpayers", label: "Income taxpayers" },
   { href: "/forecasts", label: "Forecasts" },
+  { href: "/budgets", label: "Budgets" },
 ] as const;
 
 export const FOOTER = [
@@ -28,6 +29,7 @@ export const FOOTER = [
   { href: "/faq", label: "FAQ" },
   { href: "/old-money", label: "Old money" },
   { href: "/records", label: "Records" },
+  { href: "/budgets/rules", label: "Fiscal rules" },
   { href: "/api", label: "API" },
 ] as const;
 
@@ -39,6 +41,8 @@ export const REVALIDATE_PATHS = [
   "/debt",
   "/taxpayers",
   "/forecasts",
+  "/budgets",
+  "/budgets/rules",
   "/old-money",
   "/data-health",
   "/llms.txt",
@@ -122,6 +126,24 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
   "obr-databank": {
     id: "obr-databank",
     title: "Public finances databank",
+    publisher: "Office for Budget Responsibility",
+    licence: "Open Government Licence v3.0",
+    licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    page: "https://obr.uk/data/",
+    staleAfterMs: 200 * 24 * 60 * 60 * 1000,
+  },
+  "budgets-events": {
+    id: "budgets-events",
+    title: "Fiscal events since June 2010",
+    publisher: "HM Treasury",
+    licence: "Open Government Licence v3.0",
+    licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    page: "https://www.gov.uk/search/news-and-communications?organisations[]=hm-treasury",
+    staleAfterMs: 45 * 24 * 60 * 60 * 1000,
+  },
+  "budgets-obr": {
+    id: "budgets-obr",
+    title: "OBR historical forecasts, measures and evaluation",
     publisher: "Office for Budget Responsibility",
     licence: "Open Government Licence v3.0",
     licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",

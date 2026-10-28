@@ -1,0 +1,117 @@
+# Rule regimes since June 2010. Outcomes are editorial. Unreviewed means this
+# site has not scored the rule. Do not treat that as met or missed.
+regimes:
+  - id: 2010-mandate
+    name: June 2010 mandate
+    from: 2010-06-22
+    to: 2015-07-08
+    source: https://www.gov.uk/government/publications/charter-for-budget-responsibility
+    sourceTitle: Charter for Budget Responsibility
+    rules:
+      - id: 2010-current-budget
+        name: Cyclically adjusted current budget
+        metric: Balance by the end of the rolling five-year forecast
+        target: Rolling five-year horizon
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility
+      - id: 2010-debt
+        name: Debt falling as a share of GDP
+        metric: Public sector net debt falling by the fixed target year
+        target: 2015-16
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility
+  - id: 2015-charter
+    name: Summer 2015 charter
+    from: 2015-07-08
+    to: 2016-11-23
+    source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-summer-budget-2015-update
+    sourceTitle: Charter for Budget Responsibility, Summer Budget 2015 update
+    rules:
+      - id: 2015-surplus
+        name: Surplus on the headline measure
+        metric: Surplus in 2019-20 and a surplus in normal times
+        target: 2019-20
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-summer-budget-2015-update
+      - id: 2015-welfare
+        name: Welfare cap
+        metric: Welfare spending inside the cap
+        target: Cap set at the Summer Budget
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-summer-budget-2015-update
+  - id: 2016-charter
+    name: Autumn 2016 charter
+    from: 2016-11-23
+    to: 2021-10-27
+    source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2016-update
+    sourceTitle: Charter for Budget Responsibility, autumn 2016 update
+    rules:
+      - id: 2016-structural
+        name: Structural deficit
+        metric: Cyclically adjusted deficit below 2 per cent of GDP
+        target: 2020-21
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2016-update
+      - id: 2016-debt
+        name: Debt falling
+        metric: Public sector net debt falling as a share of GDP
+        target: 2020-21
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2016-update
+  - id: 2021-charter
+    name: Autumn 2021 charter
+    from: 2021-10-27
+    to: 2022-11-17
+    source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2021-update
+    sourceTitle: Charter for Budget Responsibility, autumn 2021 update
+    rules:
+      - id: 2021-current
+        name: Current budget
+        metric: Current budget in balance by the third year of the forecast
+        target: Third year of the forecast
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2021-update
+      - id: 2021-debt
+        name: Debt falling
+        metric: Underlying debt falling as a share of GDP by the third year
+        target: Third year of the forecast
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2021-update
+  - id: 2022-charter
+    name: Autumn 2022 charter
+    from: 2022-11-17
+    to: 2024-10-30
+    source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2022-update
+    sourceTitle: Charter for Budget Responsibility, Autumn 2022 update
+    rules:
+      - id: 2022-debt
+        name: Debt falling
+        metric: Public sector net debt excluding the Bank of England falling as a share of GDP
+        target: Fifth year of the forecast
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2022-update
+      - id: 2022-borrowing
+        name: Borrowing limit
+        metric: Public sector net borrowing below 3 per cent of GDP
+        target: Fifth year of the forecast
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/charter-for-budget-responsibility-autumn-2022-update
+  - id: 2024-charter
+    name: Autumn 2024 charter
+    from: 2024-10-30
+    to: null
+    source: https://www.gov.uk/government/publications/draft-charter-for-budget-responsibility-autumn-2024
+    sourceTitle: Charter for Budget Responsibility, Autumn 2024
+    rules:
+      - id: 2024-current
+        name: Current budget
+        metric: Current budget in balance or surplus
+        target: 2029-30
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/draft-charter-for-budget-responsibility-autumn-2024
+      - id: 2024-debt
+        name: Net financial debt
+        metric: Public sector net financial liabilities falling as a share of GDP
+        target: 2029-30
+        outcome: unreviewed
+        source: https://www.gov.uk/government/publications/draft-charter-for-budget-responsibility-autumn-2024

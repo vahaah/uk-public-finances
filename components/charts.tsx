@@ -10,6 +10,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -18,6 +19,7 @@ import {
 
 import { ChartTooltip } from "@/components/chart-tooltip";
 import { PriceControls, RANGES, usePriceView } from "@/components/prices";
+import { markerPeriod } from "@/lib/budgets/events";
 import { yearLabel, yearTickValues } from "@/lib/chart-time";
 import { formatAxis, formatBillions, formatMonth, formatPercent, HMRC_MILLION, niceTicks } from "@/lib/format";
 import { adjustSeries, chartBaseYear, sliceRange, todayPricesLine, type MoneyFrequency, type PriceBundle } from "@/lib/prices";
@@ -46,20 +48,24 @@ export function useChartTheme() {
   };
 }
 
+export type EventMarker = { date: string; name: string; light: boolean };
+
 export function BorrowingChart({
   months,
   quarters = [],
   years = [],
   prices = null,
+  markers = [],
 }: {
   months: { period: string; value: number }[];
   quarters?: { period: string; value: number }[];
   years?: { period: string; value: number }[];
   prices?: PriceBundle | null;
+  markers?: EventMarker[];
 }) {
   return (
     <Suspense fallback={<div className="h-72" />}>
-      <BorrowingChartInner months={months} quarters={quarters} years={years} prices={prices} />
+      <BorrowingChartInner months={months} quarters={quarters} years={years} prices={prices} markers={markers} />
     </Suspense>
   );
 }
@@ -69,11 +75,13 @@ function BorrowingChartInner({
   quarters,
   years,
   prices,
+  markers,
 }: {
   months: { period: string; value: number }[];
   quarters: { period: string; value: number }[];
   years: { period: string; value: number }[];
   prices: PriceBundle | null;
+  markers: EventMarker[];
 }) {
   const theme = useChartTheme();
   const view = usePriceView();
@@ -135,6 +143,7 @@ function BorrowingChartInner({
                 );
               }}
             />
+            {eventLines(markers, plotted.map((point) => point.period))}
             <Bar dataKey="borrowing" isAnimationActive={false}>
               {plotted.map((point) => (
                 <Cell key={point.period} fill={point.borrowing < 0 ? theme.surplus : theme.bar} />
@@ -282,6 +291,7 @@ export function HistoryChart({
   name,
   gdp = true,
   showRange = true,
+  markers = [],
 }: {
   points: { period: string; value: number }[];
   frequency: "month" | "quarter" | "calendar" | "financial";
@@ -290,10 +300,11 @@ export function HistoryChart({
   name: string;
   gdp?: boolean;
   showRange?: boolean;
+  markers?: EventMarker[];
 }) {
   return (
     <Suspense fallback={<div className="h-72" />}>
-      <HistoryChartInner points={points} frequency={frequency} unit={unit} prices={prices} name={name} gdp={gdp} showRange={showRange} />
+      <HistoryChartInner points={points} frequency={frequency} unit={unit} prices={prices} name={name} gdp={gdp} showRange={showRange} markers={markers} />
     </Suspense>
   );
 }
@@ -306,6 +317,7 @@ function HistoryChartInner({
   name,
   gdp,
   showRange,
+  markers,
 }: {
   points: { period: string; value: number }[];
   frequency: "month" | "quarter" | "calendar" | "financial";
@@ -314,6 +326,7 @@ function HistoryChartInner({
   name: string;
   gdp: boolean;
   showRange: boolean;
+  markers: EventMarker[];
 }) {
   const theme = useChartTheme();
   const view = usePriceView();
@@ -369,6 +382,7 @@ function HistoryChartInner({
                 );
               }}
             />
+            {eventLines(markers, plotted.map((point) => point.period))}
             <Line type="linear" dataKey="value" name={name} stroke={theme.bar} dot={false} activeDot={{ r: 3 }} strokeWidth={2} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
@@ -607,15 +621,15 @@ function YieldChartInner({
   );
 }
 
-export function DebtRatioChart({ points }: { points: { period: string; value: number }[] }) {
+export function DebtRatioChart({ points, markers = [] }: { points: { period: string; value: number }[]; markers?: EventMarker[] }) {
   return (
     <Suspense fallback={<div className="h-56" />}>
-      <DebtRatioChartInner points={points} />
+      <DebtRatioChartInner points={points} markers={markers} />
     </Suspense>
   );
 }
 
-function DebtRatioChartInner({ points }: { points: { period: string; value: number }[] }) {
+function DebtRatioChartInner({ points, markers }: { points: { period: string; value: number }[]; markers: EventMarker[] }) {
   const theme = useChartTheme();
   const [range, setRange] = useQueryState("years", parseAsStringLiteral(ranges).withDefault("10"));
   const data = sliceRange(points, range);
@@ -638,6 +652,7 @@ function DebtRatioChartInner({ points }: { points: { period: string; value: numb
                 />
               )}
             />
+            {eventLines(markers, data.map((point) => point.period))}
             <Line type="linear" dataKey="value" name="Net debt, % of GDP" stroke={theme.bar} dot={false} activeDot={{ r: 3 }} strokeWidth={2} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
@@ -686,6 +701,23 @@ function Segmented<T extends string>({
       ))}
     </div>
   );
+}
+
+function eventLines(markers: EventMarker[], periods: string[]) {
+  const seen = new Set<string>();
+  return markers.flatMap((marker) => {
+    const period = markerPeriod(marker.date, periods);
+    if (!period || seen.has(period)) return [];
+    seen.add(period);
+    return [
+      <ReferenceLine
+        key={period}
+        x={period}
+        stroke={marker.light ? "#a3a3a3" : "#525252"}
+        strokeDasharray={marker.light ? "3 3" : undefined}
+      />,
+    ];
+  });
 }
 
 function formatPeriod(period: string): string {

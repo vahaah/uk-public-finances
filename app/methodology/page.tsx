@@ -18,6 +18,7 @@ const SECTIONS = [
   ["revisions", "Revisions"],
   ["nominal", "Nominal figures"],
   ["prices", "Prices and history"],
+  ["budgets", "Budgets and forecasts"],
   ["not-estimated", "What this site does not estimate"],
   ["licence", "Licence"],
 ] as const;
@@ -92,6 +93,12 @@ export default function MethodologyPage() {
           </p>
           <p className="mt-2">
             Real terms on the money charts use the GDP deflator at market prices. HM Treasury&apos;s September 2026 GDP deflators release says calendar years are taken from ONS series MNF2 and financial years from ONS series L8GG. A financial year here is the average of the four L8GG quarters from Q2 to the following Q1. A month uses the L8GG quarter that contains it. The base year defaults to 2025, the latest calendar year with a MNF2 observation and a complete L8GG year. A share of GDP uses non-seasonally adjusted money GDP, ONS series BKTL. A financial-year total of BKTL is the sum of those same four quarters. A single month is not shown as a share of GDP. CPI (D7BT), CPIH (L522) and RPI (CHAW) are used on the old-money page. RPI is for index-linked gilts, not for spending.
+          </p>
+        </section>
+        <section id="budgets">
+          <h2 className="text-base font-medium text-neutral-950 dark:text-white">Budgets and forecasts</h2>
+          <p className="mt-2">
+            A year-ahead forecast is the first financial year that starts after the event. A financial year starts on 1 April, so an event in October is compared with the year that starts the following April. The financial year already underway is not included. The stored difference is the ONS outturn minus the OBR forecast. The page says under-forecast when the outturn was higher, and over-forecast when the outturn was lower. Borrowing outturn is J5II summed from April to March and shown with the bulletin sign. Debt as a share of GDP uses HF6X in the March that ends the financial year. That is public sector net debt excluding public sector banks. CPOA, which also excludes the Bank of England, stays on the debt page and is not the series compared with the OBR. In the OBR policy measures database a positive number is an Exchequer yield and a negative number is an Exchequer cost. Rule outcomes stay unassessed until the reviewed file marks them.
           </p>
         </section>
         <section id="not-estimated">

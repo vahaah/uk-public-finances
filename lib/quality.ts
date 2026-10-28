@@ -34,6 +34,17 @@ export function snapshotRows(snapshot: AnySnapshot): number {
       return (snapshot as SnapshotOf<"dmo-gilts">).data.portfolio ? 1 : 0;
     case "obr-databank":
       return (snapshot as SnapshotOf<"obr-databank">).data.series.reduce((sum, series) => sum + series.points.length, 0);
+    case "budgets-events":
+      return (snapshot as SnapshotOf<"budgets-events">).data.events.length;
+    case "budgets-obr": {
+      const data = (snapshot as SnapshotOf<"budgets-obr">).data;
+      return (
+        data.historical.vintages.reduce((sum, vintage) => sum + vintage.points.length, 0) +
+        data.measures.rows.length +
+        data.evaluation.rows.length +
+        data.headroom.rows.length
+      );
+    }
     default:
       return assertNever(sourceId);
   }

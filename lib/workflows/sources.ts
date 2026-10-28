@@ -6,6 +6,8 @@ import {
   runDmo,
   runHmrc,
   runIncomeTax,
+  runBudgetsEvents,
+  runBudgetsObr,
   runObr,
   runOns,
   runPesa,
@@ -69,6 +71,16 @@ export async function obrDatabankWorkflow(input: Input): Promise<Record<string, 
   return settle("obr-databank", runObr, Boolean(input.force));
 }
 
+export async function budgetsEventsWorkflow(input: Input): Promise<Record<string, unknown>> {
+  "use workflow";
+  return settle("budgets-events", runBudgetsEvents, Boolean(input.force));
+}
+
+export async function budgetsObrWorkflow(input: Input): Promise<Record<string, unknown>> {
+  "use workflow";
+  return settle("budgets-obr", runBudgetsObr, Boolean(input.force));
+}
+
 export const DAILY_WORKFLOWS = [
   onsPsfWorkflow,
   pricesWorkflow,
@@ -78,4 +90,6 @@ export const DAILY_WORKFLOWS = [
   boeYieldsWorkflow,
   dmoGiltsWorkflow,
   obrDatabankWorkflow,
+  budgetsEventsWorkflow,
+  budgetsObrWorkflow,
 ] as const;

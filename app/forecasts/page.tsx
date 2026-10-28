@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
@@ -61,6 +63,11 @@ export default async function ForecastsPage() {
         pending
         detail="Until it is, this page shows ONS figures only."
       />
+      <p className="mt-3 text-sm">
+        <Link className="underline decoration-neutral-400 underline-offset-4" href="/budgets">
+          Earlier Budgets and how their forecasts turned out
+        </Link>
+      </p>
       <div className="mt-6">
         {ons?.data.financialYear ? (
           <ChartFrame
