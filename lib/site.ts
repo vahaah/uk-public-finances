@@ -41,6 +41,7 @@ export const REVALIDATE_PATHS = [
   "/debt",
   "/taxpayers",
   "/forecasts",
+  "/forecasts/history",
   "/budgets",
   "/budgets/rules",
   "/old-money",

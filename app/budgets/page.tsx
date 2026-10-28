@@ -10,7 +10,7 @@ import { eventLabel } from "@/lib/budgets/events";
 import { loadSeedEvents } from "@/lib/budgets/seed";
 import { outcomeLabel } from "@/lib/budgets/rules";
 import { outturnByFy, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
-import { formatDateLong } from "@/lib/format";
+import { formatDateLong, formatMonthYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import type { budgetsObrDataSchema } from "@/lib/schema";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -85,7 +85,7 @@ export default async function BudgetsPage() {
 }
 
 function indexCite(rows: YearAheadComparison[], firstEvent: string, asOf: string): string {
-  const comparable = rows.filter((row) => row.difference != null && row.event.obrForecast === "yes");
+  const comparable = rows.filter((row) => row.difference != null && row.event.obrForecast === "yes" && !row.basisChanged);
   if (comparable.length === 0) {
     return "The year ahead is the first financial year that starts after the event. A lighter marker is an OBR outlook with no Budget.";
   }
@@ -98,13 +98,13 @@ function indexCite(rows: YearAheadComparison[], firstEvent: string, asOf: string
   const median = sorted.length % 2 === 1 ? (sorted[mid] ?? 0) : ((left ?? 0) + (right ?? 0)) / 2;
   const medianWords = differenceWords(median, "bn");
   const medianBit = medianWords.direction === "matched" ? "matched the outturn" : `£${Math.abs(roundDifference(median)).toFixed(1)}bn ${medianWords.direction}`;
-  return `Across ${comparable.length} fiscal events since ${firstEvent}, the OBR's forecast of borrowing for the year ahead was too high ${over} times and too low ${under} times. The median difference was ${medianBit}. ${asOf} Excludes events with no OBR forecast and years that have not ended.`;
+  return `Across ${comparable.length} fiscal events since ${firstEvent}, the OBR's forecast of borrowing for the year ahead was too high ${over} times and too low ${under} times. The median difference was ${medianBit}. ${asOf} Excludes events with no OBR forecast, years that have not ended and forecasts made on an older statistical basis.`;
 }
 
 function obrFreshness(data: z.infer<typeof budgetsObrDataSchema> | undefined, retrievedAt: string | null): string {
   if (!data?.historical.loaded) return "OBR data not loaded.";
   const when = data.historical.asOf ?? retrievedAt;
-  return when ? `OBR data as of ${formatDateLong(when)}.` : "OBR data as of an unknown date.";
+  return when ? `OBR data as of ${formatMonthYear(when)}.` : "OBR data as of an unknown date.";
 }
 
 function porcupineLines(

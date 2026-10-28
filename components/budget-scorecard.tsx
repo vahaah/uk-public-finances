@@ -63,6 +63,11 @@ export function BudgetScorecard({ rows, ruleLabel }: { rows: YearAheadComparison
                           ? "OBR forecasts not loaded yet"
                           : "Not yet due"
                         : `${formatSignedDifference(row.difference, "bn")} ${row.direction === "over" ? "Over-forecast" : row.direction === "under" ? "Under-forecast" : "Matched the outturn"}`}
+                      {row.basisChanged && row.difference != null ? (
+                        <span className="ml-2 inline-flex h-5 items-center rounded-full border border-neutral-300 px-2 text-xs dark:border-neutral-700" title="Forecast made before the September 2019 ONS changes to how borrowing is measured. Not like for like.">
+                          Basis changed
+                        </span>
+                      ) : null}
                     </td>
                   </>
                 )}
@@ -73,7 +78,7 @@ export function BudgetScorecard({ rows, ruleLabel }: { rows: YearAheadComparison
         </table>
       </div>
       <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-        Replaced rules are not counted as met or missed. Events with no OBR forecast and years that have not ended are left out of the median.
+        Replaced rules are not counted as met or missed. Events with no OBR forecast, years that have not ended and rows marked Basis changed are left out of the median. Basis changed means the forecast was made before the September 2019 ONS changes to how borrowing is measured.
       </p>
     </div>
   );
