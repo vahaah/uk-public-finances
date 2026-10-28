@@ -34,3 +34,16 @@ export function loadRuleRegimes(): RuleRegime[] {
   const parsed = z.object({ regimes: z.array(ruleRegimeSchema).min(1) }).parse(parseRegistryYaml(readFileSync(file, "utf8")));
   return parsed.regimes;
 }
+
+/**
+ * Events to show: the registry in code first, then any events the daily GOV.UK check found
+ * that the registry does not have yet. A registry change (a new event, a renamed one) shows on
+ * deploy, without waiting for the next ingest run to rewrite the snapshot.
+ */
+export function withSeedEvents(snapshotEvents: FiscalEvent[] | undefined): FiscalEvent[] {
+  const seed = loadSeedEvents();
+  const slugs = new Set(seed.map((event) => event.slug));
+  const paths = new Set(seed.map((event) => event.govukPath).filter(Boolean));
+  const discovered = (snapshotEvents ?? []).filter((event) => !slugs.has(event.slug) && !(event.govukPath && paths.has(event.govukPath)));
+  return [...seed, ...discovered].sort((left, right) => left.date.localeCompare(right.date));
+}

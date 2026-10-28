@@ -190,3 +190,16 @@ describe("measure footnote markers", () => {
   });
 });
 
+
+describe("withSeedEvents", () => {
+  it("prefers the registry and keeps newly discovered events", async () => {
+    const { loadSeedEvents, withSeedEvents } = await import("@/lib/budgets/seed");
+    const seed = loadSeedEvents();
+    const stale = { ...seed.find((event) => event.slug === "2022-09-growth-plan")!, name: "Growth Plan" };
+    const found = { ...seed[0]!, slug: "2027-03-budget", date: "2027-03-10", govukPath: "/government/publications/budget-2027" };
+    const merged = withSeedEvents([stale, found]);
+    expect(merged.find((event) => event.slug === "2022-09-growth-plan")?.name).toBe("Growth Plan 2022");
+    expect(merged.some((event) => event.slug === "2026-10-budget")).toBe(true);
+    expect(merged.at(-1)?.slug).toBe("2027-03-budget");
+  });
+});
