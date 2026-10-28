@@ -7,7 +7,7 @@ export type Grid = Cell[][];
 
 const MAX_REPEAT = 40;
 
-export async function readXlsx(buffer: Buffer): Promise<Record<string, Grid>> {
+export async function readXlsx(buffer: Buffer, maxColumns = 48): Promise<Record<string, Grid>> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer as unknown as ExcelJS.Buffer);
   const sheets: Record<string, Grid> = {};
@@ -15,7 +15,7 @@ export async function readXlsx(buffer: Buffer): Promise<Record<string, Grid>> {
     const rows: Grid = [];
     sheet.eachRow({ includeEmpty: true }, (row) => {
       const cells: Cell[] = [];
-      const width = Math.min(row.cellCount, 48);
+      const width = Math.min(row.cellCount, maxColumns);
       for (let column = 1; column <= width; column += 1) {
         cells.push(excelCell(row.getCell(column).value));
       }

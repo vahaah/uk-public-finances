@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { loadSeedEvents } from "@/lib/budgets/seed";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SITE_URL } from "@/lib/site";
 
@@ -25,6 +26,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/debt", lastModified: onsDate ?? boeDate, changeFrequency: "monthly", priority: 0.8 },
     { path: "/taxpayers", lastModified: taxDate, changeFrequency: "yearly", priority: 0.7 },
     { path: "/forecasts", lastModified: onsDate, changeFrequency: "monthly", priority: 0.6 },
+    { path: "/budgets", lastModified: staticDate, changeFrequency: "monthly", priority: 0.7 },
+    { path: "/budgets/rules", lastModified: staticDate, changeFrequency: "yearly", priority: 0.5 },
+    ...loadSeedEvents().map((event) => ({ path: `/budgets/${event.slug}`, lastModified: staticDate, changeFrequency: "monthly" as const, priority: 0.4 })),
     { path: "/old-money", lastModified: staticDate, changeFrequency: "monthly", priority: 0.6 },
     { path: "/records", lastModified: onsDate, changeFrequency: "monthly", priority: 0.6 },
     { path: "/methodology", lastModified: staticDate, changeFrequency: "yearly", priority: 0.4 },

@@ -5,6 +5,7 @@ import { HistoryChart, ReceiptsChart } from "@/components/charts";
 import { JumpTo } from "@/components/jump-to";
 import { ReceiptMixChart } from "@/components/mix-chart";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
+import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatGbpFromMillions, formatMonth, formatPercent, formatReceiptBn, formatReceiptShare } from "@/lib/format";
 import { receiptMix } from "@/lib/mix";
 import { SITE_URL } from "@/lib/site";
@@ -21,7 +22,7 @@ export const metadata = pageMeta({
 });
 
 export default async function ReceiptsPage() {
-  const [loaded, priceLoaded] = await Promise.all([readSnapshot("hmrc-receipts"), readSnapshot("ons-prices")]);
+  const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("hmrc-receipts"), readSnapshot("ons-prices"), fiscalMarkers()]);
   const snapshot = takeSnapshot("hmrc-receipts", loaded.snapshot);
   const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
   const bundle = prices ? priceBundle(prices.data) : null;
@@ -149,6 +150,7 @@ export default async function ReceiptsPage() {
             unit="million"
             prices={bundle}
             name="Total HMRC receipts"
+            markers={markers}
           />
         </ChartFrame>
       </div>
@@ -174,6 +176,7 @@ export default async function ReceiptsPage() {
             prices={bundle}
             gdp={false}
             name="HMRC receipts"
+            markers={markers}
           />
           <details className="mt-3 text-sm">
             <summary className="cursor-pointer font-medium">Show table</summary>

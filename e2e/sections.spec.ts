@@ -13,6 +13,8 @@ const pages = [
   ["/debt", "debt", "94.0%"],
   ["/taxpayers", "taxpayers", "26.6%"],
   ["/forecasts", "forecasts", "The OBR forecast is not available yet"],
+  ["/budgets", "budgets", "How did each Budget's plans turn out?"],
+  ["/budgets/rules", "rules", "What fiscal rules has the government set itself?"],
   ["/old-money", "old-money", "Best for public spending"],
   ["/methodology", "methodology", "How are the numbers calculated?"],
   ["/data-sources", "data-sources", "Office for National Statistics"],

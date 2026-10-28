@@ -1,5 +1,6 @@
 import { BorrowingChart, CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
+import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatGbpFromMillions, formatMonth, formatMonthLong, previousFinancialYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
@@ -14,7 +15,7 @@ export const metadata = pageMeta({
 });
 
 export default async function BorrowingPage() {
-  const [loaded, priceLoaded] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices")]);
+  const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices"), fiscalMarkers()]);
   const snapshot = takeSnapshot("ons-psf", loaded.snapshot);
   const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
   const bundle = prices ? priceBundle(prices.data) : null;
@@ -79,6 +80,7 @@ export default async function BorrowingPage() {
           quarters={snapshot.data.series.j5ii?.quarters ?? []}
           years={snapshot.data.series.j5ii?.years ?? []}
           prices={bundle}
+          markers={markers}
         />
       </ChartFrame>
       <div className="mt-3">

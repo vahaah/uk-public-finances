@@ -18,6 +18,7 @@ const SECTIONS = [
   ["revisions", "Revisions"],
   ["nominal", "Nominal figures"],
   ["prices", "Prices and history"],
+  ["budgets", "Budgets and forecasts"],
   ["not-estimated", "What this site does not estimate"],
   ["licence", "Licence"],
 ] as const;
@@ -92,6 +93,12 @@ export default function MethodologyPage() {
           </p>
           <p className="mt-2">
             Real terms on the money charts use the GDP deflator at market prices. HM Treasury&apos;s September 2026 GDP deflators release says calendar years are taken from ONS series MNF2 and financial years from ONS series L8GG. A financial year here is the average of the four L8GG quarters from Q2 to the following Q1. A month uses the L8GG quarter that contains it. The base year defaults to 2025, the latest calendar year with a MNF2 observation and a complete L8GG year. A share of GDP uses non-seasonally adjusted money GDP, ONS series BKTL. A financial-year total of BKTL is the sum of those same four quarters. A single month is not shown as a share of GDP. CPI (D7BT), CPIH (L522) and RPI (CHAW) are used on the old-money page. RPI is for index-linked gilts, not for spending.
+          </p>
+        </section>
+        <section id="budgets">
+          <h2 className="text-base font-medium text-neutral-950 dark:text-white">Budgets and forecasts</h2>
+          <p className="mt-2">
+            The equation is outturn minus forecast. The stored field is called difference. Below zero, the forecast was too high. Above zero, it was too low. A difference that rounds to zero at £0.1bn matched the outturn. The OBR does not publish a wider band for a forecast that was merely close, so this site does not add one. A year-ahead forecast is the first financial year that starts after the event. A March Budget is still in the financial year that ends in early April, so its year ahead is the year that starts that April. That is the OBR&apos;s one-year-ahead horizon: a forecast made in the previous financial year. The year already underway is left out. Borrowing outturn is J5II summed from April to March, with borrowing shown as a positive number. Debt as a share of GDP uses HF6X in the March that ends the financial year, the same debt ratio as the rest of this site. CPOA, which also excludes the Bank of England, stays on the debt page. In the OBR policy measures database a positive number raises money and a negative number costs money. Those amounts are £ million. The third-year column is the financial year two years after the financial year that contains the event, not the third column in the sheet. Rule outcomes stay unassessed until the reviewed file marks them. Headroom is taken from that same reviewed file, with the source recorded on each rule. The March 2026 forecast did not publish a fiscal rules table, so the OBR headroom workbook is optional and a missing file leaves the reviewed figures in place.
           </p>
         </section>
         <section id="not-estimated">

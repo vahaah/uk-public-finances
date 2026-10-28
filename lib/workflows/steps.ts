@@ -18,10 +18,19 @@ import { parseHmrcReceipts } from "@/lib/parsers/hmrc";
 import { parseIncomeTax } from "@/lib/parsers/taxpayers";
 import { ONS_FILES, parseOnsRecords } from "@/lib/parsers/ons";
 import { parsePriceRecords } from "@/lib/parsers/prices";
+import { applyContentDate, discoverEvents, type GovukHit } from "@/lib/budgets/events";
+import { loadSeedEvents } from "@/lib/budgets/seed";
+import {
+  OBR_BLOB,
+  parseEvaluationWorkbook,
+  parseHeadroomWorkbook,
+  parseHistoricalForecasts,
+  parseMeasuresWorkbook,
+} from "@/lib/budgets/forecasts";
 import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
-import { snapshotSchemas, type AnySnapshot, type SourceId } from "@/lib/schema";
+import { snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
 import { buildEnvelope, decidePublish, shouldWriteSnapshot } from "@/lib/snapshot";
 import { readSnapshot } from "@/lib/store";
 import { REVALIDATE_PATHS, USER_AGENT } from "@/lib/site";
@@ -359,6 +368,104 @@ async function writeJson(pathname: string, value: unknown, overwritten: boolean)
     contentType: "application/json",
     ...(overwritten ? { cacheControlMaxAge: 60 } : {}),
   });
+}
+
+export async function runBudgetsEvents(_force: boolean): Promise<Record<string, unknown>> {
+  "use step";
+  const seed = loadSeedEvents();
+  let hits: GovukHit[] = [];
+  try {
+    hits = await searchFiscalEvents();
+  } catch {
+    hits = [];
+  }
+  const checked = [];
+  for (const event of seed) {
+    if (!event.govukPath) {
+      checked.push(event);
+      continue;
+    }
+    try {
+      const content = await getJson(`https://www.gov.uk/api/content${event.govukPath}`);
+      const published = (content as { first_published_at?: string }).first_published_at ?? null;
+      checked.push(applyContentDate(event, published));
+    } catch {
+      checked.push(event);
+    }
+  }
+  const events = [...checked, ...discoverEvents(seed, hits)];
+  return finish("budgets-events", () =>
+    buildEnvelope({
+      sourceId: "budgets-events",
+      retrievedAt: new Date().toISOString(),
+      releaseDate: null,
+      nextRelease: null,
+      sourceUrl: "https://www.gov.uk/api/search.json",
+      data: { events, checkedAt: new Date().toISOString() },
+    }),
+  );
+}
+
+export async function runBudgetsObr(_force: boolean): Promise<Record<string, unknown>> {
+  "use step";
+  const historical = await readOptionalBlob(OBR_BLOB.historical);
+  const current = await readSnapshot("budgets-obr");
+  const previous = current.snapshot?.sourceId === "budgets-obr" ? (current.snapshot as SnapshotOf<"budgets-obr">).data : null;
+  if (!historical && previous?.historical.loaded) {
+    return { status: "unchanged", detail: "Historical forecasts file is not in Blob. Keeping the last load." };
+  }
+  const measures = await readOptionalBlob(OBR_BLOB.measures);
+  const evaluation = await readOptionalBlob(OBR_BLOB.evaluation);
+  const headroom = await readOptionalBlob(OBR_BLOB.headroom);
+  return finish("budgets-obr", async () => {
+    const historicalData = historical
+      ? { loaded: true as const, ...(await parseHistoricalForecasts(historical.bytes)) }
+      : { loaded: false as const, asOf: null, vintages: [] };
+    const measureEvents = loadSeedEvents().map((event) => ({ name: event.name, date: event.date }));
+    const measuresData = measures
+      ? { loaded: true as const, ...(await parseMeasuresWorkbook(measures.bytes, measureEvents)) }
+      : { loaded: false as const, asOf: null, rows: [] };
+    const evaluationData = evaluation
+      ? { loaded: true as const, ...(await parseEvaluationWorkbook(evaluation.bytes)) }
+      : { loaded: false as const, asOf: null, rows: [] };
+    const parsedHeadroom = headroom ? await parseHeadroomWorkbook(headroom.bytes) : { asOf: null, rows: [] };
+    const headroomData =
+      parsedHeadroom.rows.length > 0
+        ? { loaded: true as const, ...parsedHeadroom }
+        : { loaded: false as const, asOf: null, rows: [] };
+    const asOf = [historicalData.asOf, measuresData.asOf, evaluationData.asOf, headroomData.asOf].filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
+    return buildEnvelope({
+      sourceId: "budgets-obr",
+      retrievedAt: new Date().toISOString(),
+      releaseDate: asOf,
+      nextRelease: null,
+      sourceUrl: "https://obr.uk/data/",
+      sourceTitle: "OBR files uploaded to Blob",
+      data: { historical: historicalData, measures: measuresData, evaluation: evaluationData, headroom: headroomData },
+    });
+  });
+}
+
+async function searchFiscalEvents(): Promise<GovukHit[]> {
+  const url = new URL("https://www.gov.uk/api/search.json");
+  url.searchParams.set("q", 'Budget OR "Autumn Statement" OR "Spring Statement" OR "Growth Plan" OR "Spending Review"');
+  url.searchParams.set("count", "50");
+  url.searchParams.set("order", "-public_timestamp");
+  url.searchParams.set("filter_organisations", "hm-treasury");
+  const body = await getJson(url.toString());
+  return (Array.isArray(body.results) ? body.results : []) as GovukHit[];
+}
+
+async function readOptionalBlob(pathname: string): Promise<{ bytes: Buffer } | null> {
+  try {
+    const blob = await head(pathname);
+    const response = await fetch(blob.url);
+    if (!response.ok) throw new Error(`${pathname} returned ${response.status}`);
+    return { bytes: Buffer.from(await response.arrayBuffer()) };
+  } catch (error) {
+    if (isMissing(error)) return null;
+    throw error;
+  }
 }
 
 async function readManualObr(): Promise<{ bytes: Buffer; uploadedAt: string | null }> {

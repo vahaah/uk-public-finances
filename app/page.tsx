@@ -1,3 +1,4 @@
+import { fiscalMarkers } from "@/lib/budgets/markers";
 import { CiteShare } from "@/components/cite-share";
 import { BorrowingChart, CumulativeChart } from "@/components/charts";
 import { EquationRow } from "@/components/equation-row";
@@ -26,7 +27,7 @@ export const metadata = pageMeta({
 });
 
 export default async function HomePage() {
-  const [loaded, priceLoaded] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices")]);
+  const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices"), fiscalMarkers()]);
   const snapshot = takeSnapshot("ons-psf", loaded.snapshot);
   const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
   const meta = SOURCES["ons-psf"];
@@ -220,6 +221,7 @@ export default async function HomePage() {
             quarters={data.series.j5ii?.quarters ?? []}
             years={data.series.j5ii?.years ?? []}
             prices={prices ? priceBundle(prices.data) : null}
+            markers={markers}
           />
         </ChartFrame>
       </div>

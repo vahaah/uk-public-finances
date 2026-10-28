@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DebtRatioChart, YieldChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { CiteShare } from "@/components/cite-share";
+import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatBillions, formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent, formatRelease } from "@/lib/format";
 import { reconcileSignedDisplay } from "@/lib/display-rounding";
 import { SITE_URL } from "@/lib/site";
@@ -18,11 +19,12 @@ export const metadata = pageMeta({
 });
 
 export default async function DebtPage() {
-  const [onsLoaded, boeLoaded, dmoLoaded, health] = await Promise.all([
+  const [onsLoaded, boeLoaded, dmoLoaded, health, markers] = await Promise.all([
     readSnapshot("ons-psf"),
     readSnapshot("boe-yields"),
     readSnapshot("dmo-gilts"),
     loadHealth(),
+    fiscalMarkers(),
   ]);
   const ons = takeSnapshot("ons-psf", onsLoaded.snapshot);
   const boe = takeSnapshot("boe-yields", boeLoaded.snapshot);
@@ -147,7 +149,7 @@ export default async function DebtPage() {
               />
             }
           >
-            <DebtRatioChart points={ons.data.series.hf6x?.months ?? []} />
+            <DebtRatioChart points={ons.data.series.hf6x?.months ?? []} markers={markers} />
           </ChartFrame>
         </div>
       ) : null}

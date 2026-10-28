@@ -5,6 +5,7 @@ import { DepartmentChart, HistoryChart, SpendingVisuals } from "@/components/cha
 import { JumpTo } from "@/components/jump-to";
 import { FunctionMixChart } from "@/components/mix-chart";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
+import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatBillions, formatGbpFromMillions, formatPercent } from "@/lib/format";
 import { functionMix, realFunctionGrowth } from "@/lib/mix";
 import { SITE_URL } from "@/lib/site";
@@ -21,7 +22,7 @@ export const metadata = pageMeta({
 });
 
 export default async function SpendingPage() {
-  const [loaded, priceLoaded] = await Promise.all([readSnapshot("pesa"), readSnapshot("ons-prices")]);
+  const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("pesa"), readSnapshot("ons-prices"), fiscalMarkers()]);
   const snapshot = takeSnapshot("pesa", loaded.snapshot);
   const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
   const bundle = prices ? priceBundle(prices.data) : null;
@@ -168,6 +169,7 @@ export default async function SpendingPage() {
             unit="billion"
             prices={bundle}
             name="Total managed expenditure"
+            markers={markers}
           />
         </ChartFrame>
       </div>
