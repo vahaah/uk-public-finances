@@ -12,6 +12,7 @@ import { outcomeLabel } from "@/lib/budgets/rules";
 import { outturnByFy, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
 import { formatDateLong, formatMonthYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { SITE_URL } from "@/lib/site";
 import type { budgetsObrDataSchema } from "@/lib/schema";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import type { z } from "zod";
@@ -38,7 +39,7 @@ export default async function BudgetsPage() {
   const asOf = obrFreshness(obr?.data, obr?.retrievedAt ?? null);
   const firstVerified = events.find((event) => event.dateStatus === "verified");
   const firstLabel = firstVerified
-    ? `the ${new Date(`${firstVerified.date}T12:00:00Z`).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "Europe/London" })} ${eventLabel(firstVerified)}`
+    ? `the ${eventLabel(firstVerified)}`
     : "the first OBR forecast";
   const lines = porcupineLines(events, vintages);
   const outturn = outturnByFy(
@@ -49,6 +50,20 @@ export default async function BudgetsPage() {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd("Budgets", "/budgets")} />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "UK Budgets and fiscal events since 2010",
+          itemListOrder: "https://schema.org/ItemListOrderAscending",
+          itemListElement: events.map((event, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: eventLabel(event),
+            url: `${SITE_URL}/budgets/${event.slug}`,
+          })),
+        }}
+      />
       <Breadcrumb current="Budgets" />
       <PageIntro kicker="Budgets" title="How did each Budget's plans turn out?" lede={indexCite(rows, firstLabel, asOf)} />
       <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{asOf}</p>

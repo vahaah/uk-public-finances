@@ -57,7 +57,7 @@ export default async function SpendingPage() {
       />
       <PageIntro
         kicker="HM Treasury PESA"
-        title="What does the government spend money on?"
+        title="What does the UK government spend money on?"
         lede={
           <>
             <p>

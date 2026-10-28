@@ -32,11 +32,11 @@ describe("fiscal events", () => {
 
   it("adds a later GOV.UK publication as pending and ignores factsheets", () => {
     const found = discoverEvents(events, [
-      { title: "Budget 2026: documents", link: "/government/publications/budget-2026-document", public_timestamp: "2026-03-11T00:00:00Z" },
-      { title: "Budget 2026: factsheet", link: "/government/publications/budget-2026-factsheet", public_timestamp: "2026-03-11T00:00:00Z" },
+      { title: "Budget 2027: documents", link: "/government/publications/budget-2027-document", public_timestamp: "2027-03-11T00:00:00Z" },
+      { title: "Budget 2027: factsheet", link: "/government/publications/budget-2027-factsheet", public_timestamp: "2027-03-11T00:00:00Z" },
       { title: "Budget 2011", link: "/government/publications/budget-2011", public_timestamp: "2011-03-23T00:00:00Z" },
     ]);
-    expect(found.map((event) => event.govukPath)).toEqual(["/government/publications/budget-2026-document"]);
+    expect(found.map((event) => event.govukPath)).toEqual(["/government/publications/budget-2027-document"]);
     expect(found[0]).toMatchObject({ status: "pending", dateStatus: "discovered", obrForecast: "unknown" });
   });
 });

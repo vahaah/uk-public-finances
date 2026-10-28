@@ -9,13 +9,13 @@
   "publisher": "HM Treasury",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "788b5cc20e8e572407d51a7286f4a9020f3dcb59b8644ed1c87af2be78deec2a",
+  "contentHash": "a79c1c92399170caa7e61dca8884377f7ffd2929c546ac12967ac9cc44bcc069",
   "data": {
     "events": [
       {
         "slug": "2010-06-emergency-budget",
         "date": "2010-06-22",
-        "name": "Emergency Budget",
+        "name": "Emergency Budget 2010",
         "shortName": null,
         "type": "emergency",
         "chancellor": "George Osborne",
@@ -30,8 +30,8 @@
       {
         "slug": "2010-11-obr-outlook",
         "date": "2010-11-29",
-        "name": "Economic and fiscal outlook",
-        "shortName": null,
+        "name": "Economic and fiscal outlook November 2010",
+        "shortName": "OBR outlook November 2010",
         "type": "forecast-only",
         "chancellor": "George Osborne",
         "government": "Con-LD coalition",
@@ -390,7 +390,7 @@
       {
         "slug": "2022-09-growth-plan",
         "date": "2022-09-23",
-        "name": "Growth Plan",
+        "name": "Growth Plan 2022",
         "shortName": null,
         "type": "growth-plan",
         "chancellor": "Kwasi Kwarteng",
@@ -520,6 +520,21 @@
         "govukPath": "/government/publications/march-2026-economic-and-fiscal-outlook",
         "dateStatus": "verified",
         "status": "listed",
+        "observedDate": null
+      },
+      {
+        "slug": "2026-10-budget",
+        "date": "2026-10-28",
+        "name": "Budget 2026",
+        "shortName": null,
+        "type": "budget",
+        "chancellor": "John Healey",
+        "government": "Labour",
+        "obrForecast": "yes",
+        "weight": "full",
+        "govukPath": "/government/publications/budget-2026-document",
+        "dateStatus": "verified",
+        "status": "pending",
         "observedDate": null
       }
     ],

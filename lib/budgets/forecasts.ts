@@ -67,8 +67,8 @@ const MEASURE_SHEETS = new Set(["Tax Measures", "Spending Measures"]);
  * "Autumn 2010" is the November 2010 outlook, the only autumn 2010 event in the registry.
  */
 const MEASURE_NAME_ALIASES: Record<string, string> = {
-  "Budget 2010 #2": "Emergency Budget",
-  "Autumn 2010": "Economic and fiscal outlook",
+  "Budget 2010 #2": "Emergency Budget 2010",
+  "Autumn 2010": "Economic and fiscal outlook November 2010",
   "Autumn 2011": "Autumn Statement 2011",
   "Autumn 2012": "Autumn Statement 2012",
   "Autumn 2013": "Autumn Statement 2013",

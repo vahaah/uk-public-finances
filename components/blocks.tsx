@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 import { formatRelease } from "@/lib/format";
 import type { SourceId } from "@/lib/schema";
-import { SITE_URL } from "@/lib/site";
+import { AUTHOR, SITE_URL } from "@/lib/site";
 
 export function PageIntro({
   kicker,
@@ -257,8 +257,8 @@ export function datasetJsonLd(input: {
     spatialCoverage: { "@type": "Country", name: "United Kingdom" },
     variableMeasured: input.variableMeasured,
     dateModified: input.dateModified ?? undefined,
-    creator: { "@id": "https://vahaah.com/#person" },
-    publisher: { "@id": "https://vahaah.com/#person" },
+    creator: AUTHOR_JSON_LD,
+    publisher: AUTHOR_JSON_LD,
     includedInDataCatalog: { "@type": "DataCatalog", name: "Budget", url: `${SITE_URL}/` },
     license: allOgl
       ? "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
@@ -284,6 +284,9 @@ export function datasetJsonLd(input: {
   };
 }
 
+/** The site's author. Matches the "Made by" credit in the footer. */
+export const AUTHOR_JSON_LD = { "@type": "Person", "@id": "https://vahaah.com/#person", name: AUTHOR.name, url: AUTHOR.url } as const;
+
 export function breadcrumbJsonLd(current: string, path: string) {
   return {
     "@context": "https://schema.org",
@@ -299,6 +302,7 @@ export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@graph": [
+      AUTHOR_JSON_LD,
       {
         "@type": "WebSite",
         "@id": `${SITE_URL}/#website`,

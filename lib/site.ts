@@ -2,6 +2,7 @@ import type { SourceId } from "@/lib/schema";
 
 export const SITE_URL = "https://budget.vahaah.com";
 export const SITE_NAME = "Budget";
+export const AUTHOR = { name: "Alex Vakhitov", url: "https://vahaah.com" } as const;
 
 export const FIXTURE_RETRIEVED_AT = "2026-10-28T06:45:00.000Z";
 

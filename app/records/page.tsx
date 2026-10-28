@@ -29,6 +29,19 @@ export default async function RecordsPage() {
   return (
     <>
       <JsonLd data={breadcrumbJsonLd("Records", "/records")} />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Records in UK public finances",
+          itemListElement: records.map((record, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: `${record.kind === "largest" ? "Largest" : "Highest"} ${record.metric} since ${record.id === "highest-hmrc-month" ? "2017" : `records began in ${formatMonth(record.firstPeriod)}`}`,
+            url: `${SITE_URL}/records#${record.id}`,
+          })),
+        }}
+      />
       <Breadcrumb current="Records" />
       <header className="mb-8 max-w-[68ch]">
         <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Which records have UK public finances set?</h1>
@@ -39,7 +52,7 @@ export default async function RecordsPage() {
       </header>
       <div className="grid gap-3 sm:grid-cols-2">
         {records.map((record) => (
-          <article key={record.id} className="border border-neutral-200 p-6 dark:border-neutral-800" title={record.basis}>
+          <article key={record.id} id={record.id} className="border border-neutral-200 p-6 dark:border-neutral-800" title={record.basis}>
             <h2 className="text-sm font-medium">
               {record.kind === "largest" ? "Largest" : "Highest"} {record.metric} since {record.id === "highest-hmrc-month" ? "2017" : `records began in ${formatMonth(record.firstPeriod)}`}
             </h2>

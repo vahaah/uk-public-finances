@@ -1,17 +1,18 @@
 import Link from "next/link";
 
 import { Breadcrumb, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
-import { FAQ } from "@/lib/content";
+import { liveFaq } from "@/lib/faq";
 import { pageMeta } from "@/lib/meta";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "Frequently asked questions",
-  description: "How much the UK borrows and owes, where the figures come from, how often they update and how to reuse them.",
+  title: "UK public finances FAQ: borrowing, debt and tax",
+  description: "How much the UK borrows and owes, what it spends on debt interest, how much tax it collects, and where the figures come from.",
   path: "/faq",
 });
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const FAQ = await liveFaq();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
