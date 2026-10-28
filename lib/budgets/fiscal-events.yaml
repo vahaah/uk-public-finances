@@ -125,6 +125,7 @@ events:
   - slug: 2015-11-spending-review
     date: 2015-11-25
     name: Spending Review and Autumn Statement 2015
+    shortName: SR and Autumn Statement 2015
     type: spending-review
     chancellor: George Osborne
     government: Conservative
@@ -235,6 +236,7 @@ events:
   - slug: 2021-10-autumn-budget
     date: 2021-10-27
     name: Autumn Budget and Spending Review 2021
+    shortName: Autumn Budget and SR 2021
     type: budget
     chancellor: Rishi Sunak
     government: Conservative

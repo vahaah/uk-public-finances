@@ -1,4 +1,4 @@
-import { forecastError, forecastWords, marchDebtRatio, sumMonths, withoutPartYear, type ForecastPoint } from "@/lib/budgets/compare";
+import { differenceWords, forecastDifference, marchDebtRatio, sumMonths, withoutPartYear, type ForecastPoint } from "@/lib/budgets/compare";
 import { yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
 import type { ForecastSeriesId, ForecastVintage } from "@/lib/budgets/forecasts";
 
@@ -7,8 +7,10 @@ export type YearAheadComparison = {
   fy: string;
   forecast: number | null;
   outturn: number | null;
-  error: number | null;
+  /** Outturn minus forecast. Below zero is over-forecast. Above zero is under-forecast. */
+  difference: number | null;
   words: string | null;
+  direction: "over" | "under" | "matched" | null;
   due: boolean;
 };
 
@@ -25,10 +27,11 @@ export function yearAheadComparisons(
     const outturnValue = series === "psnd_pct" ? marchDebtRatio(outturn, fy) : bulletinOrLevel(series, outturn, fy);
     const due = outturnValue != null;
     if (event.obrForecast === "no" || forecast == null || outturnValue == null) {
-      return { event, fy, forecast, outturn: outturnValue, error: null, words: null, due };
+      return { event, fy, forecast, outturn: outturnValue, difference: null, words: null, direction: null, due };
     }
-    const error = forecastError(outturnValue, forecast);
-    return { event, fy, forecast, outturn: outturnValue, error, words: forecastWords(error, series === "psnd_pct" ? "pp" : "bn"), due };
+    const difference = forecastDifference(outturnValue, forecast);
+    const words = differenceWords(difference, series === "psnd_pct" ? "pp" : "bn");
+    return { event, fy, forecast, outturn: outturnValue, difference, words: words.sentence, direction: words.direction, due };
   });
 }
 

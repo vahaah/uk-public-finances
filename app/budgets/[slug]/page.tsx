@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BudgetCaveats } from "@/components/budget-caveats";
 import { Breadcrumb, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
-import { yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
+import { formatSignedDifference, roundDifference } from "@/lib/budgets/compare";
+import { eventLabel, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
 import type { ForecastSeriesId } from "@/lib/budgets/forecasts";
 import { outcomeLabel, regimesAt } from "@/lib/budgets/rules";
 import { loadRuleRegimes, loadSeedEvents } from "@/lib/budgets/seed";
-import { seriesPoints, yearAheadComparisons } from "@/lib/budgets/view";
-import { formatBillions, formatPercent } from "@/lib/format";
+import { seriesPoints, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
+import { formatBillions, formatDateLong, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 
@@ -21,9 +23,12 @@ export function generateStaticParams(): { slug: string }[] {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const event = await findEvent(slug);
+  const label = event ? eventLabel(event) : "Budget";
   return pageMeta({
-    title: event ? event.name : "Budget",
-    description: event ? `${event.name} on ${event.date}, ${event.chancellor}.` : "Fiscal event",
+    title: event ? `${label}: forecast and outturn` : "Budget",
+    description: event
+      ? `What the OBR forecast at ${label} for borrowing, receipts, spending and debt, and what the ONS later recorded.`
+      : "Fiscal event",
     path: `/budgets/${slug}`,
   });
 }
@@ -41,82 +46,138 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
   const next = index >= 0 && index < events.length - 1 ? events[index + 1] : null;
   const regimes = regimesAt(loadRuleRegimes(), event.date);
   const loaded = obr?.data.historical.loaded === true;
-  const asOf = loaded ? `OBR data as of ${obr?.data.historical.asOf ?? obr?.retrievedAt ?? "an unknown date"}.` : "OBR data not loaded.";
+  const label = eventLabel(event);
+  const when = event.dateStatus === "verified" ? formatDateLong(event.date) : null;
+  const asOf = loaded ? `OBR data as of ${obr?.data.historical.asOf ? formatDateLong(obr.data.historical.asOf) : "the loaded file"} · loaded ${formatDateLong(obr?.retrievedAt ?? null)}.` : "OBR forecasts not loaded yet.";
   const borrowing = loaded
     ? yearAheadComparisons([event], obr?.data.historical.vintages ?? [], ons?.data.series.j5ii?.months ?? [], "psnb")[0]
     : null;
+  const rule = regimes[0]?.rules[0];
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd(event.name, `/budgets/${event.slug}`)} />
-      <Breadcrumb current={event.name} parents={[{ href: "/budgets", label: "Budgets" }]} />
-      <PageIntro
-        kicker={event.date}
-        title={`What did ${event.name} forecast, and what actually happened?`}
-        lede={event.obrForecast === "no" ? "This event was published without an OBR forecast." : asOf}
-      />
+      <JsonLd data={breadcrumbJsonLd(label, `/budgets/${event.slug}`)} />
+      <Breadcrumb current={label} parents={[{ href: "/budgets", label: "Budgets" }]} />
+      <PageIntro kicker="Budgets" title={`What did ${label} forecast, and what happened?`} lede={eventCite(event, label, when, borrowing, rule)} />
+      <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{event.obrForecast === "no" ? "The OBR did not publish a forecast for this event." : asOf}</p>
       <dl className="mb-6 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
         <Fact label="Chancellor" value={event.chancellor} />
         <Fact label="Government" value={event.government} />
-        <Fact label="Type" value={event.type} />
-        <Fact label="Year ahead" value={yearAheadFy(event.date)} />
+        <Fact label="Type" value={typeLabel(event.type)} />
+        <Fact label="Date" value={when ?? "Not confirmed on GOV.UK"} />
       </dl>
-      <p className="mb-6 text-sm">
+      <p className="mb-4 text-sm">
         {event.govukPath ? (
           <a className="underline decoration-neutral-500 underline-offset-4" href={`https://www.gov.uk${event.govukPath}`}>
-            HMT documents
+            HM Treasury documents
           </a>
         ) : (
           "No GOV.UK budget page for this outlook."
         )}
-        {event.dateStatus === "unverified" ? " The date is not confirmed on GOV.UK." : ""}
         {event.weight === "light" ? " This is an OBR outlook with no Budget, shown lighter on the timeline." : ""}
       </p>
       <div className="mb-6 flex gap-3 text-sm">
-        {previous ? <Link className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${previous.slug}`}>Previous</Link> : null}
-        {next ? <Link className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${next.slug}`}>Next</Link> : null}
+        {previous ? (
+          <Link className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${previous.slug}`}>
+            Previous: {eventLabel(previous)}
+          </Link>
+        ) : null}
+        {next ? (
+          <Link className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${next.slug}`}>
+            Next: {eventLabel(next)}
+          </Link>
+        ) : null}
       </div>
       {event.obrForecast === "no" ? (
-        <EmptySource name="OBR forecast" detail="This event has no OBR forecast. It is left out of the porcupine and the averages." />
-      ) : !loaded || !borrowing ? (
-        <EmptySource name="OBR forecast" pending detail="OBR data not loaded. The event page will show the year-ahead difference once the historical forecasts file is uploaded." />
-      ) : (
+        <EmptySource title="No OBR forecast" name="OBR forecast" detail={`The OBR did not publish a forecast for ${label}, so there is nothing to compare with the outturn. The HM Treasury documents are linked above.`} />
+      ) : event.status === "pending" || !loaded ? (
+        <EmptySource title="OBR forecast not loaded yet" name="OBR forecast" detail="Forecast figures appear here once the OBR files are loaded. The HM Treasury documents are linked above." />
+      ) : borrowing && borrowing.forecast != null && borrowing.outturn != null && borrowing.difference != null ? (
         <section className="mb-8 border border-neutral-200 p-6 dark:border-neutral-800">
-          <h2 className="text-sm font-medium">Year-ahead borrowing</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <Stat label={`Forecast for ${borrowing.fy}`} value={borrowing.forecast == null ? "Not in the file" : formatBillions(borrowing.forecast)} detail="OBR vintage, £ billion." />
-            <Stat label="Outturn" value={!borrowing.due || borrowing.outturn == null ? "Not yet due" : formatBillions(borrowing.outturn)} detail="ONS J5II, financial year, bulletin sign." />
-            <Stat label="Difference" value={borrowing.words ?? "Not yet due"} detail="Stored as outturn minus forecast." />
+          <h2 className="text-sm font-medium">Forecast against outturn, the year ahead ({borrowing.fy})</h2>
+          <div className="mt-4 grid items-end gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
+            <Stat label="Outturn" value={formatBillions(borrowing.outturn)} detail="ONS J5II, financial year, bulletin sign." />
+            <p className="pb-6 text-2xl" aria-hidden="true">−</p>
+            <Stat label={`Forecast at ${label}`} value={formatBillions(borrowing.forecast)} detail="OBR vintage, £ billion." />
+            <p className="pb-6 text-2xl" aria-hidden="true">=</p>
+            <Stat label="Difference" value={formatSignedDifference(borrowing.difference, "bn")} detail={borrowing.direction === "over" ? "Over-forecast" : borrowing.direction === "under" ? "Under-forecast" : "Matched the outturn"} />
           </div>
+          <p className="sr-only">
+            For the year ahead ({borrowing.fy}), outturn of {formatBillions(borrowing.outturn)} minus the forecast of {formatBillions(borrowing.forecast)} made at {label} gives a difference of {formatSignedDifference(borrowing.difference, "bn")}. {borrowing.words}
+          </p>
+          <p className="mt-4 text-sm text-neutral-800 dark:text-neutral-200">
+            Outturn minus forecast. Below zero means the forecast was too high (over-forecast); above zero means it was too low (under-forecast). Rounded to £0.1bn. Debt, % of GDP, uses HF6X.
+          </p>
           <SeriesList event={event} vintages={obr?.data.historical.vintages ?? []} ons={ons?.data.series} />
         </section>
+      ) : (
+        <EmptySource title="Not yet due" name="Outturn" detail={`${borrowing?.fy ?? yearAheadFy(event.date)} has not ended, so there is no outturn to compare yet.`} />
       )}
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium">Rules in force</h2>
+        <h2 className="mb-3 text-sm font-medium">Fiscal rules at this event</h2>
         <ul className="space-y-3">
           {regimes.flatMap((regime) =>
-            regime.rules.map((rule) => (
-              <li key={rule.id} className="border border-neutral-200 p-4 text-sm dark:border-neutral-800">
-                <p className="font-medium">{rule.name}</p>
-                <p className="mt-1">{rule.metric} Target: {rule.target}.</p>
-                <p className="mt-2">{outcomeLabel(rule.outcome)}</p>
-                <a className="mt-2 inline-block underline decoration-neutral-400 underline-offset-4" href={rule.source}>
+            regime.rules.map((item) => (
+              <li key={item.id} className="border border-neutral-200 p-4 text-sm dark:border-neutral-800">
+                <p className="font-medium">{item.name}</p>
+                <p className="mt-1">Target: {item.metric}</p>
+                <p>Target year: {item.target}</p>
+                <p className="mt-2">Outcome: {outcomeLabel(item.outcome)}. {ruleSentence(item)}</p>
+                <a className="mt-2 inline-block underline decoration-neutral-400 underline-offset-4" href={item.source}>
                   {regime.sourceTitle}
                 </a>
               </li>
             )),
           )}
         </ul>
+        <p className="mt-3 text-sm">
+          <Link className="underline decoration-neutral-400 underline-offset-4" href="/budgets/rules">
+            Headroom at every event
+          </Link>
+        </p>
       </section>
       <section>
-        <h2 className="mb-3 text-sm font-medium">Measures</h2>
-        {obr?.data.measures.loaded ? (
-          <p className="text-sm">{obr.data.measures.rows.filter((row) => row.eventDate?.slice(0, 7) === event.date.slice(0, 7)).length} measures in this month. A positive figure is an Exchequer yield and a negative figure is an Exchequer cost, which is the OBR measures database sign.</p>
+        <h2 className="mb-3 text-sm font-medium">Largest policy measures</h2>
+        {event.type === "forecast-only" ? (
+          <p className="text-sm">No policy measures at this event. It updated the forecast only.</p>
+        ) : obr?.data.measures.loaded ? (
+          <p className="text-sm">
+            A positive figure raises money. A negative figure costs money. That is the OBR policy measures database sign: a yield is positive and a cost is negative.
+          </p>
         ) : (
-          <EmptySource name="Measures" pending detail="Measures not loaded yet. Upload manual/obr/policy-measures.xlsx." />
+          <EmptySource title="Measures not loaded yet" name="Measures" detail="Measures appear once the OBR policy measures database is loaded." />
         )}
       </section>
+      <BudgetCaveats />
     </>
   );
+}
+
+function eventCite(
+  event: FiscalEvent,
+  label: string,
+  when: string | null,
+  borrowing: YearAheadComparison | null | undefined,
+  rule: { name: string; target: string; outcome: string } | undefined,
+): string {
+  const onDate = when ? ` on ${when}` : "";
+  if (event.obrForecast === "no") {
+    return `The OBR did not publish a forecast for ${label}, so there is nothing to compare with the outturn.`;
+  }
+  if (event.status === "pending") {
+    return `${label} has been announced. Its OBR forecast has not been loaded yet.`;
+  }
+  if (!borrowing || borrowing.forecast == null) {
+    return "Forecast figures appear here once the OBR files are loaded. The HM Treasury documents are linked above.";
+  }
+  if (borrowing.outturn == null || borrowing.difference == null) {
+    return `At ${label}${onDate}, the OBR forecast borrowing of ${formatBillions(borrowing.forecast)} for the year ahead, ${borrowing.fy}. That year has not ended yet.`;
+  }
+  const ruleSentence = rule ? ` The outcome for ${rule.name} has not been assessed yet.` : "";
+  if (borrowing.direction === "matched") {
+    return `At ${label}${onDate}, the OBR forecast borrowing of ${formatBillions(borrowing.forecast)} for the year ahead, ${borrowing.fy}. The outturn was ${formatBillions(borrowing.outturn)}, so the forecast matched the outturn.${ruleSentence}`;
+  }
+  const way = borrowing.direction === "over" ? "high" : "low";
+  return `At ${label}${onDate}, the OBR forecast borrowing of ${formatBillions(borrowing.forecast)} for the year ahead, ${borrowing.fy}. The outturn was ${formatBillions(borrowing.outturn)}, so the forecast was ${formatBillions(Math.abs(roundDifference(borrowing.difference)))} too ${way}.${ruleSentence}`;
 }
 
 function SeriesList({
@@ -128,30 +189,67 @@ function SeriesList({
   vintages: { date: string; precision: "day" | "month"; series: ForecastSeriesId; points: { fy: string; value: number }[] }[];
   ons: { j5ii?: { months: { period: string; value: number }[] }; jw2o?: { months: { period: string; value: number }[] }; kx5q?: { months: { period: string; value: number }[] }; hf6x?: { months: { period: string; value: number }[] } } | undefined;
 }) {
-  const series: { id: ForecastSeriesId; label: string; months: { period: string; value: number }[] }[] = [
-    { id: "psnb", label: "Borrowing", months: ons?.j5ii?.months ?? [] },
-    { id: "receipts", label: "Receipts", months: ons?.jw2o?.months ?? [] },
-    { id: "tme", label: "Spending", months: ons?.kx5q?.months ?? [] },
-    { id: "psnd_pct", label: "Debt, share of GDP", months: ons?.hf6x?.months ?? [] },
+  const series: { id: ForecastSeriesId; label: string; name: string; months: { period: string; value: number }[] }[] = [
+    { id: "psnb", label: "Borrowing, £bn", name: "borrowing", months: ons?.j5ii?.months ?? [] },
+    { id: "receipts", label: "Receipts, £bn", name: "receipts", months: ons?.jw2o?.months ?? [] },
+    { id: "tme", label: "Spending, £bn", name: "spending", months: ons?.kx5q?.months ?? [] },
+    { id: "psnd_pct", label: "Debt, % of GDP", name: "debt", months: ons?.hf6x?.months ?? [] },
   ];
   return (
     <ul className="mt-6 space-y-2 text-sm">
       {series.map((item) => {
         const row = yearAheadComparisons([event], vintages, item.months, item.id)[0];
-        const points = seriesPoints(
-          vintages.find((vintage) => vintage.series === item.id && (vintage.precision === "month" ? event.date.slice(0, 7) === vintage.date.slice(0, 7) : Math.abs(Date.parse(event.date) - Date.parse(vintage.date)) <= 7 * 86400000)),
-          event.date,
-        );
+        const vintage = vintages.find((itemVintage) => itemVintage.series === item.id && (itemVintage.precision === "month" ? event.date.slice(0, 7) === itemVintage.date.slice(0, 7) : Math.abs(Date.parse(event.date) - Date.parse(itemVintage.date)) <= 7 * 86400000));
+        const points = seriesPoints(vintage, event.date);
+        const text = row?.words ?? (row?.forecast == null ? `No ${item.name} forecast for this event.` : `${row.fy} has not ended, so there is no outturn to compare yet.`);
         return (
           <li key={item.id}>
-            {item.label}: {row?.words ?? (row?.forecast == null ? "not in the loaded file" : "not yet due")}
-            {item.id === "psnd_pct" ? ` Outturn uses HF6X in March. ${points.length} forecast years after the part year is dropped.` : ""}
-            {row?.outturn != null && item.id === "psnd_pct" ? ` March ratio ${formatPercent(row.outturn)}.` : ""}
+            {item.label}: {text}
+            {item.id === "psnd_pct" && points.length > 0 ? " Outturn is HF6X in the March that ends the financial year." : ""}
+            {row?.outturn != null && item.id === "psnd_pct" ? ` ${formatPercent(row.outturn)} of GDP.` : ""}
           </li>
         );
       })}
     </ul>
   );
+}
+
+function ruleSentence(rule: { name: string; target: string; outcome: string }): string {
+  switch (rule.outcome) {
+    case "met":
+      return `${rule.name} was met for ${rule.target}.`;
+    case "missed":
+      return `${rule.name} was not met for ${rule.target}.`;
+    case "replaced":
+      return `${rule.name} was replaced before its target year.`;
+    case "pending":
+      return `The target year for ${rule.name}, ${rule.target}, has not ended yet.`;
+    case "unreviewed":
+      return `The outcome for ${rule.name} has not been assessed yet.`;
+    default:
+      return `The outcome for ${rule.name} has not been assessed yet.`;
+  }
+}
+
+function typeLabel(type: FiscalEvent["type"]): string {
+  switch (type) {
+    case "budget":
+      return "Budget";
+    case "statement":
+      return "Statement";
+    case "emergency":
+      return "Emergency Budget";
+    case "growth-plan":
+      return "Growth Plan";
+    case "forecast-only":
+      return "Forecast only";
+    case "spending-review":
+      return "Spending Review";
+    default: {
+      const neverType: never = type;
+      return neverType;
+    }
+  }
 }
 
 function Fact({ label, value }: { label: string; value: string }) {

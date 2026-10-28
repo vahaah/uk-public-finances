@@ -8,9 +8,10 @@ import { z } from "zod";
 
 const seedSchema = z.object({
   events: z.array(
-    fiscalEventSchema.omit({ status: true, observedDate: true }).extend({
+    fiscalEventSchema.omit({ status: true, observedDate: true, shortName: true }).extend({
       status: z.enum(["listed", "pending"]).optional(),
       observedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      shortName: z.string().min(1).max(28).nullable().optional(),
     }),
   ),
 });
@@ -23,6 +24,7 @@ export function loadSeedEvents(): FiscalEvent[] {
       ...event,
       status: event.status ?? "listed",
       observedDate: event.observedDate ?? null,
+      shortName: event.shortName ?? null,
     }),
   );
 }

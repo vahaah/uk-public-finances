@@ -4,16 +4,46 @@ import { yearAheadFy } from "@/lib/budgets/events";
 
 export type ForecastPoint = { fy: string; value: number };
 
-/** Stored error is outturn minus forecast. Positive means the outturn was higher. */
-export function forecastError(outturn: number, forecast: number): number {
+/**
+ * Difference stored for the API and CSV: outturn minus forecast.
+ * Below zero, the forecast was too high (over-forecast).
+ * Above zero, the forecast was too low (under-forecast).
+ * Zero after rounding to 0.1 is a match. There is no wider "close to the outturn" band.
+ */
+export function forecastDifference(outturn: number, forecast: number): number {
   return outturn - forecast;
 }
 
-export function forecastWords(error: number, unit: "bn" | "pp"): string {
-  const quantum = 0.05;
-  if (Math.abs(error) < quantum) return "in line with the outturn";
-  const amount = unit === "bn" ? formatBillions(Math.abs(error)) : `${Math.abs(error).toFixed(1)} percentage points`;
-  return error > 0 ? `under-forecast by ${amount}` : `over-forecast by ${amount}`;
+export function roundDifference(difference: number): number {
+  return Number((Math.round(difference / 0.1) * 0.1).toFixed(1));
+}
+
+export function formatSignedDifference(difference: number, unit: "bn" | "pp"): string {
+  const rounded = roundDifference(difference);
+  if (unit === "pp") {
+    if (rounded === 0) return "0.0 percentage points";
+    return `${rounded > 0 ? "+" : "−"}${Math.abs(rounded).toFixed(1)} percentage points`;
+  }
+  const text = formatBillions(Math.abs(rounded));
+  if (rounded === 0) return text;
+  return rounded > 0 ? `+${text}` : `−${text}`;
+}
+
+export function differenceWords(difference: number, unit: "bn" | "pp"): { direction: "over" | "under" | "matched"; label: string; sentence: string } {
+  const rounded = roundDifference(difference);
+  if (rounded === 0) {
+    return { direction: "matched", label: "Matched the outturn", sentence: "Matched the outturn." };
+  }
+  const amount = unit === "bn" ? formatBillions(Math.abs(rounded)) : `${Math.abs(rounded).toFixed(1)} percentage points`;
+  if (rounded < 0) {
+    return { direction: "over", label: "Over-forecast", sentence: `The forecast was ${amount} too high.` };
+  }
+  return { direction: "under", label: "Under-forecast", sentence: `The forecast was ${amount} too low.` };
+}
+
+/** @deprecated Use forecastDifference. Kept as the stored field name in older notes. */
+export function forecastError(outturn: number, forecast: number): number {
+  return forecastDifference(outturn, forecast);
 }
 
 /** Drop the financial year already underway on the event date. */

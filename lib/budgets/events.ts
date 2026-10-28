@@ -6,6 +6,7 @@ export const fiscalEventSchema = z.object({
   slug: z.string().min(1),
   date,
   name: z.string().min(1),
+  shortName: z.string().min(1).max(28).nullable(),
   type: z.enum(["budget", "statement", "emergency", "growth-plan", "forecast-only", "spending-review"]),
   chancellor: z.string().min(1),
   government: z.string().min(1),
@@ -31,7 +32,17 @@ export type GovukHit = { title?: string; link?: string; public_timestamp?: strin
 const NOISE = /factsheet|ootlar|deflator|representations|guidance|date confirmed|what it means|regions and nations|overview of tax|libor|policy decisions table|news:/i;
 const EVENT_WORD = /\b(budget|autumn statement|spring statement|growth plan|spending review)\b/i;
 
-/** First financial year that starts after the event. A year starts on 1 April. */
+export function eventLabel(event: { name: string; shortName?: string | null }): string {
+  return event.shortName && event.shortName.length > 0 ? event.shortName : event.name;
+}
+
+/**
+ * First financial year that starts after the event. A year starts on 1 April.
+ * A March event is still in the financial year that ends in early April, so the
+ * year ahead is the year that starts that April. That matches the OBR's
+ * one-year-ahead horizon: a forecast made in the previous financial year for
+ * the next one. The year already underway is the in-year forecast and is excluded.
+ */
 export function yearAheadFy(isoDate: string): string {
   const [yearText, monthText] = isoDate.split("-");
   const year = Number(yearText);
@@ -67,6 +78,7 @@ export function discoverEvents(seed: FiscalEvent[], hits: GovukHit[]): FiscalEve
       slug: slugFrom(stamp, title),
       date: stamp,
       name: title.replace(/:\s*documents$/i, "").replace(/:\s*document$/i, ""),
+      shortName: shortenEventName(title.replace(/:\s*documents$/i, "").replace(/:\s*document$/i, "")),
       type: /growth plan/i.test(title) ? "growth-plan" : /statement/i.test(title) ? "statement" : /spending review/i.test(title) ? "spending-review" : "budget",
       chancellor: "Not confirmed",
       government: "Not confirmed",
@@ -96,6 +108,13 @@ export function markerPeriod(date: string, periods: string[]): string | null {
   const fy = financialYearOf(date);
   if (periods.includes(fy)) return fy;
   return null;
+}
+
+function shortenEventName(name: string): string | null {
+  if (name.length <= 28) return null;
+  const cut = name.slice(0, 28);
+  const space = cut.lastIndexOf(" ");
+  return (space > 12 ? cut.slice(0, space) : cut).trim();
 }
 
 function slugFrom(isoDate: string, title: string): string {

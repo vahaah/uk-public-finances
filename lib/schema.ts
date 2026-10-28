@@ -298,6 +298,7 @@ export const budgetsEventsDataSchema = z.object({
       slug: z.string().min(1),
       date: fiscalDate,
       name: z.string().min(1),
+      shortName: z.string().min(1).max(28).nullable(),
       type: z.enum(["budget", "statement", "emergency", "growth-plan", "forecast-only", "spending-review"]),
       chancellor: z.string().min(1),
       government: z.string().min(1),

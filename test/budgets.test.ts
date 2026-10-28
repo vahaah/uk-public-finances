@@ -1,8 +1,8 @@
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
 
-import { forecastError, forecastWords, marchDebtRatio, sumMonths, withoutPartYear } from "@/lib/budgets/compare";
-import { discoverEvents, yearAheadFy } from "@/lib/budgets/events";
+import { differenceWords, forecastDifference, marchDebtRatio, sumMonths, withoutPartYear } from "@/lib/budgets/compare";
+import { discoverEvents, eventLabel, yearAheadFy } from "@/lib/budgets/events";
 import { parseHistoricalForecasts, parseLooseDate, parseMeasuresWorkbook } from "@/lib/budgets/forecasts";
 import { outcomeLabel } from "@/lib/budgets/rules";
 import { loadRuleRegimes, loadSeedEvents } from "@/lib/budgets/seed";
@@ -17,11 +17,13 @@ describe("fiscal events", () => {
     expect(outlook).toMatchObject({ weight: "light", dateStatus: "unverified", obrForecast: "yes" });
     expect(events.some((event) => event.date < "2010-06-22")).toBe(false);
     expect(events.find((event) => event.slug === "2022-09-growth-plan")?.obrForecast).toBe("no");
+    for (const event of events) expect(eventLabel(event).length).toBeLessThanOrEqual(28);
   });
 
-  it("treats the first financial year after the event as year-ahead", () => {
+  it("treats a March event as a forecast of the year that starts in April", () => {
     expect(yearAheadFy("2010-06-22")).toBe("2011-12");
     expect(yearAheadFy("2010-11-29")).toBe("2011-12");
+    expect(yearAheadFy("2020-03-11")).toBe("2020-21");
     expect(yearAheadFy("2024-03-06")).toBe("2024-25");
     expect(yearAheadFy("2024-10-30")).toBe("2025-26");
   });
@@ -38,11 +40,12 @@ describe("fiscal events", () => {
 });
 
 describe("forecast comparison", () => {
-  it("stores outturn minus forecast and says which way the forecast missed", () => {
-    expect(forecastError(100, 80)).toBe(20);
-    expect(forecastWords(20, "bn")).toBe("under-forecast by £20.0bn");
-    expect(forecastWords(-1.2, "bn")).toBe("over-forecast by £1.2bn");
-    expect(forecastWords(0.4, "pp")).toBe("under-forecast by 0.4 percentage points");
+  it("stores outturn minus forecast and says whether the forecast was too high or too low", () => {
+    expect(forecastDifference(100, 80)).toBe(20);
+    expect(differenceWords(20, "bn")).toMatchObject({ direction: "under", sentence: "The forecast was £20.0bn too low." });
+    expect(differenceWords(-1.2, "bn")).toMatchObject({ direction: "over", sentence: "The forecast was £1.2bn too high." });
+    expect(differenceWords(0.04, "bn").sentence).toBe("Matched the outturn.");
+    expect(differenceWords(0.4, "pp").sentence).toBe("The forecast was 0.4 percentage points too low.");
   });
 
   it("drops the financial year already underway", () => {
@@ -78,8 +81,8 @@ describe("forecast comparison", () => {
     expect(rows[0]?.fy).toBe("2011-12");
     expect(rows[0]?.forecast).toBe(100);
     expect(rows[0]?.outturn).toBe(120);
-    expect(rows[0]?.error).toBe(20);
-    expect(rows[0]?.words).toBe("under-forecast by £20.0bn");
+    expect(rows[0]?.difference).toBe(20);
+    expect(rows[0]?.words).toBe("The forecast was £20.0bn too low.");
   });
 });
 

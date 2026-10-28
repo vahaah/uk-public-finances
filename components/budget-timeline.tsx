@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { FiscalEvent } from "@/lib/budgets/events";
+import { eventLabel, type FiscalEvent } from "@/lib/budgets/events";
 
 export function BudgetTimeline({ events }: { events: FiscalEvent[] }) {
   const ordered = [...events].sort((left, right) => left.date.localeCompare(right.date));
@@ -9,10 +9,10 @@ export function BudgetTimeline({ events }: { events: FiscalEvent[] }) {
       <ol className="hidden gap-3 lg:flex lg:flex-wrap">
         {ordered.map((event) => (
           <li key={event.slug}>
-            <Link href={`/budgets/${event.slug}`} className="group flex max-w-40 flex-col gap-1 text-xs" aria-label={`${event.name}, ${event.date}`}>
+            <Link href={`/budgets/${event.slug}`} className="group flex max-w-40 flex-col gap-1 text-xs" aria-label={ariaLabel(event)}>
               <Marker event={event} />
               <span className="text-neutral-700 group-hover:text-neutral-950 dark:text-neutral-300 dark:group-hover:text-white">{event.date.slice(0, 4)}</span>
-              <span className="font-medium">{event.name}</span>
+              <span className="font-medium">{eventLabel(event)}</span>
             </Link>
           </li>
         ))}
@@ -23,9 +23,9 @@ export function BudgetTimeline({ events }: { events: FiscalEvent[] }) {
             <Link href={`/budgets/${event.slug}`} className="flex min-h-11 items-center gap-3 px-3 py-2 text-sm">
               <Marker event={event} />
               <span>
-                <span className="block font-medium">{event.name}</span>
+                <span className="block font-medium">{eventLabel(event)}</span>
                 <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                  {event.date} · {event.chancellor}
+                  {event.dateStatus === "verified" ? event.date : "Date not confirmed on GOV.UK"} · {event.chancellor}
                 </span>
               </span>
             </Link>
@@ -34,6 +34,11 @@ export function BudgetTimeline({ events }: { events: FiscalEvent[] }) {
       </ol>
     </div>
   );
+}
+
+function ariaLabel(event: FiscalEvent): string {
+  const name = eventLabel(event);
+  return event.dateStatus === "verified" ? `${name}, ${event.date}` : name;
 }
 
 function Marker({ event }: { event: FiscalEvent }) {

@@ -4,9 +4,9 @@ import { readXlsx, type Cell, type Grid } from "@/lib/sheets";
  * Blob paths for the manual OBR uploads. obr.uk blocks automated downloads.
  * Upload the publisher's workbook to the path named here, then run the daily cron.
  *
- * Sign of a policy measure, following the OBR policy measures database: a positive
- * number is an Exchequer yield and a negative number is an Exchequer cost.
- * Forecast error stored on this site is outturn minus forecast, which is separate.
+ * OBR policy measures database sign: a positive number raises money for the Exchequer
+ * (a yield) and a negative number costs money (a cost to the Exchequer).
+ * The stored forecast difference is separate: outturn minus forecast.
  */
 export const OBR_BLOB = {
   historical: "manual/obr/historical-official-forecasts.xlsx",

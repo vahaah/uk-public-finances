@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BudgetCaveats } from "@/components/budget-caveats";
 import { Breadcrumb, EmptySource, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
 import { outcomeLabel } from "@/lib/budgets/rules";
 import { loadRuleRegimes } from "@/lib/budgets/seed";
@@ -10,8 +11,8 @@ import { readSnapshot, takeSnapshot } from "@/lib/store";
 export const revalidate = 3600;
 
 export const metadata = pageMeta({
-  title: "Fiscal rules",
-  description: "The fiscal rule regimes since June 2010, each with a source. Outcomes stay unassessed until a reviewed entry says otherwise.",
+  title: "UK fiscal rules and headroom",
+  description: "Every set of UK fiscal rules since 2010, how long each lasted, and how much headroom the OBR's forecast left against them at each event.",
   path: "/budgets/rules",
 });
 
@@ -27,8 +28,9 @@ export default async function RulesPage() {
       <PageIntro
         kicker="Budgets"
         title="What fiscal rules has the government set itself?"
-        lede={`${regimes.length} sets of rules are listed since June 2010. An outcome is shown only when the reviewed file marks it. Placeholder copy.`}
+        lede={`There have been ${regimes.length} sets of fiscal rules since the Emergency Budget. An outcome is shown only when the reviewed file marks it.`}
       />
+      <h2 className="mb-3 text-sm font-medium">Fiscal rules over time</h2>
       <ol className="mb-8 space-y-4 border-l border-neutral-300 pl-4 dark:border-neutral-700">
         {regimes.map((regime) => (
           <li key={regime.id}>
@@ -52,7 +54,7 @@ export default async function RulesPage() {
         ))}
       </ol>
       <section>
-        <h2 className="mb-3 text-sm font-medium">Headroom at each event</h2>
+        <h2 className="mb-3 text-sm font-medium">How much room did each Budget leave?</h2>
         {headroom?.loaded ? (
           <>
             <p className="mb-3 text-sm">OBR data as of {headroom.asOf ? formatDateLong(headroom.asOf) : "the upload date"}.</p>
@@ -68,8 +70,10 @@ export default async function RulesPage() {
             </ul>
           </>
         ) : (
-          <EmptySource name="Headroom" pending detail="OBR data not loaded. Upload manual/obr/efo-fiscal-rules.xlsx to show headroom." />
+          <EmptySource title="OBR forecasts not loaded yet" name="Headroom" detail="Headroom appears once the OBR fiscal rule tables are loaded." />
         )}
+        <p className="mt-3 text-xs text-neutral-700 dark:text-neutral-300">Rules replaced before their target year are not counted as met or missed.</p>
+        <BudgetCaveats />
         <p className="mt-4 text-sm">
           <Link className="underline decoration-neutral-400 underline-offset-4" href="/budgets">
             Back to Budgets

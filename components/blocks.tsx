@@ -204,10 +204,10 @@ export function DataTable({ columns, rows }: { columns: string[]; rows: (string 
   );
 }
 
-export function EmptySource({ name, pending, detail }: { name: string; pending?: boolean; detail?: string }) {
+export function EmptySource({ name, pending, detail, title }: { name: string; pending?: boolean; detail?: string; title?: string }) {
   return (
     <div className="border border-dashed border-neutral-300 p-6 text-sm text-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
-      <p className="font-medium">{pending ? `${name} is not available yet` : `${name} is not available`}</p>
+      <p className="font-medium">{title ?? (pending ? `${name} is not available yet` : `${name} is not available`)}</p>
       <p className="mt-2">
         {detail ?? "Nothing is shown in place of a missing figure."}{" "}
         <Link className="underline decoration-neutral-500 underline-offset-4" href="/data-health">

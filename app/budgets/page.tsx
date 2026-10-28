@@ -1,13 +1,15 @@
 import Link from "next/link";
 
+import { BudgetCaveats } from "@/components/budget-caveats";
 import { BudgetScorecard } from "@/components/budget-scorecard";
 import { BudgetTimeline } from "@/components/budget-timeline";
 import { Breadcrumb, EmptySource, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
 import { PorcupineChart, type PorcupineLine } from "@/components/porcupine-chart";
+import { differenceWords, roundDifference, withoutPartYear } from "@/lib/budgets/compare";
+import { eventLabel } from "@/lib/budgets/events";
 import { loadSeedEvents } from "@/lib/budgets/seed";
 import { outcomeLabel } from "@/lib/budgets/rules";
-import { withoutPartYear } from "@/lib/budgets/compare";
-import { outturnByFy, yearAheadComparisons } from "@/lib/budgets/view";
+import { outturnByFy, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
 import { formatDateLong } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import type { budgetsObrDataSchema } from "@/lib/schema";
@@ -17,8 +19,8 @@ import type { z } from "zod";
 export const revalidate = 3600;
 
 export const metadata = pageMeta({
-  title: "Budgets: how each plan turned out",
-  description: "Fiscal events since June 2010, and how the OBR's year-ahead borrowing forecast compared with the ONS outturn.",
+  title: "How did each UK Budget turn out?",
+  description: "OBR borrowing forecasts at every UK Budget and Statement since 2010, compared with what happened, plus fiscal rules and headroom at each.",
   path: "/budgets",
 });
 
@@ -34,6 +36,7 @@ export default async function BudgetsPage() {
   const vintages = obr?.data.historical.loaded ? obr.data.historical.vintages : [];
   const rows = yearAheadComparisons(events, vintages, ons?.data.series.j5ii?.months ?? [], "psnb");
   const asOf = obrFreshness(obr?.data, obr?.retrievedAt ?? null);
+  const firstVerified = events.find((event) => event.dateStatus === "verified");
   const lines = porcupineLines(events, vintages);
   const outturn = outturnByFy(
     ons?.data.series.j5ii?.months ?? [],
@@ -44,44 +47,55 @@ export default async function BudgetsPage() {
     <>
       <JsonLd data={breadcrumbJsonLd("Budgets", "/budgets")} />
       <Breadcrumb current="Budgets" />
-      <PageIntro
-        kicker="Budgets"
-        title="How did each Budget's plans turn out?"
-        lede="Each marker is a fiscal event since June 2010. The year-ahead forecast is the first financial year that starts after the event. Part-year forecasts are left out. A lighter marker is an OBR outlook with no Budget. Placeholder copy."
-      />
+      <PageIntro kicker="Budgets" title="How did each Budget's plans turn out?" lede={indexCite(rows, firstVerified ? eventLabel(firstVerified) : "the first OBR forecast", asOf)} />
       <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{asOf}</p>
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium">Timeline</h2>
+        <h2 className="mb-3 text-sm font-medium">Fiscal events</h2>
         <BudgetTimeline events={events} />
         <p className="mt-3 text-xs text-neutral-700 dark:text-neutral-300">
-          Events before June 2010 are out of scope.{" "}
+          This section covers events from {firstVerified ? eventLabel(firstVerified) : "the first OBR forecast"} onwards, when the OBR began producing the official forecast. Earlier Treasury forecasts will be added later. A lighter marker is an OBR outlook with no Budget.{" "}
           <Link className="underline decoration-neutral-400 underline-offset-4" href="/budgets/rules">
             Fiscal rules
           </Link>
         </p>
       </section>
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium">Forecasts against outturn</h2>
+        <h2 className="mb-3 text-sm font-medium">OBR borrowing forecasts against what happened</h2>
         {obr?.data.historical.loaded && lines.length > 0 ? (
           <>
             <PorcupineChart outturn={outturn} vintages={lines} />
             <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-              £bn, borrowing. The black line is the ONS outturn for J5II, summed over each financial year and shown with the bulletin sign. Grey lines are OBR vintages from the year ahead. The blue line is the latest loaded vintage. {asOf}
+              £bn, borrowing. Each thin line is one OBR forecast. The thick line is borrowing as recorded by the ONS (J5II, financial years, bulletin sign). The blue line is the latest loaded vintage. Debt comparisons on an event page use HF6X. {asOf}
             </p>
           </>
         ) : (
-          <EmptySource name="OBR forecasts" pending detail="OBR data not loaded. Upload the historical official forecasts database, then run the daily update." />
+          <EmptySource title="OBR forecasts not loaded yet" name="OBR forecasts" detail="The fiscal events are listed above. Forecast comparisons appear once the OBR files are loaded." />
         )}
       </section>
       <section>
         <h2 className="mb-3 text-sm font-medium">Scorecard</h2>
         <BudgetScorecard rows={rows} ruleLabel={outcomeLabel("unreviewed")} />
-        <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-          Rule outcomes are not assessed until a reviewed entry says so. The stored difference is outturn minus forecast.
-        </p>
       </section>
+      <BudgetCaveats />
     </>
   );
+}
+
+function indexCite(rows: YearAheadComparison[], firstEvent: string, asOf: string): string {
+  const comparable = rows.filter((row) => row.difference != null && row.event.obrForecast === "yes");
+  if (comparable.length === 0) {
+    return "The year ahead is the first financial year that starts after the event. A lighter marker is an OBR outlook with no Budget.";
+  }
+  const over = comparable.filter((row) => roundDifference(row.difference ?? 0) < 0).length;
+  const under = comparable.filter((row) => roundDifference(row.difference ?? 0) > 0).length;
+  const sorted = comparable.map((row) => row.difference ?? 0).sort((left, right) => left - right);
+  const mid = Math.floor(sorted.length / 2);
+  const left = sorted[mid - 1];
+  const right = sorted[mid];
+  const median = sorted.length % 2 === 1 ? (sorted[mid] ?? 0) : ((left ?? 0) + (right ?? 0)) / 2;
+  const medianWords = differenceWords(median, "bn");
+  const medianBit = medianWords.direction === "matched" ? "matched the outturn" : `£${Math.abs(roundDifference(median)).toFixed(1)}bn ${medianWords.direction}`;
+  return `Across ${comparable.length} fiscal events since ${firstEvent}, the OBR's forecast of borrowing for the year ahead was too high ${over} times and too low ${under} times. The median difference was ${medianBit}. ${asOf} Excludes events with no OBR forecast and years that have not ended.`;
 }
 
 function obrFreshness(data: z.infer<typeof budgetsObrDataSchema> | undefined, retrievedAt: string | null): string {
@@ -91,7 +105,7 @@ function obrFreshness(data: z.infer<typeof budgetsObrDataSchema> | undefined, re
 }
 
 function porcupineLines(
-  events: { date: string; slug: string; name: string; obrForecast: string }[],
+  events: { date: string; slug: string; name: string; shortName: string | null; obrForecast: string }[],
   vintages: { date: string; precision: "day" | "month"; series: string; points: { fy: string; value: number }[] }[],
 ): PorcupineLine[] {
   const psnb = vintages.filter((vintage) => vintage.series === "psnb");
@@ -99,7 +113,7 @@ function porcupineLines(
     if (event.obrForecast === "no") return [];
     const vintage = psnb.find((item) => (item.precision === "month" ? event.date.slice(0, 7) === item.date.slice(0, 7) : Math.abs(Date.parse(event.date) - Date.parse(item.date)) <= 7 * 86400000));
     if (!vintage) return [];
-    return [{ id: event.slug, name: event.name, highlight: false, points: withoutPartYear(event.date, vintage.points) }];
+    return [{ id: event.slug, name: eventLabel(event), highlight: false, points: withoutPartYear(event.date, vintage.points) }];
   });
   const last = matched.at(-1);
   if (last) last.highlight = true;

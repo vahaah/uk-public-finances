@@ -134,7 +134,7 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
   },
   "budgets-events": {
     id: "budgets-events",
-    title: "Fiscal events since June 2010",
+    title: "GOV.UK fiscal events (automatic)",
     publisher: "HM Treasury",
     licence: "Open Government Licence v3.0",
     licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
@@ -143,7 +143,7 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
   },
   "budgets-obr": {
     id: "budgets-obr",
-    title: "OBR historical forecasts, measures and evaluation",
+    title: "OBR historical forecasts database (loaded by hand)",
     publisher: "Office for Budget Responsibility",
     licence: "Open Government Licence v3.0",
     licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
