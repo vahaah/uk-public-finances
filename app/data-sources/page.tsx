@@ -20,7 +20,7 @@ export default function DataSourcesPage() {
         lede="Contains public sector information licensed under the Open Government Licence v3.0, from the ONS, HMRC, HM Treasury and the OBR. Bank of England and Debt Management Office data is used under their own terms."
       />
       <p className="mb-6 max-w-[68ch] text-sm leading-6 text-neutral-800 dark:text-neutral-200">
-        Figures this site calculates, such as totals, shares and borrowing shown as a positive number, are{" "}
+        Figures this site calculates, such as totals and shares, are{" "}
         <a className="underline decoration-neutral-500 underline-offset-4" href={DERIVED_LICENCE_URL}>
           {DERIVED_LICENCE}
         </a>

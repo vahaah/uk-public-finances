@@ -2,6 +2,7 @@ import { CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
@@ -13,10 +14,15 @@ export const metadata = pageMeta({
 });
 
 export default async function ForecastsPage() {
-  const onsLoaded = await readSnapshot("ons-psf");
-  const obrLoaded = await readSnapshot("obr-databank");
+  const [onsLoaded, obrLoaded, priceLoaded] = await Promise.all([
+    readSnapshot("ons-psf"),
+    readSnapshot("obr-databank"),
+    readSnapshot("ons-prices"),
+  ]);
   const ons = takeSnapshot("ons-psf", onsLoaded.snapshot);
   const obr = takeSnapshot("obr-databank", obrLoaded.snapshot);
+  const prices = takeSnapshot("ons-prices", priceLoaded.snapshot);
+  const bundle = prices ? priceBundle(prices.data) : null;
   const meta = SOURCES["obr-databank"];
   const onsMeta = SOURCES["ons-psf"];
   return (
@@ -71,7 +77,12 @@ export default async function ForecastsPage() {
               />
             }
           >
-            <CumulativeChart months={ons.data.financialYear.months} thisYear={ons.data.financialYear.year} compare={false} />
+            <CumulativeChart
+              months={ons.data.financialYear.months}
+              thisYear={ons.data.financialYear.year}
+              compare={false}
+              prices={bundle}
+            />
             <DataTable
               columns={["Month", "Running total, £bn"]}
               rows={ons.data.financialYear.months.map((row) => [formatMonth(row.period), formatGbpFromMillions(-row.cumulative)])}
