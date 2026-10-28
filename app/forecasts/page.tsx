@@ -65,12 +65,12 @@ export default async function ForecastsPage() {
       <PageIntro
         kicker="Office for Budget Responsibility"
         title="Is borrowing on track with the OBR's forecast?"
-        lede="Outturn is what the ONS has recorded so far this financial year. The forecast is the Office for Budget Responsibility's projection for the full year. Borrowing is not spread evenly across the year, so compare the share so far with the same point last year."
+        lede="The ONS records how much the government has borrowed so far this financial year. The Office for Budget Responsibility (OBR) forecasts borrowing for the whole year. Borrowing is not spread evenly across the months, so the fairest comparison is with the same point last year."
       />
       {fyData && fy ? (
         <ChartFrame
-          title={`Borrowing so far in ${fy} against the full-year forecast`}
-          subtitle="£bn, running total from April."
+          title={`Borrowing so far in ${fy}, against the OBR forecast for the year`}
+          subtitle="£bn, running total since April."
           source={
             <SourceNote
               publisher={onsMeta.publisher}
@@ -85,25 +85,25 @@ export default async function ForecastsPage() {
         >
           <dl className="mb-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
             <div>
-              <dt className="text-xs text-neutral-700 dark:text-neutral-300">So far</dt>
+              <dt className="text-xs text-neutral-700 dark:text-neutral-300">Borrowed so far</dt>
               <dd className="text-lg font-medium tabular-nums">{ytd != null ? formatBillions(ytd) : "—"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-neutral-700 dark:text-neutral-300">Forecast for the year</dt>
+              <dt className="text-xs text-neutral-700 dark:text-neutral-300">OBR forecast for the year</dt>
               <dd className="text-lg font-medium tabular-nums">{forecast != null ? formatBillions(forecast) : "Not loaded"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-neutral-700 dark:text-neutral-300">Share after {monthsIn} of 12 months</dt>
+              <dt className="text-xs text-neutral-700 dark:text-neutral-300">Share of the forecast after {monthsIn} months</dt>
               <dd className="text-lg font-medium tabular-nums">{share != null ? formatPercent(share, 0) : "—"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-neutral-700 dark:text-neutral-300">Same point last year</dt>
+              <dt className="text-xs text-neutral-700 dark:text-neutral-300">Share at the same point last year</dt>
               <dd className="text-lg font-medium tabular-nums">{lastShare != null ? formatPercent(lastShare, 0) : "—"}</dd>
             </div>
           </dl>
           <ForecastTrackChart thisYear={thisYear} lastYear={lastYear} forecast={forecast} thisLabel={fy} lastLabel={lastFy ?? "Last year"} />
           <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-            Solid line: {fy} so far. Dashed line: {lastFy}. Dotted guide: the OBR forecast for {fy}. Not adjusted for inflation. The OBR does not publish a monthly path, so only the full-year figure is shown.
+            The solid line is {fy} so far and the dashed line is {lastFy}. The dotted line is the OBR forecast for the whole of {fy}. The OBR does not publish a month-by-month forecast. Not adjusted for inflation.
           </p>
           <details className="mt-3 text-sm">
             <summary className="cursor-pointer">Show table</summary>
@@ -119,8 +119,8 @@ export default async function ForecastsPage() {
       {obr && series.length > 0 ? (
         <div className="mt-3">
           <ChartFrame
-            title={`Outturn and forecast, ${vintage ?? "OBR public finances databank"}`}
-            subtitle="£bn, by financial year. The last 10 years of outturn, then 5 forecast years (dashed)."
+            title={`Outturn and forecast, from the ${vintage ?? "OBR public finances databank"}`}
+            subtitle="£bn, by financial year. The last 10 years of outturn, then 5 years of forecast (dashed)."
             source={<SourceNote publisher={meta.publisher} title="Public finances databank" url={obr.sourceUrl} releaseDate={obr.releaseDate} licenceUrl={meta.licenceUrl} sourceId="obr-databank" />}
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -130,7 +130,7 @@ export default async function ForecastsPage() {
             </div>
             {series.slice(0, 4).map((item) => (
               <details key={item.name} className="mt-3 text-sm">
-                <summary className="cursor-pointer">{item.name}: table</summary>
+                <summary className="cursor-pointer">Show table: {item.name}</summary>
                 <DataTable
                   columns={["Financial year", "Outturn", "Forecast"]}
                   rows={recentWindow(item.points).map((point) => [
@@ -143,7 +143,7 @@ export default async function ForecastsPage() {
             ))}
             <p className="mt-3 text-sm">
               <Link className="underline decoration-neutral-400 underline-offset-4" href="/forecasts/history">
-                Full history from 1946, with CSV download
+                Full history from 1946, with a CSV download
               </Link>
             </p>
           </ChartFrame>

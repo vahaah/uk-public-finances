@@ -28,8 +28,8 @@ export default async function ForecastHistoryPage() {
       <Breadcrumb current="Full history" parents={[{ href: "/forecasts", label: "Forecasts" }]} />
       <PageIntro
         kicker="Office for Budget Responsibility"
-        title="What does the full record show?"
-        lede={`Outturn and forecast by financial year, £bn. Forecast vintage: ${vintageLabel(obr?.data.round ?? null) ?? "not loaded"}.`}
+        title="How have borrowing, debt, receipts and spending changed since 1946?"
+        lede={`Outturn and forecast by financial year, in £bn. Forecast from the ${vintageLabel(obr?.data.round ?? null) ?? "OBR databank, not loaded yet"}.`}
       />
       {series.length === 0 ? (
         <EmptySource name="The OBR databank" pending />

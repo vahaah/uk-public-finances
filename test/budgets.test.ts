@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { differenceWords, forecastDifference, marchDebtRatio, sumMonths, withoutPartYear } from "@/lib/budgets/compare";
 import { discoverEvents, eventLabel, yearAheadFy } from "@/lib/budgets/events";
-import { measureEventDate, parseEvaluationWorkbook, parseHeadroomWorkbook, parseHistoricalForecasts, parseLooseDate, parseMeasuresWorkbook } from "@/lib/budgets/forecasts";
+import { measureEventDate, parseEvaluationWorkbook, parseHeadroomWorkbook, parseHistoricalForecasts, parseLooseDate, parseMeasuresWorkbook, stripFootnoteMarker } from "@/lib/budgets/forecasts";
 import { outcomeLabel, reviewedHeadroom } from "@/lib/budgets/rules";
 import { loadRuleRegimes, loadSeedEvents } from "@/lib/budgets/seed";
 import { yearAheadComparisons } from "@/lib/budgets/view";
@@ -175,3 +175,18 @@ describe("fiscal rules", () => {
     }
   });
 });
+
+describe("measure footnote markers", () => {
+  it("strips a footnote digit after a year or a word", () => {
+    expect(stripFootnoteMarker("Fund agreement with EU to join Erasmus+ in 20274")).toBe("Fund agreement with EU to join Erasmus+ in 2027");
+    expect(stripFootnoteMarker("Income Tax: reduce basic rate from 20% to 19% from April 20243")).toBe("Income Tax: reduce basic rate from 20% to 19% from April 2024");
+    expect(stripFootnoteMarker("Industrial Energy Transformation Fund1")).toBe("Industrial Energy Transformation Fund");
+  });
+  it("keeps digits that are part of the name", () => {
+    expect(stripFootnoteMarker("Pillar 2")).toBe("Pillar 2");
+    expect(stripFootnoteMarker("Freeze thresholds to 2028")).toBe("Freeze thresholds to 2028");
+    expect(stripFootnoteMarker("Grant of £120000")).toBe("Grant of £120000");
+    expect(stripFootnoteMarker("Covid-19")).toBe("Covid-19");
+  });
+});
+

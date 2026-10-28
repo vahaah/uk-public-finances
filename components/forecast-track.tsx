@@ -1,10 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { useChartTheme } from "@/components/charts";
 import { formatBillions } from "@/lib/format";
 import { FY_MONTHS, type DatabankPoint } from "@/lib/forecasts-view";
+
+const QUARTER_TICKS = ["Apr", "Jul", "Oct", "Jan", "Mar"] as const;
+
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 639px)");
+    const sync = () => setNarrow(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+  return narrow;
+}
 
 function niceCeil(value: number, step: number): number {
   return Math.max(step, Math.ceil(value / step) * step);
@@ -24,6 +39,7 @@ export function ForecastTrackChart({
   lastLabel: string;
 }) {
   const theme = useChartTheme();
+  const narrow = useNarrow();
   const data = FY_MONTHS.map((month, index) => ({ month, thisYear: thisYear[index] ?? null, lastYear: lastYear[index] ?? null }));
   const max = Math.max(forecast ?? 0, ...lastYear.map((value) => value ?? 0), ...thisYear.map((value) => value ?? 0));
   const step = max > 200 ? 50 : 25;
@@ -34,7 +50,7 @@ export function ForecastTrackChart({
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
         <LineChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid stroke={theme.grid} vertical={false} />
-          <XAxis dataKey="month" interval={0} tick={{ fontSize: 12, fill: theme.tick }} />
+          <XAxis dataKey="month" ticks={narrow ? [...QUARTER_TICKS] : [...FY_MONTHS]} interval={0} tick={{ fontSize: 12, fill: theme.tick }} />
           <YAxis domain={[0, top]} ticks={ticks} width={40} tick={{ fontSize: 12, fill: theme.tick }} />
           <Tooltip
             content={({ active, payload, label }) => {
@@ -49,7 +65,7 @@ export function ForecastTrackChart({
                       </p>
                     ),
                   )}
-                  {forecast != null ? <p>OBR forecast for the year {formatBillions(forecast)}</p> : null}
+                  {forecast != null ? <p>OBR forecast for the year: {formatBillions(forecast)}</p> : null}
                 </div>
               );
             }}
@@ -59,7 +75,7 @@ export function ForecastTrackChart({
               y={forecast}
               stroke="#a3a3a3"
               strokeDasharray="2 4"
-              label={{ value: `OBR forecast ${formatBillions(forecast)}`, position: "insideTopRight", fontSize: 12, fill: theme.tick }}
+              label={{ value: `OBR forecast for the year: ${formatBillions(forecast)}`, position: "insideTopRight", fontSize: 12, fill: theme.tick }}
             />
           ) : null}
           <Line type="linear" dataKey="lastYear" name={lastLabel} stroke={theme.muted} strokeDasharray="4 4" strokeWidth={1.5} dot={false} connectNulls={false} isAnimationActive={false} />
