@@ -186,7 +186,7 @@ describe("OBR workbook and gilt buckets", () => {
       .join("\n");
     expect(xml).toMatch(/id="\{[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}\}"/);
     const again = new ExcelJS.Workbook();
-    await again.xlsx.load(buffer);
+    await again.xlsx.load(buffer as unknown as ExcelJS.Buffer);
     expect(again.getWorksheet("Bars")?.getCell("A2").value).toBe(3);
   });
 
