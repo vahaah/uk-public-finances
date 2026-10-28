@@ -37,6 +37,9 @@ export default async function BudgetsPage() {
   const rows = yearAheadComparisons(events, vintages, ons?.data.series.j5ii?.months ?? [], "psnb");
   const asOf = obrFreshness(obr?.data, obr?.retrievedAt ?? null);
   const firstVerified = events.find((event) => event.dateStatus === "verified");
+  const firstLabel = firstVerified
+    ? `the ${new Date(`${firstVerified.date}T12:00:00Z`).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "Europe/London" })} ${eventLabel(firstVerified)}`
+    : "the first OBR forecast";
   const lines = porcupineLines(events, vintages);
   const outturn = outturnByFy(
     ons?.data.series.j5ii?.months ?? [],
@@ -47,13 +50,13 @@ export default async function BudgetsPage() {
     <>
       <JsonLd data={breadcrumbJsonLd("Budgets", "/budgets")} />
       <Breadcrumb current="Budgets" />
-      <PageIntro kicker="Budgets" title="How did each Budget's plans turn out?" lede={indexCite(rows, firstVerified ? eventLabel(firstVerified) : "the first OBR forecast", asOf)} />
+      <PageIntro kicker="Budgets" title="How did each Budget's plans turn out?" lede={indexCite(rows, firstLabel, asOf)} />
       <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{asOf}</p>
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-medium">Fiscal events</h2>
         <BudgetTimeline events={events} />
         <p className="mt-3 text-xs text-neutral-700 dark:text-neutral-300">
-          This section covers events from {firstVerified ? eventLabel(firstVerified) : "the first OBR forecast"} onwards, when the OBR began producing the official forecast. Earlier Treasury forecasts will be added later. A lighter marker is an OBR outlook with no Budget.{" "}
+          This section covers events from {firstLabel} onwards, when the OBR began producing the official forecast. Earlier Treasury forecasts will be added later. A lighter marker is an OBR outlook with no Budget.{" "}
           <Link className="underline decoration-neutral-400 underline-offset-4" href="/budgets/rules">
             Fiscal rules
           </Link>

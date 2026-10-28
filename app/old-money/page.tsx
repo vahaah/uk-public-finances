@@ -44,7 +44,7 @@ export default async function OldMoneyPage() {
       />
       <SourceNote
         publisher={meta.publisher}
-        title="MNF2 and L8GG (GDP deflator), BKTL is not used here, D7BT (CPI), L522 (CPIH), CHAW (RPI)"
+        title="GDP deflator (MNF2 calendar years, L8GG financial years), CPI (D7BT), CPIH (L522) and RPI (CHAW)"
         url="https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/l8gg/qna"
         releaseDate={snapshot.releaseDate}
         licenceUrl={meta.licenceUrl}

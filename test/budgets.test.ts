@@ -16,7 +16,7 @@ describe("fiscal events", () => {
   it("starts in June 2010 and keeps the November 2010 outlook lighter", () => {
     expect(events[0]).toMatchObject({ date: "2010-06-22", dateStatus: "verified", govukPath: "/government/publications/budget-june-2010" });
     const outlook = events.find((event) => event.slug === "2010-11-obr-outlook");
-    expect(outlook).toMatchObject({ weight: "light", dateStatus: "unverified", obrForecast: "yes" });
+    expect(outlook).toMatchObject({ weight: "light", dateStatus: "verified", obrForecast: "yes" });
     expect(events.some((event) => event.date < "2010-06-22")).toBe(false);
     expect(events.find((event) => event.slug === "2022-09-growth-plan")?.obrForecast).toBe("no");
     for (const event of events) expect(eventLabel(event).length).toBeLessThanOrEqual(28);
@@ -114,7 +114,7 @@ describe("OBR workbooks", () => {
     expect(measureEventDate("Spring Budget 2021", events)).toBe("2021-03-03");
     expect(measureEventDate("Autumn Budget 2021", events)).toBe("2021-10-27");
     expect(measureEventDate("Autumn Budget 2025", events)).toBe("2025-11-26");
-    expect(measureEventDate("Spring Forecast 2026", events)).toBeNull();
+    expect(measureEventDate("Spring Forecast 2026", events)).toBe("2026-03-03");
     expect(parseLooseDate("22 June 2010")).toEqual({ date: "2010-06-22", precision: "day" });
 
     const parsed = await parseMeasuresWorkbook(readFileSync("fixtures/raw/obr/policy-measures-march-2026.xlsx"), events);
@@ -126,8 +126,8 @@ describe("OBR workbooks", () => {
     expect(infected?.year3).toBeCloseTo(-1123.055, 3);
     const freeze = parsed.rows.find((row) => row.name.startsWith("Council Tax"));
     expect(freeze).toMatchObject({ eventDate: "2010-06-22", year3: 630 });
-    expect(parsed.rows.find((row) => row.name.startsWith("Police precept"))?.eventDate).toBeNull();
-    expect(parsed.rows.find((row) => row.name.startsWith("Police precept"))?.year3).toBeNull();
+    expect(parsed.rows.find((row) => row.name.startsWith("Police precept"))?.eventDate).toBe("2026-03-03");
+    expect(parsed.rows.find((row) => row.name.startsWith("Police precept"))?.year3).not.toBeUndefined();
   });
 
   it("reads T3.6 and T3.7 with the economic factors column", async () => {

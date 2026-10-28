@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
-import { formatBillions, formatCount, formatPercent } from "@/lib/format";
+import { formatBillions, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
@@ -46,7 +46,7 @@ export default async function TaxpayersPage() {
             <p>
               {totalPeople == null
                 ? `The number of income taxpayers for tax year ${year} is not available.`
-                : `HMRC projects ${formatCount(payers.total ?? 0)} thousand income taxpayers in tax year ${year}, about ${totalPeople.toLocaleString("en-GB", { maximumFractionDigits: 1 })} million people.`}
+                : `HMRC projects about ${totalPeople.toLocaleString("en-GB", { maximumFractionDigits: 1 })} million income taxpayers in tax year ${year}.`}
               {payers.projected
                 ? " Figures for 2026-27 are projections based on the 2023-24 Survey of Personal Incomes and the OBR's March 2026 Economic and fiscal outlook. The top 1% projection is indicative."
                 : ""}

@@ -20,8 +20,8 @@ events:
     government: "Con-LD coalition"
     obrForecast: "yes"
     weight: light
-    govukPath: null
-    dateStatus: unverified
+    govukPath: /government/news/chancellors-autumn-forecast-statement
+    dateStatus: verified
   - slug: 2011-03-budget
     date: 2011-03-23
     name: Budget 2011
@@ -333,4 +333,14 @@ events:
     obrForecast: "yes"
     weight: full
     govukPath: /government/publications/budget-2025-document
+    dateStatus: verified
+  - slug: 2026-03-spring-forecast
+    date: 2026-03-03
+    name: Spring Forecast 2026
+    type: statement
+    chancellor: Rachel Reeves
+    government: Labour
+    obrForecast: "yes"
+    weight: full
+    govukPath: /government/publications/march-2026-economic-and-fiscal-outlook
     dateStatus: verified

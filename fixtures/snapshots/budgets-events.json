@@ -9,7 +9,7 @@
   "publisher": "HM Treasury",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "7dfcde45d93bb5a08aa480690608921e287c7987bba6f112a731000815d33ef2",
+  "contentHash": "788b5cc20e8e572407d51a7286f4a9020f3dcb59b8644ed1c87af2be78deec2a",
   "data": {
     "events": [
       {
@@ -37,8 +37,8 @@
         "government": "Con-LD coalition",
         "obrForecast": "yes",
         "weight": "light",
-        "govukPath": null,
-        "dateStatus": "unverified",
+        "govukPath": "/government/news/chancellors-autumn-forecast-statement",
+        "dateStatus": "verified",
         "status": "listed",
         "observedDate": null
       },
@@ -503,6 +503,21 @@
         "obrForecast": "yes",
         "weight": "full",
         "govukPath": "/government/publications/budget-2025-document",
+        "dateStatus": "verified",
+        "status": "listed",
+        "observedDate": null
+      },
+      {
+        "slug": "2026-03-spring-forecast",
+        "date": "2026-03-03",
+        "name": "Spring Forecast 2026",
+        "shortName": null,
+        "type": "statement",
+        "chancellor": "Rachel Reeves",
+        "government": "Labour",
+        "obrForecast": "yes",
+        "weight": "full",
+        "govukPath": "/government/publications/march-2026-economic-and-fiscal-outlook",
         "dateStatus": "verified",
         "status": "listed",
         "observedDate": null
