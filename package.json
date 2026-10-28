@@ -27,8 +27,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^3.10.1",
-    "workflow": "^4.2.0",
-    "zod": "^3.25.76"
+    "workflow": "^5.2.3",
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
@@ -41,7 +41,7 @@
     "tailwindcss": "^4.1.16",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^5.0.5"
   },
   "overrides": {
     "undici": "7.30.1",
