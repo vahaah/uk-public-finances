@@ -2,7 +2,10 @@ import Link from "next/link";
 
 import { DebtRatioChart, YieldChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
+import { CiteShare } from "@/components/cite-share";
 import { formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent, formatRelease } from "@/lib/format";
+import { reconcileSignedDisplay } from "@/lib/display-rounding";
+import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
 import { loadHealth, readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
@@ -28,6 +31,17 @@ export default async function DebtPage() {
   const stale = boeHealth?.stale ? formatRelease(boeHealth.releaseDate) : null;
   const portfolio = dmo?.data.portfolio ?? null;
   const month = ons?.data.series.kse6?.latest?.period;
+  const balance = ons ? debtMove(ons.data.series.kse6?.months ?? [], ons.data.financialYear?.borrowing ?? null) : null;
+  const interestShare = calendarShare(
+    ons?.data.series.nmfx?.years ?? [],
+    ons?.data.series.jw2o?.years ?? [],
+    ons?.data.series.jnyy?.years ?? [],
+    ons?.data.series.jnyx?.years ?? [],
+  );
+  const debtCite =
+    ons?.data.series.kse6?.latest && ons.data.series.hf6x?.latest && month
+      ? `Public sector net debt was ${formatGbpFromMillions(ons.data.series.kse6.latest.value)} at the end of ${formatMonthLong(month)}, ${formatPercent(ons.data.series.hf6x.latest.value)} of GDP.${interestShare ? ` Debt interest took ${formatPercent(interestShare.share)} of receipts in calendar year ${interestShare.year}.` : ""}`
+      : "Public sector net debt from the ONS.";
   const interest = ons?.data.series.nmfx?.latest;
   const exUplift = ons?.data.series.jnyx?.latest;
   const uplift = ons?.data.series.jnyy?.latest;
@@ -54,7 +68,7 @@ export default async function DebtPage() {
       <Breadcrumb current="Debt and gilts" />
       <PageIntro
         kicker="Public sector finances"
-        title="UK national debt, debt interest and gilts"
+        title="How big is the national debt, and what does it cost?"
         lede={
           <>
             Public sector net debt and central government net interest come from the ONS. Bank Rate and gilt yields come from the Bank of England. Gilts in issue come from the UK Debt Management Office. Borrowing, which adds to the debt, is on{" "}
@@ -65,6 +79,29 @@ export default async function DebtPage() {
           </>
         }
       />
+      <CiteShare sentence={debtCite} citation={`${debtCite} Source: Office for National Statistics, KSE6, HF6X, NMFX, JW2O. Via budget.vahaah.com/debt.`} url={`${SITE_URL}/debt`} />
+      {balance ? (
+        <section className="mt-6 border border-neutral-200 p-6 dark:border-neutral-800" data-balanced={balance.balanced ? "true" : "false"}>
+          <h2 className="text-sm font-medium">Why debt is not the same as borrowing</h2>
+          <p className="mt-2 text-sm text-neutral-800 dark:text-neutral-200">
+            Borrowing is what the government needs in one period. Debt is the total owed. Debt usually rises by about the amount borrowed, but it also changes for other reasons, such as loans the government makes and the value of its cash and assets.
+          </p>
+          <p className="mt-3 text-sm tabular-nums">
+            Debt at {formatMonthLong(balance.anchor)} £{balance.start}bn + borrowing £{balance.borrowing}bn + other changes £{balance.other}bn = debt now £{balance.now}bn.
+          </p>
+          <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300" title="The difference between the change in debt and borrowing over the same period. It includes lending, cash movements and valuation changes.">
+            Other changes (balancing figure). ONS annual borrowing, receipts and GDP are calendar years. This sum uses the monthly stock and borrowing since the end of the previous financial year.
+          </p>
+        </section>
+      ) : null}
+      {interestShare ? (
+        <section className="mt-4 border border-neutral-200 p-6 dark:border-neutral-800">
+          <h2 className="text-sm font-medium">Debt interest as a share of receipts</h2>
+          <p className="mt-2 text-sm text-neutral-800 dark:text-neutral-200">
+            Index-linked gilts rise in value with inflation. The increase is counted as debt interest each year, so interest costs climb when inflation is high. In calendar year {interestShare.year}, interest excluding uplift was {formatGbpFromMillions(interestShare.interest)} and the uplift was {formatGbpFromMillions(interestShare.uplift)}.
+          </p>
+        </section>
+      ) : null}
       {ons && month ? (
         <div className="grid gap-3 sm:grid-cols-3">
           <Stat
@@ -183,4 +220,58 @@ export default async function DebtPage() {
       </div>
     </>
   );
+}
+
+function debtMove(months: { period: string; value: number }[], rawBorrowing: number | null): {
+  anchor: string;
+  start: number;
+  borrowing: number;
+  other: number;
+  now: number;
+  balanced: boolean;
+} | null {
+  const latest = months.at(-1);
+  if (!latest || rawBorrowing == null) return null;
+  const [yearText, monthText] = latest.period.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const startYear = month >= 4 ? year : year - 1;
+  const anchor = `${startYear}-03`;
+  const start = months.find((point) => point.period === anchor);
+  if (!start) return null;
+  const borrowingBn = -rawBorrowing / 1000;
+  const startBn = start.value / 1000;
+  const nowBn = latest.value / 1000;
+  const otherBn = nowBn - startBn - borrowingBn;
+  const rounded = reconcileSignedDisplay([
+    { key: "start", amount: startBn, sign: 1 },
+    { key: "borrowing", amount: borrowingBn, sign: 1 },
+    { key: "other", amount: otherBn, sign: 1 },
+  ]);
+  return {
+    anchor,
+    start: rounded.displayed.start ?? 0,
+    borrowing: rounded.displayed.borrowing ?? 0,
+    other: rounded.displayed.other ?? 0,
+    now: Number((((rounded.displayed.start ?? 0) + (rounded.displayed.borrowing ?? 0) + (rounded.displayed.other ?? 0))).toFixed(1)),
+    balanced: rounded.balanced,
+  };
+}
+
+function calendarShare(
+  interest: { period: string; value: number }[],
+  receipts: { period: string; value: number }[],
+  uplift: { period: string; value: number }[] = [],
+  cashInterest: { period: string; value: number }[] = [],
+): { year: string; share: number; uplift: number; interest: number } | null {
+  const byYear = new Map(receipts.map((point) => [point.period, point.value]));
+  const latest = [...interest].reverse().find((point) => (byYear.get(point.period) ?? 0) > 0);
+  if (!latest) return null;
+  const base = byYear.get(latest.period) ?? 0;
+  return {
+    year: latest.period,
+    share: (latest.value / base) * 100,
+    uplift: uplift.find((point) => point.period === latest.period)?.value ?? 0,
+    interest: cashInterest.find((point) => point.period === latest.period)?.value ?? 0,
+  };
 }

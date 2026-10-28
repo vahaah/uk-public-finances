@@ -29,7 +29,7 @@ export default function MethodologyPage() {
       <Breadcrumb current="Methodology" />
       <PageIntro
         kicker="Methodology"
-        title="How the figures are collected"
+        title="How are the numbers calculated?"
         lede="The figures come from official publishers. This site does not produce its own estimates. A new file is shown only after it passes the checks; if it fails, the previous figures stay in place."
       />
       <nav aria-label="On this page" className="mb-8 text-sm">
@@ -88,7 +88,7 @@ export default function MethodologyPage() {
         <section id="prices">
           <h2 className="text-base font-medium text-neutral-950 dark:text-white">Prices and history</h2>
           <p className="mt-2">
-            The public sector finances series are stored at every frequency ONS publishes. In the September 2026 file, J5II runs from the 1946 calendar year and the 1946 Q1 quarter, and the monthly series runs from January 1993. Other series start later, where ONS starts them. HMRC&apos;s workbook has annual receipts from 2006-07 and months from April 2017. PESA table 4.2 has financial years from 2003-04. Table 6.1 has outturn from 2021-22 and plans to 2028-29.
+            ONS annual borrowing (J5II), receipts (JW2O) and GDP (BKTL) are calendar years. The 2025 borrowing total equals the sum of the twelve months of 2025, and the 2025 GDP total equals the four quarters of 2025. They are not financial years. HMRC receipts and PESA spending use financial years, and a share of GDP for those uses GDP from April to March. The public sector finances series are stored at every frequency ONS publishes. In the September 2026 file, J5II runs from the 1946 calendar year and the 1946 Q1 quarter, and the monthly series runs from January 1993. Other series start later, where ONS starts them. HMRC&apos;s workbook has annual receipts from 2006-07 and months from April 2017. PESA table 4.2 has financial years from 2003-04. Table 6.1 has outturn from 2021-22 and plans to 2028-29.
           </p>
           <p className="mt-2">
             Real terms on the money charts use the GDP deflator at market prices. HM Treasury&apos;s September 2026 GDP deflators release says calendar years are taken from ONS series MNF2 and financial years from ONS series L8GG. A financial year here is the average of the four L8GG quarters from Q2 to the following Q1. A month uses the L8GG quarter that contains it. The base year defaults to 2025, the latest calendar year with a MNF2 observation and a complete L8GG year. A share of GDP uses non-seasonally adjusted money GDP, ONS series BKTL. A financial-year total of BKTL is the sum of those same four quarters. A single month is not shown as a share of GDP. CPI (D7BT), CPIH (L522) and RPI (CHAW) are used on the old-money page. RPI is for index-linked gilts, not for spending.

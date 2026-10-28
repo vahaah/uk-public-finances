@@ -44,7 +44,7 @@ export default async function DataHealthPage() {
       <Breadcrumb current="Data health" />
       <PageIntro
         kicker=""
-        title="Data health"
+        title="Can I trust today's numbers?"
         lede={`Last checked ${formatDateLong(health.checkedAt)}. If a new file fails a check, the previous figures stay and the problem is listed here.`}
       />
       <div className="mb-4 flex flex-wrap gap-2">

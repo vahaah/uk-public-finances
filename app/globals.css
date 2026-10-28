@@ -8,12 +8,51 @@
   --color-chart: #171717;
   --color-chart-muted: #737373;
   --color-grid: #e5e5e5;
+  --color-chart-tax-income: var(--chart-tax-income);
+  --color-chart-tax-nics: var(--chart-tax-nics);
+  --color-chart-tax-vat: var(--chart-tax-vat);
+  --color-chart-tax-corp: var(--chart-tax-corp);
+  --color-chart-tax-duties: var(--chart-tax-duties);
+  --color-chart-tax-other: var(--chart-tax-other);
+  --color-chart-fn-health: var(--chart-fn-health);
+  --color-chart-fn-welfare: var(--chart-fn-welfare);
+  --color-chart-fn-education: var(--chart-fn-education);
+  --color-chart-fn-defence: var(--chart-fn-defence);
+  --color-chart-fn-interest: var(--chart-fn-interest);
+  --color-chart-fn-other: var(--chart-fn-other);
+}
+
+:root {
+  --chart-tax-income: #1d4ed8;
+  --chart-tax-nics: #1e3a8a;
+  --chart-tax-vat: #0369a1;
+  --chart-tax-corp: #0f766e;
+  --chart-tax-duties: #57534e;
+  --chart-tax-other: #a3a3a3;
+  --chart-fn-health: #1d4ed8;
+  --chart-fn-welfare: #1e3a8a;
+  --chart-fn-education: #0369a1;
+  --chart-fn-defence: #0f766e;
+  --chart-fn-interest: #44403c;
+  --chart-fn-other: #a3a3a3;
 }
 
 .dark {
   --color-chart: #fafafa;
   --color-chart-muted: #a3a3a3;
   --color-grid: #262626;
+  --chart-tax-income: #93c5fd;
+  --chart-tax-nics: #bfdbfe;
+  --chart-tax-vat: #7dd3fc;
+  --chart-tax-corp: #5eead4;
+  --chart-tax-duties: #d6d3d1;
+  --chart-tax-other: #737373;
+  --chart-fn-health: #93c5fd;
+  --chart-fn-welfare: #bfdbfe;
+  --chart-fn-education: #7dd3fc;
+  --chart-fn-defence: #5eead4;
+  --chart-fn-interest: #d6d3d1;
+  --chart-fn-other: #737373;
 }
 
 html {

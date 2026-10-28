@@ -29,12 +29,22 @@ export default function GlossaryPage() {
       <Breadcrumb current="Glossary" />
       <PageIntro
         kicker=""
-        title="Glossary"
+        title="What do these terms mean?"
         lede="Plain definitions of the terms used on this site."
       />
+      <nav aria-label="A to Z" className="sticky top-14 z-10 mb-4 hidden gap-2 bg-white/80 py-2 text-xs backdrop-blur lg:flex dark:bg-black/80">
+        {[...new Set(GLOSSARY.map((entry) => entry.term[0]?.toUpperCase() ?? ""))].map((letter) => (
+          <a key={letter} href={`#letter-${letter}`} className="underline decoration-neutral-400 underline-offset-4">
+            {letter}
+          </a>
+        ))}
+      </nav>
       <dl className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
         {GLOSSARY.map((entry) => (
           <div key={entry.id} id={entry.id} className="scroll-mt-20 py-4">
+            <span id={`letter-${entry.term[0]?.toUpperCase()}`} className="sr-only">
+              {entry.term[0]}
+            </span>
             <dt className="text-sm font-medium">{entry.term}</dt>
             <dd className="mt-1 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{entry.body}</dd>
           </div>

@@ -1,20 +1,21 @@
-import { BorrowingChart } from "@/components/charts";
+import { CiteShare } from "@/components/cite-share";
+import { BorrowingChart, CumulativeChart } from "@/components/charts";
+import { EquationRow } from "@/components/equation-row";
 import {
   ChartFrame,
   datasetJsonLd,
   EmptySource,
   JsonLd,
-  PageIntro,
   SourceNote,
-  Sparkline,
   Stat,
   websiteJsonLd,
 } from "@/components/blocks";
-import { formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent } from "@/lib/format";
+import { formatDateLong, formatGbpFromMillions, formatMonth, formatMonthLong, formatPercent, previousFinancialYear } from "@/lib/format";
+import { buildRecords } from "@/lib/records";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
-import { SOURCES } from "@/lib/site";
+import { SITE_URL, SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
   title: "UK public finances: tax, spending, borrowing, debt",
@@ -42,6 +43,52 @@ export default async function HomePage() {
   const deficit = data.bulletinSign.currentBudgetDeficitLatest;
   const delta =
     yearBorrowing != null && previous != null ? versusYearEarlier(yearBorrowing - previous) : null;
+  const monthLabel = month ? formatMonthLong(month) : "the latest month";
+  const monthName = month ? formatMonthLong(month).replace(/ \d{4}$/, "") : "that month";
+  const earlierBorrowing = sameMonthValue(data.series.j5ii?.months, month);
+  const cite =
+    receipts && spending && borrowing != null
+      ? `In ${monthLabel}, the public sector received ${formatGbpFromMillions(receipts.value)} and spent ${formatGbpFromMillions(spending.value)}, so it borrowed ${formatGbpFromMillions(Math.abs(borrowing))}.${
+          earlierBorrowing == null
+            ? ""
+            : ` That is ${formatGbpFromMillions(Math.abs(Math.abs(borrowing) - Math.abs(earlierBorrowing)))} ${Math.abs(borrowing) >= Math.abs(earlierBorrowing) ? "more" : "less"} than in ${monthName} last year.`
+        }`
+      : "The latest UK public sector finances from the ONS.";
+  const citation = `${cite} Source: ${meta.publisher}, JW2O, KX5Q, J5II, published ${formatDateLong(snapshot.releaseDate)}. Via budget.vahaah.com/, accessed ${formatDateLong(new Date().toISOString())}.`;
+  const ytdReceipts = sumFiscal(data.series.jw2o?.months ?? [], month);
+  const ytdSpending = sumFiscal(data.series.kx5q?.months ?? [], month);
+  const equationMonth =
+    receipts && spending && borrowing != null
+      ? {
+          periodLabel: monthLabel,
+          spendingBn: spending.value / 1000,
+          receiptsBn: receipts.value / 1000,
+          borrowingBn: Math.abs(borrowing) / 1000,
+          caption: `Spending minus receipts equals borrowing. Figures are for ${monthLabel}, rounded to £0.1bn, from ONS Public sector finances.`,
+          spoken: `In ${monthLabel}, spending of ${formatGbpFromMillions(spending.value)} minus receipts of ${formatGbpFromMillions(receipts.value)} equals borrowing of ${formatGbpFromMillions(Math.abs(borrowing))}.`,
+        }
+      : null;
+  const equationYtd =
+    ytdReceipts != null && ytdSpending != null && yearBorrowing != null
+      ? {
+          periodLabel: "Year to date",
+          spendingBn: ytdSpending / 1000,
+          receiptsBn: ytdReceipts / 1000,
+          borrowingBn: Math.abs(yearBorrowing) / 1000,
+          caption: `Spending minus receipts equals borrowing, April to ${formatMonth(month)}.`,
+          spoken: `From April to ${formatMonth(month)}, spending minus receipts equals borrowing.`,
+        }
+      : null;
+  const interestShare = calendarInterestShare(data.series.nmfx?.years ?? [], data.series.jw2o?.years ?? []);
+  const overviewRecords = buildRecords({
+    borrowingMonths: data.series.j5ii?.months ?? [],
+    debtRatioMonths: data.series.hf6x?.months ?? [],
+    interestYears: data.series.nmfx?.years ?? [],
+    receiptYears: data.series.jw2o?.years ?? [],
+    hmrcMonths: [],
+  }).filter((record) => ["largest-monthly-surplus", "largest-monthly-borrowing", "highest-debt-ratio"].includes(record.id));
+  const recordOrder = ["largest-monthly-surplus", "largest-monthly-borrowing", "highest-debt-ratio"];
+  overviewRecords.sort((left, right) => recordOrder.indexOf(left.id) - recordOrder.indexOf(right.id));
   return (
     <>
       <JsonLd data={websiteJsonLd()} />
@@ -73,75 +120,75 @@ export default async function HomePage() {
           ],
         })}
       />
-      <PageIntro
-        kicker={`ONS data published ${formatDateLong(snapshot.releaseDate)}`}
-        title="UK public finances"
-        lede={
-          borrowing == null || !month
-            ? "The latest UK public sector finances from the ONS."
-            : borrowing < 0
-              ? `The public sector ran a surplus of ${formatGbpFromMillions(Math.abs(borrowing))} in ${formatMonthLong(month)}. The next ONS release is due on ${data.series.j5ii?.nextRelease || "a date not yet announced"}.`
-              : `Public sector net borrowing was ${formatGbpFromMillions(borrowing)} in ${formatMonthLong(month)}. The next ONS release is due on ${data.series.j5ii?.nextRelease || "a date not yet announced"}.`
-        }
-      />
-      <div className="grid gap-3 md:grid-cols-3">
-        <Stat
-          wide
-          href="/borrowing"
-          label={month ? `Borrowing in ${formatMonthLong(month)}` : "Borrowing"}
-          value={borrowing == null ? "Not available" : formatGbpFromMillions(Math.abs(borrowing))}
-          delta={
-            yearBorrowing != null && previous != null
-              ? movement(yearBorrowing - previous, "the same months last year")
-              : null
-          }
-          sparkline={<Sparkline values={(data.series.j5ii?.months ?? []).map((point) => -point.value)} />}
-          detail={`Public sector net borrowing, excluding public sector banks. ${data.financialYear?.year ?? ""} so far: ${yearBorrowing == null ? "not available" : formatGbpFromMillions(yearBorrowing)}${delta ? `, ${delta.replace("a year earlier", "the same months last year")}` : ""}.`}
-        />
-        <Stat
-          href="/receipts"
-          label={receipts ? `Receipts in ${formatMonthLong(receipts.period)}` : "Receipts"}
-          value={receipts ? formatGbpFromMillions(receipts.value) : "Not available"}
-          delta={monthDelta(data.series.jw2o?.months, receipts?.period, receipts?.value)}
-          detail="Mostly taxes, counted when due rather than when paid. Differs from the HMRC cash total."
-        />
-        <Stat
-          href="/spending"
-          label={spending ? `Spending in ${formatMonthLong(spending.period)}` : "Spending"}
-          value={spending ? formatGbpFromMillions(spending.value) : "Not available"}
-          delta={monthDelta(data.series.kx5q?.months, spending?.period, spending?.value)}
-          detail="Total managed expenditure (TME): day-to-day spending, depreciation and net investment. Excludes public sector banks."
-        />
+      <header className="mb-8 max-w-[68ch]">
+        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Is the government spending more than it takes in?</h1>
+        <p id="summary" data-cite className="mt-3 text-base text-neutral-900 dark:text-neutral-100">
+          {cite}
+        </p>
+        <CiteShare sentence={cite} citation={citation} url={`${SITE_URL}/`} />
+      </header>
+      {equationMonth && equationYtd ? <EquationRow month={equationMonth} yearToDate={equationYtd} /> : null}
+      {data.financialYear ? (
+        <div className="mt-4">
+          <ChartFrame
+            title={`Borrowing so far in ${data.financialYear.year}`}
+            subtitle="Borrowing added up month by month since April, this financial year against last."
+            source={
+              <SourceNote
+                publisher={meta.publisher}
+                title="Public sector net borrowing excluding public sector banks (J5II)"
+                url={snapshot.sourceUrl}
+                releaseDate={snapshot.releaseDate}
+                licenceUrl={meta.licenceUrl}
+                sourceId="ons-psf"
+              />
+            }
+          >
+            <CumulativeChart
+              months={data.financialYear.months}
+              prices={prices ? priceBundle(prices.data) : null}
+              thisYear={data.financialYear.year}
+              lastYear={previousFinancialYear(data.financialYear.year)}
+            />
+          </ChartFrame>
+        </div>
+      ) : null}
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
           href="/debt"
           label={debt ? `Net debt at end of ${formatMonthLong(debt.period)}` : "Net debt"}
           value={debt ? formatGbpFromMillions(debt.value) : "Not available"}
-          delta={monthDelta(data.series.kse6?.months, debt?.period, debt?.value)}
-          detail={
-            ratio
-              ? `${formatPercent(ratio.value)} of GDP. Public sector net debt, excluding public sector banks. The latest month is provisional.`
-              : "Public sector net debt, excluding public sector banks. The latest month is provisional."
-          }
+          detail="Public sector net debt, excluding public sector banks. The latest month is provisional."
         />
         <Stat
           href="/debt"
-          label={interest ? `Net interest payable in ${formatMonthLong(interest.period)}` : "Net interest payable"}
+          label={ratio ? `Net debt, ${formatMonthLong(ratio.period)}` : "Net debt as a share of GDP"}
+          value={ratio ? `${formatPercent(ratio.value)} of GDP` : "Not available"}
+          detail="Share of calendar-year GDP is on the debt page. This month's ratio is HF6X."
+        />
+        <Stat
+          href="/debt"
+          label={interest ? `Debt interest in ${formatMonthLong(interest.period)}` : "Debt interest"}
           value={interest ? formatGbpFromMillions(interest.value) : "Not available"}
-          delta={monthDelta(data.series.nmfx?.months, interest?.period, interest?.value)}
           detail="Central government interest paid, net of interest received, including inflation uplift on index-linked gilts."
         />
         <Stat
-          href="/borrowing"
-          label={
-            deficit == null
-              ? "Current budget"
-              : deficit < 0
-                ? `Current budget surplus in ${month ? formatMonthLong(month) : "the month"}`
-                : `Current budget deficit in ${month ? formatMonthLong(month) : "the month"}`
-          }
-          value={deficit == null ? "Not available" : formatGbpFromMillions(Math.abs(deficit))}
-          detail="Day-to-day spending, including depreciation, minus receipts. Borrowing for investment is not included."
+          href="/debt"
+          label={interestShare ? `Interest share of receipts, calendar year ${interestShare.year}` : "Interest share of receipts"}
+          value={interestShare ? formatPercent(interestShare.share) : "Not available"}
+          detail="Debt interest (NMFX) divided by public sector receipts (JW2O). Both annual series are calendar years, not financial years."
         />
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {overviewRecords.map((record) => (
+          <a key={record.id} href="/records" className="border border-neutral-200 p-4 text-sm hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-950" title={record.basis}>
+            <p className="font-medium">
+              {record.kind === "largest" ? "Largest" : "Highest"} {record.metric}
+            </p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums">{record.valueLabel}</p>
+            <p className="mt-1 text-neutral-800 dark:text-neutral-200">in {formatMonth(record.period)}</p>
+          </a>
+        ))}
       </div>
       <div className="mt-3">
         <ChartFrame
@@ -182,6 +229,35 @@ function movement(gapMillions: number, comparedWith: string): string {
   if (gapMillions < 0) return `▼ ${amount} compared with ${comparedWith}`;
   if (gapMillions > 0) return `▲ ${amount} compared with ${comparedWith}`;
   return `Unchanged compared with ${comparedWith}`;
+}
+
+function sameMonthValue(months: { period: string; value: number }[] | undefined, period: string): number | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(period);
+  if (!match || !months) return null;
+  return months.find((point) => point.period === `${Number(match[1]) - 1}-${match[2]}`)?.value ?? null;
+}
+
+function sumFiscal(months: { period: string; value: number }[], through: string): number | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(through);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const startYear = month >= 4 ? year : year - 1;
+  const start = `${startYear}-04`;
+  const picked = months.filter((point) => point.period >= start && point.period <= through);
+  if (picked.length === 0) return null;
+  return picked.reduce((sum, point) => sum + point.value, 0);
+}
+
+function calendarInterestShare(
+  interest: { period: string; value: number }[],
+  receipts: { period: string; value: number }[],
+): { year: string; share: number } | null {
+  const byYear = new Map(receipts.map((point) => [point.period, point.value]));
+  const latest = [...interest].reverse().find((point) => (byYear.get(point.period) ?? 0) > 0);
+  if (!latest) return null;
+  const base = byYear.get(latest.period) ?? 0;
+  return { year: latest.period, share: (latest.value / base) * 100 };
 }
 
 function monthDelta(

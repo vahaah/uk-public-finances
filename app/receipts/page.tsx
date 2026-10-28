@@ -1,8 +1,13 @@
 import Link from "next/link";
 
+import { CiteShare } from "@/components/cite-share";
 import { HistoryChart, ReceiptsChart } from "@/components/charts";
+import { JumpTo } from "@/components/jump-to";
+import { ReceiptMixChart } from "@/components/mix-chart";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
-import { formatGbpFromMillions, formatMonth, formatReceiptBn, formatReceiptShare } from "@/lib/format";
+import { formatGbpFromMillions, formatMonth, formatPercent, formatReceiptBn, formatReceiptShare } from "@/lib/format";
+import { receiptMix } from "@/lib/mix";
+import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -40,9 +45,17 @@ export default async function ReceiptsPage() {
         })}
       />
       <Breadcrumb current="Tax and receipts" />
+      <JumpTo
+        links={[
+          { href: "#mix", label: "Mix over time" },
+          { href: "#by-tax", label: "Receipts by tax" },
+          { href: "#by-year", label: "By financial year" },
+          { href: "#by-month", label: "By month" },
+        ]}
+      />
       <PageIntro
         kicker="HMRC tax receipts"
-        title="Where UK tax comes from"
+        title="Where does the government's money come from?"
         lede={
           <>
             <p>
@@ -62,6 +75,31 @@ export default async function ReceiptsPage() {
           </>
         }
       />
+      <CiteShare
+        sentence={receiptCite(annual, rows)}
+        citation={`${receiptCite(annual, rows)} Source: ${meta.publisher}, HMRC tax receipts, published ${snapshot.releaseDate ?? ""}. Via budget.vahaah.com/receipts.`}
+        url={`${SITE_URL}/receipts`}
+      />
+      <div id="mix" className="mt-6 scroll-mt-28">
+        <ChartFrame
+          title="How the mix of receipts has changed"
+          subtitle="How HMRC receipts split between the main taxes each year since 2006-07. Switch to 100% to see shares instead of £bn."
+          source={
+            <SourceNote
+              publisher={meta.publisher}
+              title="HMRC tax receipts and National Insurance contributions for the UK"
+              url={snapshot.sourceUrl}
+              releaseDate={snapshot.releaseDate}
+              licenceUrl={meta.licenceUrl}
+              extra="HMRC figures are cash received in the period. ONS public sector receipts are recorded when the tax is due, so the two do not match month by month."
+              sourceId="hmrc-receipts"
+            />
+          }
+        >
+          <ReceiptMixChart pounds={receiptMix(snapshot.data.annualHistory, false)} shares={receiptMix(snapshot.data.annualHistory, true)} />
+        </ChartFrame>
+      </div>
+      <div id="by-tax" className="mt-3 scroll-mt-28">
       <ChartFrame
         title={`Receipts by tax, ${annual.year}`}
         subtitle="£bn. The ten largest taxes, with the rest grouped as Other."
@@ -89,10 +127,11 @@ export default async function ReceiptsPage() {
           />
         </details>
       </ChartFrame>
-      <div className="mt-3">
+      </div>
+      <div id="by-year" className="mt-3 scroll-mt-28">
         <ChartFrame
           title="HMRC receipts by financial year"
-          subtitle="£bn. Cash received by HMRC in each financial year."
+          subtitle="£bn. Cash received by HMRC in each financial year. As a share of GDP, each financial year uses GDP for the same April to March year."
           source={
             <SourceNote
               publisher={meta.publisher}
@@ -113,10 +152,10 @@ export default async function ReceiptsPage() {
           />
         </ChartFrame>
       </div>
-      <div className="mt-3">
+      <div id="by-month" className="mt-3 scroll-mt-28">
         <ChartFrame
           title="Total HMRC receipts by month"
-          subtitle="£bn on the chart, £m in the table. Not adjusted for inflation."
+          subtitle="£bn on the chart, £m in the table. Not adjusted for inflation. Receipts are not spread evenly across the year. Self assessment income tax is mostly paid in January and July, so those months are higher every year."
           source={
             <SourceNote
               publisher={meta.publisher}
@@ -148,6 +187,17 @@ export default async function ReceiptsPage() {
       </div>
     </>
   );
+}
+
+function receiptCite(
+  annual: { year: string; total: number; taxes: { name: string; value: number }[] },
+  rows: { name: string; value: number }[],
+): string {
+  const top = rows[0];
+  if (!top) return `HMRC receipts in ${annual.year}.`;
+  const mix = receiptMix([annual], true)[0];
+  const together = mix ? Number((mix.income + mix.nics + mix.vat).toFixed(1)) : 0;
+  return `${top.name} raised ${formatGbpFromMillions(top.value)} in ${annual.year}, ${formatReceiptShare(top.value, annual.total)} of HMRC receipts. Income tax, National Insurance and VAT together made up ${formatPercent(together)}.`;
 }
 
 function receiptCell(millions: number): string {

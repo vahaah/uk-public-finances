@@ -12,23 +12,23 @@ type IndexId = (typeof INDEXES)[number];
 const COPY: Record<IndexId, { label: string; fit: string }> = {
   mnf2: {
     label: "GDP deflator, calendar year",
-    fit: "Best for comparing public spending or tax across calendar years. ONS series MNF2.",
+    fit: "Best for public spending and the economy as a whole. Uses calendar years.",
   },
   l8gg: {
     label: "GDP deflator, financial year",
-    fit: "Use this for a financial year (April to March) of public spending. Each year is the average of ONS series L8GG for Q2, Q3, Q4 and the next Q1. HM Treasury takes its financial-year deflator from L8GG.",
+    fit: "As above, for April to March years, matching most government figures.",
   },
   d7bt: {
     label: "CPI",
-    fit: "Use this for household prices of consumer goods and services. It is ONS series D7BT, the CPI all-items index, 2015=100.",
+    fit: "The main measure of household prices and the Bank of England's inflation target.",
   },
   l522: {
     label: "CPIH",
-    fit: "Use this for household prices including owner-occupiers' housing costs. It is ONS series L522, the CPIH all-items index, 2015=100.",
+    fit: "CPI plus owner occupiers' housing costs. The ONS's lead measure of inflation.",
   },
   chaw: {
     label: "RPI",
-    fit: "RPI is used for index-linked gilts and some older contracts. ONS series CHAW.",
+    fit: "An older measure, no longer a national statistic. Still used for index-linked gilts and some older contracts.",
   },
 };
 
@@ -62,13 +62,13 @@ function CalculatorInner({
     : { ok: false as const, reason: "Enter an amount.", first: span?.first ?? null, last: span?.last ?? null };
   return (
     <div className="max-w-3xl">
-      <div className="flex flex-wrap gap-2">
+      <div className="inline-flex flex-wrap rounded-md border border-neutral-300 p-0.5 dark:border-neutral-700" role="group">
         {INDEXES.map((id) => (
           <button
             key={id}
             type="button"
             aria-pressed={id === index}
-            className={`h-7 rounded-md border px-2.5 text-xs ${id === index ? "border-neutral-950 bg-neutral-100 font-medium dark:border-white dark:bg-neutral-800" : "border-neutral-300 dark:border-neutral-700"}`}
+            className={`h-7 px-2.5 text-xs ${id === index ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200"}`}
             onClick={() => setIndex(id)}
           >
             {COPY[id].label}
@@ -94,8 +94,9 @@ function CalculatorInner({
           <p className="text-sm leading-6">
             <span className="font-sans text-3xl font-semibold tabular-nums tracking-tight">{pounds(result.value)}</span>
             <span className="mt-2 block">
-              {pounds(amount)} in {from} is worth {pounds(result.value)} in {to} prices. The index {result.indexTo >= result.indexFrom ? "rose" : "fell"} from {result.indexFrom.toLocaleString("en-GB")} to {result.indexTo.toLocaleString("en-GB")}.
+              {pounds(amount)} in {from} is worth {pounds(result.value)} in {to} prices, using {COPY[index].label}.
             </span>
+            <span className="mt-2 block text-sm">The index went from {result.indexFrom.toLocaleString("en-GB")} to {result.indexTo.toLocaleString("en-GB")}.</span>
           </p>
         ) : (
           <p className="text-sm leading-6">{result.reason}</p>
