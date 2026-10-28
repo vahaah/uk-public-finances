@@ -128,6 +128,9 @@ function toHealthSource(
   let status: HealthSource["status"] = "ok";
   if (validationError && usingLastGood) status = "validation_failed";
   else if (stale) status = "stale";
+  // A fixture served while Blob is configured means ingest never wrote a snapshot. Do not report that as fresh.
+  const fixtureFallback = loaded.origin === "fixture" && loaded.fallbackReason != null && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  if (status === "ok" && fixtureFallback) status = "stale";
   return {
     source,
     status,
@@ -137,7 +140,7 @@ function toHealthSource(
     origin: loaded.origin,
     validationError: status === "validation_failed" ? validationError : null,
     usingLastGood: status === "validation_failed",
-    stale,
+    stale: stale || (status === "stale" && fixtureFallback),
     fallbackReason: loaded.fallbackReason,
   };
 }

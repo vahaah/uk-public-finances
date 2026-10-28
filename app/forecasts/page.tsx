@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
-import { formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
+import { formatBillions, formatGbpFromMillions, formatMonth, formatMonthLong } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -58,11 +58,9 @@ export default async function ForecastsPage() {
         title="Is borrowing on track with the OBR's forecast?"
         lede="Outturn is what the ONS has recorded so far: public sector net borrowing for the financial year to date. A forecast is the Office for Budget Responsibility's projection for the full year, so a part-year outturn is not directly comparable with it."
       />
-      <EmptySource
-        name="The OBR forecast"
-        pending
-        detail="Until it is, this page shows ONS figures only."
-      />
+      {obr && obr.data.series.length > 0 ? null : (
+        <EmptySource name="The OBR forecast" pending detail="Until it is, this page shows ONS figures only." />
+      )}
       <p className="mt-3 text-sm">
         <Link className="underline decoration-neutral-400 underline-offset-4" href="/budgets">
           Earlier Budgets and how their forecasts turned out
@@ -115,8 +113,8 @@ export default async function ForecastsPage() {
                   columns={["Financial year", "Outturn", "Forecast"]}
                   rows={series.points.map((point) => [
                     point.year,
-                    point.outturn == null ? "—" : point.outturn.toLocaleString("en-GB"),
-                    point.forecast == null ? "—" : point.forecast.toLocaleString("en-GB"),
+                    point.outturn == null ? "—" : formatBillions(point.outturn),
+                    point.forecast == null ? "—" : formatBillions(point.forecast),
                   ])}
                 />
               </div>

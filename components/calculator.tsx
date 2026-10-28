@@ -3,6 +3,7 @@
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useMemo } from "react";
 
+import { formatRelease } from "@/lib/format";
 import { coverage, equivalentValue, financialYearMean, type Observation } from "@/lib/prices";
 
 const INDEXES = ["mnf2", "l8gg", "d7bt", "l522", "chaw"] as const;
@@ -103,7 +104,7 @@ function CalculatorInner({
         )}
       </div>
       <p className="mt-3 text-xs leading-5 text-neutral-700 dark:text-neutral-300">
-        {chosen.title}. Published {chosen.releaseDate.slice(0, 10)}.
+        {chosen.title}. Published {formatRelease(chosen.releaseDate)}.
         {span ? ` Annual observations run from ${span.first} to ${span.last}.` : ""} A year that is not in that list is not estimated.
       </p>
     </div>

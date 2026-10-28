@@ -2,14 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BudgetCaveats } from "@/components/budget-caveats";
-import { Breadcrumb, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
+import { Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
 import { formatSignedDifference, roundDifference } from "@/lib/budgets/compare";
-import { eventLabel, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
-import type { ForecastSeriesId } from "@/lib/budgets/forecasts";
+import { eventLabel, financialYearOf, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
+import { fiscalYearPlus, type ForecastSeriesId } from "@/lib/budgets/forecasts";
 import { outcomeLabel, regimesAt } from "@/lib/budgets/rules";
 import { loadRuleRegimes, loadSeedEvents } from "@/lib/budgets/seed";
 import { seriesPoints, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
-import { formatBillions, formatDateLong, formatPercent } from "@/lib/format";
+import { formatBillions, formatDateLong, formatMillions, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 
@@ -53,6 +53,11 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
     ? yearAheadComparisons([event], obr?.data.historical.vintages ?? [], ons?.data.series.j5ii?.months ?? [], "psnb")[0]
     : null;
   const rule = regimes[0]?.rules[0];
+  const measureYear = fiscalYearPlus(financialYearOf(event.date), 2) ?? "the third year";
+  const measures = (obr?.data.measures.rows ?? [])
+    .filter((row) => row.eventDate === event.date && row.year3 != null && row.year3 !== 0)
+    .sort((left, right) => Math.abs(right.year3 ?? 0) - Math.abs(left.year3 ?? 0))
+    .slice(0, 10);
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(label, `/budgets/${event.slug}`)} />
@@ -140,9 +145,19 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
         {event.type === "forecast-only" ? (
           <p className="text-sm">No policy measures at this event. It updated the forecast only.</p>
         ) : obr?.data.measures.loaded ? (
-          <p className="text-sm">
-            A positive figure raises money. A negative figure costs money. That is the OBR policy measures database sign: a yield is positive and a cost is negative.
-          </p>
+          <>
+            <p className="text-sm">
+              A positive figure raises money. A negative figure costs money. That is the OBR policy measures database sign: a yield is positive and a cost is negative.
+            </p>
+            {measures.length > 0 ? (
+              <DataTable
+                columns={["Measure", "Category", `${measureYear}, £m`]}
+                rows={measures.map((row) => [row.name, row.category, formatMillions(row.year3 ?? 0)])}
+              />
+            ) : (
+              <p className="mt-2 text-sm">The OBR database lists no costed measures for this event in {measureYear}.</p>
+            )}
+          </>
         ) : (
           <EmptySource title="Measures not loaded yet" name="Measures" detail="Measures appear once the OBR policy measures database is loaded." />
         )}

@@ -280,7 +280,7 @@ function seriesTitle(label: string): string | null {
   return cleaned || null;
 }
 
-function fiscalYearPlus(fy: string, years: number): string | null {
+export function fiscalYearPlus(fy: string, years: number): string | null {
   const start = Number(fy.slice(0, 4));
   if (!Number.isFinite(start)) return null;
   const next = start + years;
