@@ -1,4 +1,5 @@
 import { TopicStory } from "@/components/topic-story";
+import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
 import { DebtRatioChart, YieldChart } from "@/components/charts";
@@ -82,6 +83,7 @@ export default async function DebtPage() {
           </>
         }
       />
+      <StoryStepper current="/debt" />
       <CiteShare sentence={debtCite} citation={`${debtCite} Source: Office for National Statistics, KSE6, HF6X, NMFX, JW2O. Via budget.vahaah.com/debt.`} url={`${SITE_URL}/debt`} />
       {balance ? (
         <section className="mt-6 border border-neutral-200 p-6 dark:border-neutral-800" data-balanced={balance.balanced ? "true" : "false"}>

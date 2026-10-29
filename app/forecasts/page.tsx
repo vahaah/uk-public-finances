@@ -1,4 +1,5 @@
 import { TopicStory } from "@/components/topic-story";
+import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
 import { ForecastTrackChart, SmallSeriesChart } from "@/components/forecast-track";
@@ -80,6 +81,7 @@ export default async function ForecastsPage() {
           </>
         }
       />
+      <StoryStepper current="/forecasts" />
       {fyData && fy ? (
         <ChartFrame
           title={`Borrowing so far in ${fy}, against the OBR forecast for the year`}

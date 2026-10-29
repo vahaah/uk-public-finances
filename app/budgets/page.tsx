@@ -1,4 +1,5 @@
 import { TopicStory } from "@/components/topic-story";
+import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
 import { BudgetCaveats } from "@/components/budget-caveats";
@@ -67,6 +68,7 @@ export default async function BudgetsPage() {
       />
       <Breadcrumb current="Budgets" />
       <PageIntro kicker="Budgets" title="How did each Budget's plans turn out?" lede={indexCite(rows, firstLabel, asOf)} />
+      <StoryStepper current="/budgets" />
       <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{asOf}</p>
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-medium">Fiscal events</h2>

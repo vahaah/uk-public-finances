@@ -1,4 +1,5 @@
 import { TopicStory } from "@/components/topic-story";
+import { StoryStepper } from "@/components/story-stepper";
 import { BorrowingChart, CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
 import { fiscalMarkers } from "@/lib/budgets/markers";
@@ -79,6 +80,7 @@ export default async function BorrowingPage() {
           </>
         }
       />
+      <StoryStepper current="/borrowing" />
       <ChartFrame title="Public sector net borrowing by month" subtitle="£bn. Bars above zero are borrowing; below zero, a surplus." source={source}>
         <BorrowingChart
           months={snapshot.data.series.j5ii?.months ?? []}

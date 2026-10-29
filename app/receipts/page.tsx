@@ -1,4 +1,5 @@
 import { TopicStory } from "@/components/topic-story";
+import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
 import { CiteShare } from "@/components/cite-share";
@@ -77,6 +78,7 @@ export default async function ReceiptsPage() {
           </>
         }
       />
+      <StoryStepper current="/receipts" />
       <CiteShare
         sentence={receiptCite(annual, rows)}
         citation={`${receiptCite(annual, rows)} Source: ${meta.publisher}, HMRC tax receipts, published ${snapshot.releaseDate ?? ""}. Via budget.vahaah.com/receipts.`}
