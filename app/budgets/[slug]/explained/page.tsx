@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const label = story && story.event.slug === slug ? eventLabel(story.event) : "Budget";
   return pageMeta({
     title: `${label} explained: what it means for the UK`,
-    description: `${label} in charts from official OBR data: slower growth, higher inflation, squeezed incomes, more borrowing, record taxes and the debt promise.`,
+    description: `${label} in charts from OBR data: growth, prices, incomes, borrowing, interest, taxes and debt, against the previous forecast.`,
     path: `/budgets/${slug}/explained`,
     og: { kicker: "Budgets", title: `${label} explained`, detail: "The story in charts, from OBR data" },
   });
@@ -51,15 +51,15 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
       <header className="mb-8 max-w-[68ch]">
         <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{label} explained</h1>
         <p className="mt-3 text-base text-neutral-900 dark:text-neutral-100">
-          {formatDateLong(event.date)} · {event.chancellor}. The economy is weaker than hoped, prices are rising faster and borrowing is higher. This page follows the
-          Budget in four steps, using the OBR&apos;s {efo.currentLabel} forecast and comparing it with {efo.previousLabel}.
+          {formatDateLong(event.date)} · {event.chancellor}. What the OBR&apos;s {efo.currentLabel} forecast says about the economy and the public finances, compared with its{" "}
+          {efo.previousLabel} forecast, in four chapters.
         </p>
         <ol className="mt-4 flex flex-wrap gap-2 text-sm">
           {[
-            ["#squeeze", "1. The squeeze"],
-            ["#trap", "2. The fiscal trap"],
-            ["#strategy", "3. The strategy"],
-            ["#reality", "4. The reality"],
+            ["#squeeze", "1. Growth and incomes"],
+            ["#trap", "2. Borrowing and interest"],
+            ["#strategy", "3. The Budget's plan"],
+            ["#reality", "4. The measures"],
           ].map(([href, text]) => (
             <li key={href}>
               <a className="inline-flex h-8 items-center rounded-md border border-neutral-300 px-3 dark:border-neutral-700" href={href}>
@@ -70,33 +70,33 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
         </ol>
       </header>
 
-      <Chapter id="squeeze" title="1. The squeeze" lede="Growth is slower, inflation is higher, and incomes after inflation barely move.">
+      <Chapter id="squeeze" title="1. Growth and incomes" lede="How the forecast for the economy, prices and household incomes has changed.">
         <GdpFigure {...props} />
         <CpiFigure {...props} />
         <RhdiGrowthFigure {...props} />
         <RhdiRollingFigure {...props} />
       </Chapter>
 
-      <Chapter id="trap" title="2. The fiscal trap" lede="A weaker economy means less tax and more spending, and the cost of past debt keeps climbing.">
+      <Chapter id="trap" title="2. Borrowing and interest" lede="How much the government is forecast to borrow, and what its debt costs.">
         <PsnbFigure {...props} />
         <DebtInterestFigure {...props} />
       </Chapter>
 
-      <Chapter id="strategy" title="3. The strategy" lede="Spend a little more now, raise taxes later, and promise that debt will fall.">
+      <Chapter id="strategy" title="3. The Budget's plan" lede="What the Budget's decisions do to borrowing, and the forecast for taxes and debt.">
         <PolicyFigure {...props} />
         <TaxBurdenFigure {...props} />
         <PsnflFigure {...props} />
         <DebtVsOutturnFigure {...props} />
       </Chapter>
 
-      <Chapter id="reality" title="4. The reality" lede="Many measures, most of them small.">
+      <Chapter id="reality" title="4. The measures" lede="How many measures each event had, as scored by the OBR.">
         <MeasuresFigure rows={measures} path={path} releaseDate={obr.measures.asOf} />
         <p className="text-sm text-neutral-800 dark:text-neutral-200">
-          Who gains and who loses by income decile is in HM Treasury&apos;s distributional analysis, which is not loaded here yet. See the{" "}
+          HM Treasury&apos;s analysis of the effect on households by income is not loaded here yet. Every scored measure is on the{" "}
           <Link className="underline underline-offset-4" href={`/budgets/${slug}`}>
             {label} page
-          </Link>{" "}
-          for every scored measure.
+          </Link>
+          .
         </p>
       </Chapter>
 

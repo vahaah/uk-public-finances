@@ -21,13 +21,18 @@ export async function HomeStory() {
   const interestLong = interest.filter((point) => point.period >= "1990");
   const tax = [...(efo.taxBurden?.outturn ?? []), ...(efo.taxBurden?.points.flatMap((point) => (point.current == null || (efo.taxBurden?.outturn ?? []).some((past) => past.period === point.period) ? [] : [{ period: point.period, value: point.current }])) ?? [])].filter((point) => point.period >= "1990");
   const interestNow = interest.find((point) => point.period === fy);
-  const lastHigher = interestNow ? interest.filter((point) => point.period < fy && point.value >= interestNow.value).at(-1) : undefined;
+  const tenEarlier = /^\d{4}-\d{2}$/.test(fy) ? `${Number(fy.slice(0, 4)) - 10}-${String((Number(fy.slice(0, 4)) - 9) % 100).padStart(2, "0")}` : undefined;
+  const interestThen = tenEarlier ? interest.find((point) => point.period === tenEarlier) : undefined;
+  const taxOutturnLast = efo.taxBurden?.outturn.at(-1);
+  const taxEnd = tax.at(-1);
+  const taxMove = taxEnd && taxOutturnLast && taxEnd.period !== taxOutturnLast.period && taxEnd.value !== taxOutturnLast.value ? (taxEnd.value > taxOutturnLast.value ? "rise" : "fall") : undefined;
+  const psnbMove = psnb && psnb.current != null && psnb.previous != null && psnb.current !== psnb.previous ? (psnb.current > psnb.previous ? "higher" : "lower") : undefined;
   const outturnMax = Math.max(...(efo.taxBurden?.outturn ?? []).map((point) => point.value));
   const taxRecord = (tax.at(-1)?.value ?? 0) > outturnMax;
   const cards = [
     {
       href: `${base}#squeeze`,
-      step: "The squeeze",
+      step: "Growth and incomes",
       value: rollingNow ? formatUnit(rollingNow.value, "pct") : "n/a",
       text: `Average yearly growth in real household income per person over the ten years to ${fy}.`,
       values: rolling.map((point) => point.value),
@@ -35,25 +40,25 @@ export async function HomeStory() {
     },
     {
       href: `${base}#trap`,
-      step: "More borrowing",
+      step: "Borrowing and interest",
       value: psnb ? formatUnit(psnb.current, "bn") : "n/a",
-      text: psnb ? `Borrowing forecast for ${fy}, up from ${formatUnit(psnb.previous, "bn")} in ${efo.psnb?.previousLabel}.` : "Borrowing forecast.",
+      text: psnb && psnb.previous != null && psnbMove ? `Borrowing forecast for ${fy}, ${psnbMove === "higher" ? "up" : "down"} from ${formatUnit(psnb.previous, "bn")} in the ${efo.psnb?.previousLabel} forecast.` : `Borrowing forecast for ${fy}.`,
       values: psnbLine,
       label: `Borrowing forecast by year. ${trendWords(psnbLine, (v) => formatUnit(v, "bn"), "the forecast")}`,
     },
     {
       href: `${base}#trap`,
-      step: "Interest bill",
+      step: "Debt interest",
       value: interestNow ? formatUnit(interestNow.value, "pctGdp") : "n/a",
-      text: lastHigher ? `Debt interest in ${fy} as a share of GDP, the highest since ${lastHigher.period}.` : `Debt interest in ${fy} as a share of GDP.`,
+      text: interestNow && interestThen ? `Debt interest in ${fy} as a share of GDP, against ${formatUnit(interestThen.value, "pctGdp")} in ${interestThen.period}.` : `Debt interest in ${fy} as a share of GDP.`,
       values: interestLong.map((point) => point.value),
       label: `Debt interest as a share of GDP since 1990. ${trendWords(interestLong.map((p) => p.value), (v) => formatUnit(v, "pctGdp"), "1990 to the forecast")}`,
     },
     {
       href: `${base}#strategy`,
-      step: taxRecord ? "Record taxes" : "Taxes",
+      step: "Taxes",
       value: tax.at(-1) ? formatUnit(tax.at(-1)!.value, "pctGdp") : "n/a",
-      text: `Taxes forecast for ${tax.at(-1)?.period ?? "the end of the forecast"}${taxRecord ? ", higher than any year in the OBR series back to 1948-49" : ""}.`,
+      text: `Taxes forecast for ${tax.at(-1)?.period ?? "the end of the forecast"}, as a share of GDP.${taxRecord ? " Higher than any year since the series starts in 1948-49." : ""}`,
       values: tax.map((point) => point.value),
       label: `National Accounts taxes as a share of GDP since 1990. ${trendWords(tax.map((p) => p.value), (v) => formatUnit(v, "pctGdp"), "1990 to the forecast")}`,
     },
@@ -67,8 +72,9 @@ export async function HomeStory() {
         </Link>
       </div>
       <p className="mt-1 max-w-[68ch] text-neutral-900 dark:text-neutral-100">
-        Incomes are barely growing, so tax revenue is weaker and borrowing is higher. More debt costs more interest, and the plan is to close the gap with higher taxes later. Figures are from
-        the OBR&apos;s {efo.currentLabel} forecast.
+        Four figures from the OBR&apos;s {efo.currentLabel} forecast.
+        {psnbMove ? ` Borrowing for ${fy} is forecast ${psnbMove} than in the ${efo.psnb?.previousLabel} forecast.` : ""}
+        {taxMove && taxEnd ? ` Taxes are forecast to ${taxMove} as a share of GDP by ${taxEnd.period}.` : ""} Each card links to the chart behind it.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (

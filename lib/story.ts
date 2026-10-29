@@ -110,7 +110,7 @@ export type StoryStep = { href: string; label: string; blurb: string };
 /** One reading order for the whole site: the big picture, each part of it, then the fiscal events. */
 export function storySteps(latest: { slug: string; label: string } | null): StoryStep[] {
   const steps: StoryStep[] = [
-    { href: "/", label: "Overview", blurb: "What the government takes in, spends and borrows" },
+    { href: "/", label: "Overview", blurb: "What the government receives, spends and borrows" },
     { href: "/borrowing", label: "Borrowing", blurb: "The gap between spending and receipts" },
     { href: "/debt", label: "Debt and interest", blurb: "What past borrowing adds up to, and what it costs" },
     { href: "/receipts", label: "Tax receipts", blurb: "Where the money comes from" },
@@ -119,8 +119,8 @@ export function storySteps(latest: { slug: string; label: string } | null): Stor
     { href: "/budgets", label: "Budgets", blurb: "Every fiscal event and how its forecast turned out" },
   ];
   if (latest) {
-    steps.push({ href: `/budgets/${latest.slug}`, label: latest.label, blurb: "The numbers from the latest Budget" });
-    steps.push({ href: `/budgets/${latest.slug}/explained`, label: `${latest.label} explained`, blurb: "The story in eleven charts" });
+    steps.push({ href: `/budgets/${latest.slug}`, label: latest.label, blurb: `Forecasts, rules and measures from ${latest.label}` });
+    steps.push({ href: `/budgets/${latest.slug}/explained`, label: `${latest.label} explained`, blurb: "The Budget in four chapters" });
   }
   return steps;
 }
