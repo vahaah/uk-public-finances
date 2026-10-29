@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BudgetCaveats } from "@/components/budget-caveats";
+import { StoryNav } from "@/components/story-nav";
 import { CompareFigure, PolicyFigure } from "@/components/story-sections";
 import { eventComparisons, efoSourceTitle, type ObrData } from "@/lib/story";
 import { AUTHOR_JSON_LD, Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
@@ -258,6 +259,7 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
         )}
       </section>
       <BudgetCaveats />
+      <StoryNav current={`/budgets/${event.slug}`} />
     </>
   );
 }

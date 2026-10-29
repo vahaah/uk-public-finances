@@ -8,6 +8,8 @@ type Props = { efo: EfoData; path: string };
 
 const src = (efo: EfoData, extra?: string) => ({ ...OBR_SOURCE, title: extra ?? efoSourceTitle(efo), releaseDate: efo.eventDate });
 const forecastFrom = (efo: EfoData) => (efo.eventDate ? financialYearOf(efo.eventDate) : null);
+const dir = (current: number | null | undefined, previous: number | null | undefined) => (current == null || previous == null || current === previous ? null : current > previous ? 1 : -1);
+const round1 = (value: number) => Math.round(value * 10) / 10;
 const at = (points: { period: string; current: number | null; previous: number | null }[], period: string) => points.find((point) => point.period === period);
 
 function compareCsv(points: { period: string; current: number | null; previous: number | null }[], current: string, previous: string) {
@@ -52,9 +54,9 @@ export function GdpFigure({ efo, path }: Props) {
     <StoryFigure
       id="gdp"
       path={path}
-      title="Growth was marked down for next year"
+      title={next && dir(next.current, next.previous) === -1 ? `Growth forecast cut for ${next.period}` : next && dir(next.current, next.previous) === 1 ? `Growth forecast raised for ${next.period}` : next && next.current != null && next.previous != null ? `Growth forecast for ${next.period} unchanged` : "Real GDP growth forecasts compared"}
       subtitle="Real GDP growth, per cent, by calendar year."
-      takeaway={next ? `The OBR now expects the economy to grow ${formatUnit(next.current, "pct")} in ${next.period}, down from ${formatUnit(next.previous, "pct")} in its ${efo.gdp.previousLabel} forecast.` : "Real GDP growth forecasts compared."}
+      takeaway={next ? `The OBR now expects the economy to grow ${formatUnit(next.current, "pct")} in ${next.period}, ${dir(next.current, next.previous) === 1 ? "up" : dir(next.current, next.previous) === -1 ? "down" : "unchanged"} from ${formatUnit(next.previous, "pct")} in its ${efo.gdp.previousLabel} forecast.` : "Real GDP growth forecasts compared."}
       csv={compareCsv(points, efo.gdp.currentLabel, efo.gdp.previousLabel)}
       source={src(efo)}
     >
@@ -68,13 +70,22 @@ export function CpiFigure({ efo, path }: Props) {
   const year = Number(efo.eventDate?.slice(0, 4) ?? 0);
   const points = efo.cpi.points.filter((point) => Number(point.period) >= year);
   const next = at(points, String(year + 1));
+  const after = at(points, String(year + 2));
+  const cpiTitle =
+    next && dir(next.current, next.previous) === 1 && after && dir(after.current, after.previous) === 1
+      ? "Inflation forecast higher for the next two years"
+      : next && dir(next.current, next.previous) === 1
+        ? `Inflation forecast raised for ${next.period}`
+        : next
+          ? `CPI inflation forecast for ${next.period}`
+          : "CPI inflation forecasts compared";
   return (
     <StoryFigure
       id="cpi"
       path={path}
-      title="Inflation is expected to stay higher for longer"
+      title={cpiTitle}
       subtitle="CPI inflation, per cent, by calendar year."
-      takeaway={next ? `CPI inflation is forecast at ${formatUnit(next.current, "pct")} in ${next.period}, up from ${formatUnit(next.previous, "pct")} in the ${efo.cpi.previousLabel} forecast.` : "CPI inflation forecasts compared."}
+      takeaway={next ? `CPI inflation is forecast at ${formatUnit(next.current, "pct")} in ${next.period}, ${dir(next.current, next.previous) === -1 ? "down" : dir(next.current, next.previous) === 1 ? "up" : "unchanged"} from ${formatUnit(next.previous, "pct")} in the ${efo.cpi.previousLabel} forecast.` : "CPI inflation forecasts compared."}
       csv={compareCsv(points, efo.cpi.currentLabel, efo.cpi.previousLabel)}
       source={src(efo)}
     >
@@ -92,7 +103,7 @@ export function RhdiGrowthFigure({ efo, path }: Props) {
     <StoryFigure
       id="incomes"
       path={path}
-      title="Living standards fall this year, then recover slowly"
+      title={first?.current == null ? "Real income per person forecasts compared" : first.current < 0 ? `Real income per person forecast to fall in ${first.period}` : `Real income per person forecast to grow ${formatUnit(first.current, "pct")} in ${first.period}`}
       subtitle="Growth in real household disposable income per person, per cent, by financial year."
       takeaway={first ? `Real household disposable income per person is forecast to change by ${formatUnit(first.current, "pct")} in ${first.period}, against ${formatUnit(first.previous, "pct")} in the ${efo.rhdiGrowth.previousLabel} forecast.` : "Household income forecasts compared."}
       csv={compareCsv(points, efo.rhdiGrowth.currentLabel, efo.rhdiGrowth.previousLabel)}
@@ -112,9 +123,9 @@ export function RhdiRollingFigure({ efo, path }: Props) {
     <StoryFigure
       id="income-growth-long-run"
       path={path}
-      title={efo.rhdiRolling.reduce((low, point) => (point.value < low.value ? point : low)).period >= "2015" ? "The slowest growth in living standards on record" : "Growth in living standards over the long run"}
+      title={now.value <= Math.min(...efo.rhdiRolling.map((point) => point.value)) ? "Slowest ten years of income growth since the series began" : "Ten-year growth in household income per person"}
       subtitle="Rolling 10-year average growth in real household disposable income per person, per cent."
-      takeaway={`Over the ten years to ${now.period}, real household income per person grew by an average of ${formatUnit(now.value, "pct")} a year. In the ten years to ${first.period} it was ${formatUnit(first.value, "pct")}.`}
+      takeaway={`Over the ten years to ${now.period}, real household income per person grew by an average of ${formatUnit(now.value, "pct")} a year. The series starts with the ten years to ${first.period}, at ${formatUnit(first.value, "pct")} a year.`}
       csv={{ header: ["period", "rolling 10-year average growth, %"], rows: efo.rhdiRolling.map((point) => [point.period, point.value]) }}
       source={src(efo)}
     >
@@ -127,13 +138,21 @@ export function PsnbFigure({ efo, path }: Props) {
   if (!efo.psnb) return null;
   const from = forecastFrom(efo) ?? "";
   const first = at(efo.psnb.points, from);
+  const both = efo.psnb.points.filter((point) => point.current != null && point.previous != null);
+  const higher = both.filter((point) => dir(point.current, point.previous) === 1).length;
+  const psnbTitle =
+    both.length && higher === both.length
+      ? `Borrowing forecast higher in every year than in ${efo.psnb.previousLabel}`
+      : higher > 0
+        ? `Borrowing forecast higher in ${higher} of ${both.length} years`
+        : `Borrowing forecast against ${efo.psnb.previousLabel}`;
   return (
     <StoryFigure
       id="borrowing"
       path={path}
-      title="Borrowing is higher in every year than planned"
+      title={psnbTitle}
       subtitle="Public sector net borrowing, £ billion, by financial year."
-      takeaway={first ? `Borrowing in ${from} is now forecast at ${formatUnit(first.current, "bn")}, up from ${formatUnit(first.previous, "bn")} in the ${efo.psnb.previousLabel} forecast.` : "Borrowing forecasts compared."}
+      takeaway={first ? `Borrowing in ${from} is now forecast at ${formatUnit(first.current, "bn")}, ${dir(first.current, first.previous) === -1 ? "down" : dir(first.current, first.previous) === 1 ? "up" : "unchanged"} from ${formatUnit(first.previous, "bn")} in the ${efo.psnb.previousLabel} forecast.` : "Borrowing forecasts compared."}
       csv={compareCsv(efo.psnb.points, efo.psnb.currentLabel, efo.psnb.previousLabel)}
       source={src(efo)}
     >
@@ -153,9 +172,17 @@ export function DebtInterestFigure({ efo, path }: Props) {
     <StoryFigure
       id="debt-interest"
       path={path}
-      title="The cost of debt interest over the long run"
+      title={
+        end && peakPast && round1(end.value) > round1(peakPast.value)
+          ? "Debt interest forecast to reach a new high"
+          : end && peakPast && round1(end.value) === round1(peakPast.value)
+            ? `Debt interest forecast to match its ${peakPast.period} high`
+            : line[0]
+              ? `Debt interest as a share of GDP since ${line[0].period}`
+              : "Debt interest as a share of GDP"
+      }
       subtitle={`Debt interest spending, per cent of GDP, outturn and ${efo.debtInterest.currentLabel} forecast, with the ${efo.debtInterest.previousLabel} forecast.`}
-      takeaway={end && peakPast ? `Debt interest is forecast at ${formatUnit(end.value, "pctGdp")} in ${end.period}. The highest outturn in the series is ${formatUnit(peakPast.value, "pctGdp")} in ${peakPast.period}.` : "Debt interest as a share of GDP."}
+      takeaway={end && peakPast ? `Debt interest is forecast at ${formatUnit(end.value, "pctGdp")} in ${end.period}. The highest year so far was ${peakPast.period}, at ${formatUnit(peakPast.value, "pctGdp")}.` : "Debt interest as a share of GDP."}
       csv={{ header: ["period", `${efo.debtInterest.currentLabel} (outturn and forecast), % GDP`, `${efo.debtInterest.previousLabel} forecast, % GDP`], rows: efo.debtInterest.points.map((point) => [point.period, point.current, point.previous]) }}
       source={src(efo)}
     >
@@ -173,13 +200,13 @@ export function PolicyFigure({ efo, path }: Props) {
     <StoryFigure
       id="policy-by-year"
       path={path}
-      title="Give now, take later"
+      title={first.value > 0 && last.value < 0 ? "Decisions add to borrowing at first, then reduce it" : points.every((point) => point.value > 0) ? "Decisions add to borrowing in every year" : points.every((point) => point.value < 0) ? "Decisions reduce borrowing in every year" : "Effect of the decisions on borrowing"}
       subtitle="Direct effect of this event's policy decisions on borrowing, £ billion. Above zero adds to borrowing; below zero reduces it."
       takeaway={`The decisions add ${formatUnit(first.value, "bn")} to borrowing in ${first.period} and reduce it by ${formatUnit(Math.abs(last.value), "bn")} in ${last.period}.`}
       csv={{ header: ["period", "total £bn", "current spending £bn", "capital spending £bn", "receipts £bn"], rows: efo.policy.map((point) => [point.period, point.total, point.currentSpending, point.capitalSpending, point.receipts]) }}
       source={src(efo)}
     >
-      <SignedBars points={points} unit="bn" name="Effect on borrowing" positiveLabel="Adds to borrowing (giveaway)" negativeLabel="Reduces borrowing (takeaway)" />
+      <SignedBars points={points} unit="bn" name="Effect on borrowing" positiveLabel="Adds to borrowing" negativeLabel="Reduces borrowing" />
     </StoryFigure>
   );
 }
@@ -200,7 +227,7 @@ export function TaxBurdenFigure({ efo, path }: Props) {
       path={path}
       title={end && peakPast && end.value > peakPast.value ? "The tax burden rises to a record high" : "The tax burden over the long run"}
       subtitle="National Accounts taxes, per cent of GDP, outturn since 1948-49 and forecast."
-      takeaway={end && peakPast ? `Taxes are forecast to reach ${formatUnit(end.value, "pctGdp")} by ${end.period}. The highest outturn since 1948-49 is ${formatUnit(peakPast.value, "pctGdp")} in ${peakPast.period}.` : "The tax burden over time."}
+      takeaway={end && peakPast ? `Taxes are forecast to reach ${formatUnit(end.value, "pctGdp")} by ${end.period}. The highest year so far was ${peakPast.period}, at ${formatUnit(peakPast.value, "pctGdp")}. The series starts in 1948-49.` : "The tax burden over time."}
       csv={{ header: ["period", "outturn % GDP", `${efo.taxBurden.currentLabel} forecast % GDP`, `${efo.taxBurden.previousLabel} forecast % GDP`], rows: [...new Set([...outturn.map((p) => p.period), ...efo.taxBurden.points.map((p) => p.period)])].sort().map((period) => [period, outturn.find((p) => p.period === period)?.value ?? null, forecast.find((p) => p.period === period)?.value ?? null, previous.find((p) => p.period === period)?.value ?? null]) }}
       source={src(efo)}
     >
@@ -213,13 +240,14 @@ export function PsnflFigure({ efo, path }: Props) {
   if (!efo.psnfl) return null;
   const peak = efo.psnfl.points.filter((point) => point.current != null).sort((a, b) => (b.current ?? 0) - (a.current ?? 0))[0];
   const end = efo.psnfl.points.filter((point) => point.current != null).at(-1);
+  const peaksThenFalls = peak && end && peak.period < end.period && (end.current ?? 0) < (peak.current ?? 0);
   return (
     <StoryFigure
       id="debt"
       path={path}
-      title="Debt rises, then is meant to fall"
+      title={peaksThenFalls ? `Debt forecast to peak in ${peak.period}, then fall` : "Net financial liabilities forecast"}
       subtitle="Public sector net financial liabilities, per cent of GDP, by financial year."
-      takeaway={peak && end ? `Net financial liabilities peak at ${formatUnit(peak.current, "pctGdp")} in ${peak.period} and fall to ${formatUnit(end.current, "pctGdp")} by ${end.period}, if the forecast holds.` : "Debt forecasts compared."}
+      takeaway={peak && end ? peaksThenFalls ? `Net financial liabilities are forecast to peak at ${formatUnit(peak.current, "pctGdp")} in ${peak.period} and to be ${formatUnit(end.current, "pctGdp")} by ${end.period}.` : `Net financial liabilities are forecast to be ${formatUnit(end.current, "pctGdp")} by ${end.period}.` : "Debt forecasts compared."}
       csv={compareCsv(efo.psnfl.points, efo.psnfl.currentLabel, efo.psnfl.previousLabel)}
       source={src(efo)}
     >
@@ -233,13 +261,15 @@ export function DebtVsOutturnFigure({ efo, path }: Props) {
   if (!data || data.points.length < 2) return null;
   const lastOut = data.points.filter((point) => point.outturn != null).at(-1);
   const firstVintage = data.vintages[0];
+  const firstForecast = lastOut?.values[0];
+  const gap = lastOut?.outturn != null && firstForecast != null ? lastOut.outturn - firstForecast : null;
   return (
     <StoryFigure
       id="debt-forecasts-vs-outturn"
       path={path}
-      title="Debt forecasts and what happened"
+      title={gap != null && gap !== 0 && firstVintage ? `Debt came in ${gap < 0 ? "below" : "above"} the ${firstVintage} forecast` : "Debt forecasts and what happened"}
       subtitle="Debt as a share of GDP: past OBR forecasts against the outturn, as shown in the OBR Forecast evaluation report."
-      takeaway={lastOut && firstVintage ? `For ${lastOut.period}, the outturn was ${formatUnit(lastOut.outturn, "pctGdp")}. The ${firstVintage} forecast for that year was ${formatUnit(lastOut.values[0], "pctGdp")}.` : "Past debt forecasts against outturn."}
+      takeaway={lastOut && firstVintage ? `For ${lastOut.period}, debt was ${formatUnit(lastOut.outturn, "pctGdp")} of GDP. The ${firstVintage} forecast was ${formatUnit(firstForecast, "pctGdp")}${gap != null && gap !== 0 ? `, an ${gap < 0 ? "over" : "under"}-forecast of ${Math.abs(gap).toFixed(1)} percentage points` : ""}.` : "Past debt forecasts against outturn."}
       csv={{ header: ["period", ...data.vintages.map((vintage) => `${vintage} forecast`), "outturn"], rows: data.points.map((point) => [point.period, ...point.values, point.outturn]) }}
       source={{ ...OBR_SOURCE, title: "Forecast evaluation report: charts and tables, chart 'Debt as a share of GDP'", releaseDate: null }}
     >
@@ -257,12 +287,12 @@ export function PackagesFigure({ efo, path }: Props) {
       id="package-size"
       path={path}
       title="How big each fiscal event was"
-      subtitle="Change to borrowing from policy decisions, per cent of GDP, summed over five years. Above zero is a net giveaway."
+      subtitle="Change to borrowing from policy decisions, per cent of GDP, summed over five years. Above zero adds to borrowing."
       takeaway={`The ${latest.period} decisions changed borrowing by ${formatUnit(latest.value, "pctGdp")} over five years, as measured by the OBR.`}
       csv={{ header: ["event", "% of GDP over 5 years"], rows: points.map((point) => [point.period, point.value]) }}
       source={src(efo)}
     >
-      <SignedBars points={points} unit="pctGdp" name="Policy package" positiveLabel="Net giveaway" negativeLabel="Net takeaway" />
+      <SignedBars points={points} unit="pctGdp" name="Policy package" positiveLabel="Adds to borrowing" negativeLabel="Reduces borrowing" />
     </StoryFigure>
   );
 }
@@ -276,9 +306,9 @@ export function MeasuresFigure({ rows, path, releaseDate }: { rows: { name: stri
     <StoryFigure
       id="measures-per-event"
       path={path}
-      title="How many measures each event scored"
+      title="Measures scored at each fiscal event"
       subtitle="Number of tax and spending measures at each event in the OBR policy measures database."
-      takeaway={`${latest.name} had ${latest.count} scored measures. The most since 2010 was ${top.count}, at ${top.name}.`}
+      takeaway={`${latest.name} had ${latest.count} measures scored by the OBR. The most at any event since 2010 was ${top.count}, at ${top.name}.`}
       csv={{ header: ["event", "date", "measures", "average size in year 3, £bn"], rows: recent.map((row) => [row.name, row.date, row.count, row.averageBn == null ? null : Number(row.averageBn.toFixed(3))]) }}
       source={{ ...OBR_SOURCE, title: "Policy measures database", releaseDate }}
     >
