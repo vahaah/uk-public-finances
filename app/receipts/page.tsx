@@ -1,3 +1,4 @@
+import { TopicStory } from "@/components/topic-story";
 import Link from "next/link";
 
 import { CiteShare } from "@/components/cite-share";
@@ -188,6 +189,7 @@ export default async function ReceiptsPage() {
           </details>
         </ChartFrame>
       </div>
+      <TopicStory path="/receipts" figures={["taxBurden"]} title="The tax burden over the long run" />
     </>
   );
 }

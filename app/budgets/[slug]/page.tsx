@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BudgetCaveats } from "@/components/budget-caveats";
+import { CompareFigure, PolicyFigure } from "@/components/story-sections";
+import { eventComparisons, efoSourceTitle, type ObrData } from "@/lib/story";
 import { AUTHOR_JSON_LD, Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
 import { formatSignedDifference, roundDifference } from "@/lib/budgets/compare";
 import { eventLabel, financialYearOf, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
@@ -209,6 +211,7 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
       ) : (
         <EmptySource title="Not yet due" name="Outturn" detail={`${borrowing?.fy ?? yearAheadFy(event.date)} has not ended, so there is no outturn to compare yet.`} />
       )}
+      <ForecastChanges event={event} label={label} obr={obr?.data ?? null} />
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-medium">Fiscal rules at this event</h2>
         <ul className="space-y-3">
@@ -421,4 +424,36 @@ function eventJsonLd(event: FiscalEvent, label: string, borrowing: YearAheadComp
       ...(event.govukPath ? { url: `https://www.gov.uk${event.govukPath}` } : {}),
     },
   };
+}
+
+/** This event's OBR forecast against the one before it: growth, inflation, borrowing and debt. */
+function ForecastChanges({ event, label, obr }: { event: FiscalEvent; label: string; obr: ObrData | null }) {
+  if (!obr || event.obrForecast === "no") return null;
+  const compares = eventComparisons(event, obr.historical.vintages);
+  const efo = obr.efo?.data && obr.efo.data.eventDate === event.date ? obr.efo.data : null;
+  if (compares.length === 0 && !efo) return null;
+  const path = `/budgets/${event.slug}`;
+  const sourceTitle = efo ? efoSourceTitle(efo) : "Historical official forecasts database";
+  const releaseDate = efo ? efo.eventDate : obr.historical.asOf;
+  return (
+    <section className="mb-8" aria-labelledby="forecast-changes">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="forecast-changes" className="text-sm font-medium">
+          What changed in the forecast at {label}
+        </h2>
+        {efo ? (
+          <Link className="text-sm underline decoration-neutral-400 underline-offset-4" href={`/budgets/${event.slug}/explained`}>
+            Read {label} explained →
+          </Link>
+        ) : null}
+      </div>
+      <p className="mt-1 mb-3 text-sm text-neutral-800 dark:text-neutral-200">Each chart sets this event&apos;s OBR forecast against the forecast before it.</p>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {compares.map((compare) => (
+          <CompareFigure key={compare.series} id={`forecast-${compare.series}`} compare={compare} path={path} sourceTitle={sourceTitle} releaseDate={releaseDate} />
+        ))}
+        {efo ? <PolicyFigure efo={efo} path={path} /> : null}
+      </div>
+    </section>
+  );
 }

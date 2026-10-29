@@ -1,3 +1,5 @@
+import { HomeStory } from "@/components/home-story";
+import { StoryNav } from "@/components/story-nav";
 import { fiscalMarkers } from "@/lib/budgets/markers";
 import { CiteShare } from "@/components/cite-share";
 import { BorrowingChart, CumulativeChart } from "@/components/charts";
@@ -153,6 +155,7 @@ export default async function HomePage() {
         </p>
         <CiteShare sentence={cite} citation={citation} url={`${SITE_URL}/`} />
       </header>
+      <HomeStory />
       {equationMonth && equationYtd ? <EquationRow month={equationMonth} yearToDate={equationYtd} trends={trends} /> : null}
       {data.financialYear ? (
         <div className="mt-4">
@@ -249,6 +252,7 @@ export default async function HomePage() {
           />
         </ChartFrame>
       </div>
+      <StoryNav current="/" />
     </>
   );
 }

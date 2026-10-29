@@ -1,3 +1,4 @@
+import { TopicStory } from "@/components/topic-story";
 import Link from "next/link";
 
 import { DebtRatioChart, YieldChart } from "@/components/charts";
@@ -220,6 +221,7 @@ export default async function DebtPage() {
           <EmptySource name="DMO gilts" />
         )}
       </div>
+      <TopicStory path="/debt" figures={["debtInterest", "psnfl", "debtVsOutturn"]} title="Debt and interest over the long run" />
     </>
   );
 }

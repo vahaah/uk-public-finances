@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const boeDate = dateOf(takeSnapshot("boe-yields", boe.snapshot)?.releaseDate);
   const staticDate = dateOf(process.env.BUILD_COMMIT_DATE);
   const obrSnapshot = takeSnapshot("budgets-obr", obr.snapshot);
+  const efoEvent = loadSeedEvents().find((event) => event.date === obrSnapshot?.data.efo?.data?.eventDate);
   const obrDate = dateOf(obrSnapshot?.releaseDate ?? obrSnapshot?.retrievedAt);
   // An event page changes when the event happens, when the OBR files are reloaded, and when ONS outturn arrives.
   // Once the year-ahead outturn has had two years of revisions, monthly ONS releases no longer change the page.
@@ -39,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/forecasts/history", lastModified: onsDate, changeFrequency: "monthly", priority: 0.3 },
     { path: "/budgets", lastModified: obrDate > onsDate ? obrDate : onsDate, changeFrequency: "monthly", priority: 0.7 },
     { path: "/budgets/rules", lastModified: staticDate, changeFrequency: "yearly", priority: 0.5 },
+    ...(efoEvent ? [{ path: `/budgets/${efoEvent.slug}/explained`, lastModified: obrDate, changeFrequency: "monthly" as const, priority: 0.8 }] : []),
     ...loadSeedEvents().map((event) => ({ path: `/budgets/${event.slug}`, lastModified: eventDate(event.date), changeFrequency: "monthly" as const, priority: 0.4 })),
     { path: "/old-money", lastModified: staticDate, changeFrequency: "monthly", priority: 0.6 },
     { path: "/records", lastModified: onsDate, changeFrequency: "monthly", priority: 0.6 },

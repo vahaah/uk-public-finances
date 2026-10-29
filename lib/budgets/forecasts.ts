@@ -18,7 +18,7 @@ export const OBR_BLOB = {
   headroom: "manual/obr/efo-fiscal-rules.xlsx",
 } as const;
 
-export type ForecastSeriesId = "psnb" | "receipts" | "tme" | "psnd_pct";
+export type ForecastSeriesId = "psnb" | "receipts" | "tme" | "psnd_pct" | "gdp" | "cpi" | "psnfl_pct";
 
 export type ForecastVintage = {
   date: string;
@@ -56,6 +56,9 @@ const HISTORICAL_SHEETS: Record<string, ForecastSeriesId> = {
   "£PSCR": "receipts",
   "£TME": "tme",
   PSND: "psnd_pct",
+  UKGDP: "gdp",
+  CPI: "cpi",
+  PSNFL: "psnfl_pct",
 };
 
 const MEASURE_SHEETS = new Set(["Tax Measures", "Spending Measures"]);
@@ -234,7 +237,7 @@ function parseVintageSheet(grid: Grid, series: ForecastSeriesId): ForecastVintag
   const header = grid[headerIndex];
   if (!header) return [];
   const years = header
-    .map((cell, index) => ({ index, fy: fiscalYearLabel(cell) }))
+    .map((cell, index) => ({ index, fy: fiscalYearLabel(cell) ?? (series === "gdp" || series === "cpi" ? calendarYearLabel(cell) : null) }))
     .filter((column): column is { index: number; fy: string } => column.index > 0 && column.fy != null);
   const vintages: ForecastVintage[] = [];
   for (const row of grid.slice(headerIndex + 1)) {
@@ -363,6 +366,11 @@ export function parseLooseDate(cell: Cell): { date: string; precision: "day" | "
     return { date: `${year}-${month}-01`, precision: "month" };
   }
   return null;
+}
+
+function calendarYearLabel(cell: Cell): string | null {
+  const raw = String(cell ?? "").trim();
+  return /^(19|20)\d{2}$/.test(raw) ? raw : null;
 }
 
 function fiscalYearLabel(cell: Cell): string | null {
