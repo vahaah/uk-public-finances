@@ -9,7 +9,7 @@ import { readXlsx, type Cell, type Grid } from "@/lib/sheets";
  * (a yield) and a negative number costs money (a cost to the Exchequer). Values are £ million.
  * The stored forecast difference is separate: outturn minus forecast.
  *
- * manual/obr/efo-fiscal-rules.xlsx is optional. The March 2026 forecast has no fiscal
+ * manual/obr/efo-fiscal-rules.xlsx is optional: reviewed headroom lives in fiscal-rules.yaml. If the workbook has no fiscal
  * rules table. A missing file, or a workbook with no headroom column, returns no rows.
  */
 export const OBR_BLOB = {

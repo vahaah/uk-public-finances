@@ -109,9 +109,17 @@ regimes:
         target: 2029-30
         outcome: unreviewed
         source: https://www.gov.uk/government/publications/draft-charter-for-budget-responsibility-autumn-2024
+        headroomBn: 14.5
+        headroomDate: 2026-10-28
+        headroomSource: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+        headroomCite: "OBR, October 2026 Economic and fiscal outlook, Table 7.1 (margin in 2029-30)"
       - id: 2024-debt
         name: Net financial debt
         metric: Public sector net financial liabilities falling as a share of GDP
         target: 2029-30
         outcome: unreviewed
         source: https://www.gov.uk/government/publications/draft-charter-for-budget-responsibility-autumn-2024
+        headroomBn: 24.4
+        headroomDate: 2026-10-28
+        headroomSource: https://obr.uk/efo/economic-and-fiscal-outlook-october-2026/
+        headroomCite: "OBR, October 2026 Economic and fiscal outlook, Table 7.1 (margin in 2029-30)"

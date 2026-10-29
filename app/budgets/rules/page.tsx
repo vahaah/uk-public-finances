@@ -24,7 +24,7 @@ export default async function RulesPage() {
   const fromWorkbook = Boolean(uploaded?.loaded && uploaded.rows.length > 0);
   const headroomRows =
     uploaded?.loaded && uploaded.rows.length > 0
-      ? uploaded.rows.map((row) => ({ ...row, source: null as string | null }))
+      ? uploaded.rows.map((row) => ({ ...row, source: null as string | null, cite: null as string | null }))
       : reviewedHeadroom(regimes);
   return (
     <>
@@ -64,7 +64,7 @@ export default async function RulesPage() {
           <p className="mb-3 text-sm">OBR data as of {uploaded?.asOf ? formatDateLong(uploaded.asOf) : "the upload date"}.</p>
         ) : (
           <p className="mb-3 text-sm">
-            Headroom is taken from the reviewed rules file. The March 2026 forecast did not publish a fiscal rules table, and the OBR workbook is optional. A figure is shown only when that file records one.
+            Headroom is the OBR&apos;s margin against each rule, taken from the reviewed rules file with the table it comes from. Earlier events show "Not published" until a reviewed figure is added.
           </p>
         )}
         <ul className="divide-y divide-neutral-200 border border-neutral-200 text-sm dark:divide-neutral-800 dark:border-neutral-800">
@@ -72,6 +72,7 @@ export default async function RulesPage() {
             <li key={`${row.eventDate}-${row.rule}`} className="flex justify-between gap-3 px-3 py-2">
               <span>
                 {row.eventDate} {row.rule}
+                {row.cite ? <span className="text-neutral-700 dark:text-neutral-300"> ({row.cite})</span> : null}
                 {row.source ? (
                   <>
                     {" "}

@@ -155,9 +155,14 @@ describe("OBR workbooks", () => {
     const reviewed = reviewedHeadroom(loadRuleRegimes());
     expect(reviewed.length).toBeGreaterThan(0);
     for (const row of reviewed) {
-      expect(row.source).toMatch(/^https:\/\/www\.gov\.uk\//);
-      expect(row.headroomBn).toBeNull();
+      if (row.headroomBn == null) {
+        expect(row.source).toMatch(/^https:\/\/www\.gov\.uk\//);
+      } else {
+        expect(row.source).toMatch(/^https:\/\/obr\.uk\//);
+        expect(row.cite).toMatch(/Table 7\.1/);
+      }
     }
+    expect(reviewed.filter((row) => row.headroomBn != null).map((row) => row.headroomBn)).toEqual([14.5, 24.4]);
   });
 });
 
