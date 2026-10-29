@@ -65,7 +65,7 @@ export function CompareBars({
   const y = yAxisFor(points.flatMap((point) => [point.current, point.previous]), true);
   const missing = points.filter((point) => point.previous == null && point.current != null).map((point) => point.period);
   const tagged = points.map((point) => ({ ...point, currentTag: point.period === highlight ? point.current : null, previousTag: point.period === highlight ? point.previous : null }));
-  const label = (value: unknown) => (value == null ? "" :  formatUnit(Number(value), unit).replace(" of GDP", ""));
+  const label = (value: unknown) => (value == null ? "" : formatUnit(Number(value), unit).replace(" of GDP", ""));
   return (
     <div>
       {small ? null : <Swatches items={[{ label: `${previousLabel} forecast`, className: "bg-neutral-400 dark:bg-neutral-500" }, { label: `${currentLabel} forecast`, className: "bg-blue-700 dark:bg-blue-300" }]} />}
