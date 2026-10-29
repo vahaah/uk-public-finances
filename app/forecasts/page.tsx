@@ -65,7 +65,19 @@ export default async function ForecastsPage() {
       <PageIntro
         kicker="Office for Budget Responsibility"
         title="Is borrowing on track with the OBR's forecast?"
-        lede="The ONS records how much the government has borrowed so far this financial year. The Office for Budget Responsibility (OBR) forecasts borrowing for the whole year. Borrowing is not spread evenly across the months, so the fairest comparison is with the same point last year."
+        lede={
+          <>
+            The ONS records how much the government has borrowed so far this financial year. The Office for Budget Responsibility (OBR) forecasts borrowing for the whole year. Borrowing is not spread evenly across the months, so the fairest comparison is with the same point last year. For{" "}
+            <a className="underline decoration-neutral-500 underline-offset-4" href="/budgets">
+              how past forecasts turned out
+            </a>
+            , see each Budget. Monthly figures are on{" "}
+            <a className="underline decoration-neutral-500 underline-offset-4" href="/borrowing">
+              borrowing
+            </a>
+            .
+          </>
+        }
       />
       {fyData && fy ? (
         <ChartFrame

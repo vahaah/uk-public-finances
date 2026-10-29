@@ -132,7 +132,7 @@ export default async function HomePage() {
         })}
       />
       <header className="mb-8 max-w-[68ch]">
-        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Is the UK government spending more than it takes in?</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">UK borrowing: is the government spending more than it takes in?</h1>
         <p id="summary" data-cite className="mt-3 text-base text-neutral-900 dark:text-neutral-100">
           {cite}
         </p>

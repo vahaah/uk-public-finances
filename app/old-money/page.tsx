@@ -31,7 +31,15 @@ export default async function OldMoneyPage() {
       <PageIntro
         kicker="Prices"
         title="What is an old amount worth today?"
-        lede="Enter an amount and two years. The result uses only the published index values for those years. It does not fill a gap. The GDP deflator is the measure for public spending. CPI and CPIH are household prices. RPI is for index-linked gilts and contracts that still use it."
+        lede={
+          <>
+            Enter an amount and two years. The result uses only the published index values for those years. It does not fill a gap. The GDP deflator is the measure for public spending, as used for{" "}
+            <a className="underline decoration-neutral-500 underline-offset-4" href="/spending">
+              spending in real terms
+            </a>
+            . CPI and CPIH are household prices. RPI is for index-linked gilts and contracts that still use it.
+          </>
+        }
       />
       <OldMoneyCalculator
         series={{

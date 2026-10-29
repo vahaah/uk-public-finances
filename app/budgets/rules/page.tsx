@@ -38,7 +38,7 @@ export default async function RulesPage() {
       <h2 className="mb-3 text-sm font-medium">Fiscal rules over time</h2>
       <ol className="mb-8 space-y-4 border-l border-neutral-300 pl-4 dark:border-neutral-700">
         {regimes.map((regime) => (
-          <li key={regime.id}>
+          <li key={regime.id} id={regime.id} className="scroll-mt-20">
             <p className="text-sm font-medium">{regime.name}</p>
             <p className="text-xs text-neutral-700 dark:text-neutral-300">
               <time dateTime={regime.from}>{regime.from}</time>
