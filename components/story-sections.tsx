@@ -60,7 +60,7 @@ export function GdpFigure({ efo, path }: Props) {
       csv={compareCsv(points, efo.gdp.currentLabel, efo.gdp.previousLabel)}
       source={src(efo)}
     >
-      <CompareBars points={points} currentLabel={efo.gdp.currentLabel} previousLabel={efo.gdp.previousLabel} unit="pct" />
+      <CompareBars points={points} currentLabel={efo.gdp.currentLabel} previousLabel={efo.gdp.previousLabel} unit="pct" highlight={next?.period} />
     </StoryFigure>
   );
 }
@@ -89,7 +89,7 @@ export function CpiFigure({ efo, path }: Props) {
       csv={compareCsv(points, efo.cpi.currentLabel, efo.cpi.previousLabel)}
       source={src(efo)}
     >
-      <CompareBars points={points} currentLabel={efo.cpi.currentLabel} previousLabel={efo.cpi.previousLabel} unit="pct" />
+      <CompareBars points={points} currentLabel={efo.cpi.currentLabel} previousLabel={efo.cpi.previousLabel} unit="pct" highlight={next?.period} />
     </StoryFigure>
   );
 }
@@ -109,7 +109,7 @@ export function RhdiGrowthFigure({ efo, path }: Props) {
       csv={compareCsv(points, efo.rhdiGrowth.currentLabel, efo.rhdiGrowth.previousLabel)}
       source={src(efo)}
     >
-      <CompareBars points={points} currentLabel={efo.rhdiGrowth.currentLabel} previousLabel={efo.rhdiGrowth.previousLabel} unit="pct" />
+      <CompareBars points={points} currentLabel={efo.rhdiGrowth.currentLabel} previousLabel={efo.rhdiGrowth.previousLabel} unit="pct" highlight={first?.period} />
     </StoryFigure>
   );
 }
@@ -156,7 +156,7 @@ export function PsnbFigure({ efo, path }: Props) {
       csv={compareCsv(efo.psnb.points, efo.psnb.currentLabel, efo.psnb.previousLabel)}
       source={src(efo)}
     >
-      <CompareBars points={efo.psnb.points} currentLabel={efo.psnb.currentLabel} previousLabel={efo.psnb.previousLabel} unit="bn" />
+      <CompareBars points={efo.psnb.points} currentLabel={efo.psnb.currentLabel} previousLabel={efo.psnb.previousLabel} unit="bn" highlight={first?.period} />
     </StoryFigure>
   );
 }
@@ -238,6 +238,9 @@ export function TaxBurdenFigure({ efo, path }: Props) {
 
 export function PsnflFigure({ efo, path }: Props) {
   if (!efo.psnfl) return null;
+  // Years with no figure in this forecast (e.g. a year with only an earlier forecast) are left out rather than drawn half-empty.
+  const shown = efo.psnfl.points.filter((point) => point.current != null);
+  const dropped = efo.psnfl.points.filter((point) => point.current == null).map((point) => point.period);
   const peak = efo.psnfl.points.filter((point) => point.current != null).sort((a, b) => (b.current ?? 0) - (a.current ?? 0))[0];
   const end = efo.psnfl.points.filter((point) => point.current != null).at(-1);
   const peaksThenFalls = peak && end && peak.period < end.period && (end.current ?? 0) < (peak.current ?? 0);
@@ -251,7 +254,8 @@ export function PsnflFigure({ efo, path }: Props) {
       csv={compareCsv(efo.psnfl.points, efo.psnfl.currentLabel, efo.psnfl.previousLabel)}
       source={src(efo)}
     >
-      <CompareBars points={efo.psnfl.points} currentLabel={efo.psnfl.currentLabel} previousLabel={efo.psnfl.previousLabel} unit="pctGdp" />
+      <CompareBars points={shown} currentLabel={efo.psnfl.currentLabel} previousLabel={efo.psnfl.previousLabel} unit="pctGdp" highlight={peaksThenFalls ? peak.period : undefined} />
+      {dropped.length ? <p className="mt-1 text-xs text-neutral-700 dark:text-neutral-300">Not shown: {dropped.join(", ")}, which has no {efo.psnfl.currentLabel} figure in this OBR table.</p> : null}
     </StoryFigure>
   );
 }
@@ -302,17 +306,26 @@ export function MeasuresFigure({ rows, path, releaseDate }: { rows: { name: stri
   if (recent.length < 2) return null;
   const top = [...recent].sort((a, b) => b.count - a.count)[0]!;
   const latest = recent.at(-1)!;
+  const counts = recent.map((row) => ({ period: row.date.slice(0, 7), value: row.count, label: row.name }));
+  const sizes = recent.flatMap((row) => (row.averageBn == null ? [] : [{ period: row.date.slice(0, 7), value: row.averageBn, label: row.name }]));
+  const year = (period: string) => period.slice(0, 4);
   return (
     <StoryFigure
       id="measures-per-event"
       path={path}
       title="Measures scored at each fiscal event"
-      subtitle="Number of tax and spending measures at each event in the OBR policy measures database."
+      subtitle="Number of tax and spending measures at each event in the OBR policy measures database. Below: their average size in the third year, ignoring sign."
       takeaway={`${latest.name} had ${latest.count} measures scored by the OBR. The most at any event since 2010 was ${top.count}, at ${top.name}.`}
       csv={{ header: ["event", "date", "measures", "average size in year 3, £bn"], rows: recent.map((row) => [row.name, row.date, row.count, row.averageBn == null ? null : Number(row.averageBn.toFixed(3))]) }}
       source={{ ...OBR_SOURCE, title: "Policy measures database", releaseDate }}
     >
-      <SignedBars points={recent.map((row) => ({ period: row.date.slice(0, 7), value: row.count }))} unit="count" name="Measures" positiveLabel="Scored measures" negativeLabel="" />
+      <SignedBars points={counts} unit="count" name="Measures" positiveLabel={`Measures (${latest.name} in blue)`} negativeLabel="" highlight={counts.at(-1)!.period} tickLabel={year} tickEvery={4} />
+      {sizes.length >= 2 ? (
+        <div className="mt-4">
+          <p className="text-xs font-medium">Average size of a measure in its third year, £ billion</p>
+          <SignedBars points={sizes} unit="bn" name="Average size" positiveLabel="Average size, either sign" negativeLabel="" highlight={sizes.at(-1)!.period} tickLabel={year} tickEvery={4} height="h-40" />
+        </div>
+      ) : null}
     </StoryFigure>
   );
 }

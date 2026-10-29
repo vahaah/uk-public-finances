@@ -106,8 +106,12 @@ export function SourceNote({
       </a>
       {" · "}
       {title}
-      {" · Published "}
-      {formatRelease(releaseDate)}
+      {releaseDate ? (
+        <>
+          {" · Published "}
+          {formatRelease(releaseDate)}
+        </>
+      ) : null}
       {" · "}
       <a className="underline decoration-neutral-500 underline-offset-4" href={licenceUrl}>
         Licence terms
@@ -152,16 +156,39 @@ export function ChartFrame({
 }
 
 /** Small trend line for a number block. Fixed height so it never shifts layout; the label carries the trend in words. */
-export function Sparkline({ values, label, limit = 24, className = "mt-4" }: { values: number[]; label?: string; limit?: number; className?: string }) {
+export function Sparkline({
+  values,
+  label,
+  limit = 24,
+  className = "mt-4",
+  dot,
+  secondary,
+}: {
+  values: number[];
+  label?: string;
+  limit?: number;
+  className?: string;
+  /** Index into `values` (before slicing) of the headline point, drawn as a dot. */
+  dot?: number;
+  /** A second series on the same x positions (e.g. the previous forecast), drawn dashed in gray. */
+  secondary?: (number | null)[];
+}) {
+  const offset = Math.max(0, values.length - limit);
   const slice = values.slice(-limit).filter((value) => Number.isFinite(value));
   if (slice.length < 2) return <div className={`${className} h-10`} aria-hidden="true" />;
-  const min = Math.min(...slice);
-  const max = Math.max(...slice);
+  const second = (secondary ?? []).slice(offset, offset + slice.length);
+  const all = [...slice, ...second.filter((value): value is number => value != null && Number.isFinite(value))];
+  const min = Math.min(...all);
+  const max = Math.max(...all);
   const width = 200;
   const height = 40;
+  const x = (index: number) => (index / (slice.length - 1)) * width;
   const y = (value: number) => height - ((value - min) / (max - min || 1)) * (height - 6) - 3;
-  const points = slice.map((value, index) => `${((index / (slice.length - 1)) * width).toFixed(1)},${y(value).toFixed(1)}`).join(" ");
+  const points = slice.map((value, index) => `${x(index).toFixed(1)},${y(value).toFixed(1)}`).join(" ");
+  const secondPoints = second.flatMap((value, index) => (value == null || !Number.isFinite(value) ? [] : [`${x(index).toFixed(1)},${y(value).toFixed(1)}`])).join(" ");
   const zero = min < 0 && max > 0 ? y(0) : null;
+  const dotIndex = dot != null ? dot - offset : null;
+  const dotValue = dotIndex != null ? slice[dotIndex] : undefined;
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
@@ -172,7 +199,11 @@ export function Sparkline({ values, label, limit = 24, className = "mt-4" }: { v
       aria-hidden={label ? undefined : true}
     >
       {zero != null ? <line x1="0" x2={width} y1={zero} y2={zero} className="stroke-neutral-300 dark:stroke-neutral-700" strokeWidth="1" vectorEffect="non-scaling-stroke" /> : null}
+      {secondPoints ? <polyline points={secondPoints} fill="none" className="stroke-neutral-400 dark:stroke-neutral-500" strokeWidth="1.5" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" /> : null}
       <polyline points={points} fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      {dotIndex != null && dotValue != null ? (
+        <line x1={x(dotIndex)} x2={x(dotIndex)} y1={y(dotValue)} y2={y(dotValue)} stroke="currentColor" strokeWidth="6" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      ) : null}
     </svg>
   );
 }
