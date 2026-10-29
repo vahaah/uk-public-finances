@@ -33,7 +33,7 @@ export function StoryFigure({
   const url = `${SITE_URL}${path}#${id}`;
   const citation = `${takeaway} Source: ${source.publisher}, ${source.title}${source.releaseDate ? `, published ${formatDateLong(source.releaseDate)}` : ""}. Via ${url.replace("https://", "")}.`;
   return (
-    <figure id={id} className="scroll-mt-20">
+    <figure id={id} className="scroll-mt-40 md:scroll-mt-28">
       <ChartFrame title={title} subtitle={subtitle} source={<SourceNote {...source} />}>
         <p className="sr-only">{takeaway}</p>
         {children}
