@@ -22,7 +22,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const obrSnapshot = takeSnapshot("budgets-obr", obr.snapshot);
   const obrDate = dateOf(obrSnapshot?.releaseDate ?? obrSnapshot?.retrievedAt);
   // An event page changes when the event happens, when the OBR files are reloaded, and when ONS outturn arrives.
-  const eventDate = (date: string) => new Date(Math.min(Date.now(), Math.max(new Date(`${date}T12:00:00Z`).getTime(), obrDate.getTime(), onsDate.getTime())));
+  // Once the year-ahead outturn has had two years of revisions, monthly ONS releases no longer change the page.
+  const eventDate = (date: string) => {
+    const held = new Date(`${date}T12:00:00Z`).getTime();
+    const settled = held + 3 * 365 * 24 * 3600 * 1000 < Date.now();
+    return new Date(Math.min(Date.now(), Math.max(held, obrDate.getTime(), settled ? 0 : onsDate.getTime())));
+  };
   const pages: { path: string; lastModified: Date; changeFrequency: "daily" | "monthly" | "yearly"; priority: number }[] = [
     { path: "/", lastModified: onsDate, changeFrequency: "monthly", priority: 1 },
     { path: "/receipts", lastModified: hmrcDate, changeFrequency: "monthly", priority: 0.8 },

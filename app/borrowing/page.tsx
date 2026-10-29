@@ -69,6 +69,10 @@ export default async function BorrowingPage() {
               <a className="underline decoration-neutral-500 underline-offset-4" href="/forecasts">
                 forecasts
               </a>
+              , and how past forecasts turned out is on{" "}
+              <a className="underline decoration-neutral-500 underline-offset-4" href="/budgets">
+                Budgets
+              </a>
               .
             </p>
           </>

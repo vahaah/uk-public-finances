@@ -29,11 +29,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const label = eventLabel(event);
   const { borrowing } = await loadEventView(event);
   const when = event.dateStatus === "verified" ? formatDateLong(event.date) : null;
+  const heading = eventHeading(event, label, borrowing);
   return pageMeta({
-    title: `${label}: forecast and outturn`,
+    title: hasOutturn(event, borrowing) ? `${label}: forecast and outturn` : heading,
     description: eventDescription(event, label, when, borrowing),
     path: `/budgets/${slug}`,
-    og: { kicker: "Budgets", title: `${label}: forecast vs outturn`, detail: when ? `${when} · ${event.chancellor}` : event.chancellor },
+    og: { kicker: "Budgets", title: hasOutturn(event, borrowing) ? `${label}: forecast vs outturn` : heading, detail: when ? `${when} · ${event.chancellor}` : event.chancellor },
     keywords: eventKeywords(event, label),
   });
 }
@@ -52,6 +53,17 @@ async function loadEventView(event: FiscalEvent) {
   // forecasts database. Use the databank when its vintage is this event's month.
   const borrowing = historical?.forecast != null ? historical : (databankForecast(event, databank?.data) ?? historical);
   return { obr, ons, loaded, borrowing };
+}
+
+/** True once the year-ahead outturn is known, or when there is no OBR forecast to wait on. */
+function hasOutturn(event: FiscalEvent, borrowing: YearAheadComparison | null | undefined): boolean {
+  return event.obrForecast === "no" || (borrowing?.outturn != null && borrowing.difference != null);
+}
+
+/** Until the outturn exists, ask only what was forecast. */
+function eventHeading(event: FiscalEvent, label: string, borrowing: YearAheadComparison | null | undefined): string {
+  const name = HEADINGS[event.slug] ?? label;
+  return hasOutturn(event, borrowing) ? `What did ${name} forecast, and what happened?` : `What did ${name} forecast?`;
 }
 
 /** Popular names people search for, beside the official name. */
@@ -120,7 +132,20 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
       <JsonLd data={breadcrumbJsonLd(label, `/budgets/${event.slug}`)} />
       <JsonLd data={eventJsonLd(event, label, borrowing)} />
       <Breadcrumb current={label} parents={[{ href: "/budgets", label: "Budgets" }]} />
-      <PageIntro kicker="Budgets" title={`What did ${HEADINGS[event.slug] ?? label} forecast, and what happened?`} lede={eventCite(event, label, when, borrowing, rule)} />
+      <PageIntro kicker="Budgets" title={eventHeading(event, label, borrowing)} lede={eventCite(event, label, when, borrowing, rule)} />
+      {regimes[0] ? (
+        <p className="mb-3 text-sm">
+          The fiscal rules in force at the time were{" "}
+          <Link className="underline decoration-neutral-500 underline-offset-4" href={`/budgets/rules#${regimes[0].id}`}>
+            {regimes[0].name}
+          </Link>
+          . Other events are on{" "}
+          <Link className="underline decoration-neutral-500 underline-offset-4" href="/budgets">
+            how each UK Budget turned out
+          </Link>
+          .
+        </p>
+      ) : null}
       <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{event.obrForecast === "no" ? "The OBR did not publish a forecast for this event." : asOf}</p>
       <dl className="mb-6 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
         <Fact label="Chancellor" value={event.chancellor} />

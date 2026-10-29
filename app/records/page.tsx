@@ -58,7 +58,11 @@ export default async function RecordsPage() {
             </h2>
             <p className="mt-3 text-3xl font-semibold tabular-nums">{record.valueLabel}</p>
             <p className="mt-2 text-sm">
-              {record.valueLabel} in {formatMonth(record.period)}. Source: {record.publisher}, {record.seriesId}.
+              {record.valueLabel} in {formatMonth(record.period)}. Source: {record.publisher}, {record.seriesId}. See{" "}
+              <a className="underline decoration-neutral-500 underline-offset-4" href={RECORD_PAGES[record.seriesId]?.href ?? "/borrowing"}>
+                {RECORD_PAGES[record.seriesId]?.label ?? "borrowing"}
+              </a>
+              .
             </p>
             <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">{record.basis}</p>
           </article>
@@ -78,3 +82,11 @@ export default async function RecordsPage() {
     </>
   );
 }
+
+/** The page that charts each record's series. */
+const RECORD_PAGES: Record<string, { href: string; label: string }> = {
+  J5II: { href: "/borrowing", label: "borrowing" },
+  HF6X: { href: "/debt", label: "debt" },
+  "NMFX ÷ JW2O": { href: "/debt", label: "debt interest" },
+  "HMRC monthly total": { href: "/receipts", label: "tax receipts" },
+};
