@@ -9,8 +9,7 @@ import { readXlsx, type Cell, type Grid } from "@/lib/sheets";
  * (a yield) and a negative number costs money (a cost to the Exchequer). Values are £ million.
  * The stored forecast difference is separate: outturn minus forecast.
  *
- * manual/obr/efo-fiscal-rules.xlsx is optional. The March 2026 forecast has no fiscal
- * rules table. A missing file, or a workbook with no headroom column, returns no rows.
+ * manual/obr/efo-fiscal-rules.xlsx is optional: the latest EFO chapter 7 workbook, read from Table 7.1. A missing file, or a workbook with no headroom column, returns no rows.
  */
 export const OBR_BLOB = {
   historical: "manual/obr/historical-official-forecasts.xlsx",
@@ -163,10 +162,52 @@ export async function parseEvaluationWorkbook(buffer: Buffer): Promise<{ asOf: s
   return { asOf, rows };
 }
 
-export async function parseHeadroomWorkbook(buffer: Buffer): Promise<{ asOf: string | null; rows: HeadroomRow[] }> {
-  const sheets = await readXlsx(buffer, 20);
+/** EFO Table 7.1 target headings, mapped to the rule names in fiscal-rules.yaml. */
+const TARGET_RULES: [RegExp, string][] = [
+  [/^current budget/i, "Current budget"],
+  [/net financial liabilities/i, "Net financial debt"],
+];
+
+/**
+ * EFO chapter 7, Table 7.1 "Performance against the Government's fiscal targets": a target heading,
+ * then one row per forecast ("October 2026 forecast", margin % of GDP, margin £bn, probability).
+ * Pre-measures and memo rows are skipped. Each forecast maps to the registry event in that month.
+ */
+function parseTargetsTable(grid: Grid, events: MeasureEvent[]): HeadroomRow[] {
+  if (!grid.slice(0, 4).some((row) => row.some((cell) => /performance against the government's fiscal targets/i.test(text(cell))))) return [];
+  const bnCol = grid.slice(0, 10).map((row) => row.findIndex((cell) => /^£ ?billion$/i.test(text(cell)))).find((index) => index >= 0) ?? -1;
+  if (bnCol < 0) return [];
+  const rows: HeadroomRow[] = [];
+  let rule: string | null = null;
+  for (const row of grid) {
+    const cells = row.map((cell) => text(cell)).filter(Boolean);
+    const label = cells[0] ?? "";
+    const target = TARGET_RULES.find(([pattern]) => pattern.test(label));
+    if (target && cells.length === 1) {
+      rule = target[1];
+      continue;
+    }
+    if (/welfare cap/i.test(label)) rule = null;
+    const forecast = /^([A-Za-z]+ \d{4}) forecast\d*$/.exec(label);
+    if (!rule || !forecast?.[1]) continue;
+    const month = parseLooseDate(forecast[1])?.date.slice(0, 7);
+    const event = month ? events.filter((item) => item.date.startsWith(month)) : [];
+    const bn = numberCell(row[bnCol]);
+    if (event.length !== 1 || bn == null) continue;
+    rows.push({ eventDate: event[0]!.date, rule, headroomBn: Math.round(bn * 10) / 10 });
+  }
+  return rows;
+}
+
+export async function parseHeadroomWorkbook(buffer: Buffer, events: MeasureEvent[] = []): Promise<{ asOf: string | null; rows: HeadroomRow[] }> {
+  const sheets = await readXlsx(buffer, 40);
   const rows: HeadroomRow[] = [];
   for (const grid of Object.values(sheets)) {
+    const targets = parseTargetsTable(grid, events);
+    if (targets.length > 0) {
+      rows.push(...targets);
+      continue;
+    }
     const header = findHeader(grid, (cells) => cells.some((cell) => /headroom/i.test(text(cell))));
     if (!header) continue;
     const index = (pattern: RegExp) => header.cells.findIndex((cell) => pattern.test(text(cell)));

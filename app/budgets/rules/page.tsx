@@ -61,10 +61,10 @@ export default async function RulesPage() {
       <section>
         <h2 className="mb-3 text-sm font-medium">How much room did each Budget leave?</h2>
         {fromWorkbook ? (
-          <p className="mb-3 text-sm">OBR data as of {uploaded?.asOf ? formatDateLong(uploaded.asOf) : "the upload date"}.</p>
+          <p className="mb-3 text-sm">Margin against each rule in its target year, from Table 7.1 of the OBR Economic and fiscal outlook. OBR data as of {uploaded?.asOf ? formatDateLong(uploaded.asOf) : "the upload date"}.</p>
         ) : (
           <p className="mb-3 text-sm">
-            Headroom is taken from the reviewed rules file. The March 2026 forecast did not publish a fiscal rules table, and the OBR workbook is optional. A figure is shown only when that file records one.
+            Headroom comes from the OBR&apos;s fiscal targets table (Table 7.1 of the Economic and fiscal outlook). It is not loaded yet, so no figure is shown.
           </p>
         )}
         <ul className="divide-y divide-neutral-200 border border-neutral-200 text-sm dark:divide-neutral-800 dark:border-neutral-800">

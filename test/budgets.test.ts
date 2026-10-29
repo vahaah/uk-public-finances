@@ -191,6 +191,38 @@ describe("measure footnote markers", () => {
 });
 
 
+describe("EFO fiscal targets table", () => {
+  it("reads Table 7.1 margins and maps each forecast to its event", async () => {
+    const ExcelJS = (await import("exceljs")).default;
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("T7.1");
+    [
+      ["Back to contents"],
+      ["Table 7.1: Performance against the Government's fiscal targets"],
+      [],
+      ["", "Per cent of GDP", "£ billion", "Per cent"],
+      ["Current budget to be in surplus by 2029-30"],
+      ["November 2025 forecast2", 0.62, 21.7, 59],
+      ["October 2026 pre-measures forecast ", 0.35, 12.49, 55.4],
+      ["October 2026 forecast", 0.41, 14.53, 55.77],
+      ["Memo: excluding fuel duty rises3", 0.29, 10.24],
+      ["Change in public sector net financial liabilities in 2029-30"],
+      ["November 2025 forecast2", 0.68, "-", 52],
+      ["October 2026 forecast", 0.68, 24.39, 53.99],
+      ["Welfare cap: specified welfare spending in 2029-30"],
+      ["October 2026 forecast", 207.03, -2.82],
+    ].forEach((row) => sheet.addRow(row));
+    const events = [{ name: "Budget 2025", date: "2025-11-26" }, { name: "Budget 2026", date: "2026-10-28" }];
+    const parsed = await parseHeadroomWorkbook(Buffer.from(await workbook.xlsx.writeBuffer()), events);
+    expect(parsed.rows).toEqual([
+      { eventDate: "2025-11-26", rule: "Current budget", headroomBn: 21.7 },
+      { eventDate: "2026-10-28", rule: "Current budget", headroomBn: 14.5 },
+      { eventDate: "2026-10-28", rule: "Net financial debt", headroomBn: 24.4 },
+    ]);
+    expect(parsed.asOf).toBe("2026-10-28");
+  });
+});
+
 describe("withSeedEvents", () => {
   it("prefers the registry and keeps newly discovered events", async () => {
     const { loadSeedEvents, withSeedEvents } = await import("@/lib/budgets/seed");

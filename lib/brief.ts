@@ -6,22 +6,31 @@ import {
   formatPercent,
   formatRelease,
 } from "@/lib/format";
+import { forecastFor, vintageLabel } from "@/lib/forecasts-view";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { DERIVED_LICENCE, SITE_URL } from "@/lib/site";
 
 export async function renderLlms(full: boolean): Promise<string> {
-  const [onsLoaded, hmrcLoaded, pesaLoaded, taxLoaded, boeLoaded] = await Promise.all([
+  const [onsLoaded, hmrcLoaded, pesaLoaded, taxLoaded, boeLoaded, obrLoaded] = await Promise.all([
     readSnapshot("ons-psf"),
     readSnapshot("hmrc-receipts"),
     readSnapshot("pesa"),
     readSnapshot("hmrc-income-tax"),
     readSnapshot("boe-yields"),
+    readSnapshot("obr-databank"),
   ]);
   const ons = takeSnapshot("ons-psf", onsLoaded.snapshot);
   const hmrc = takeSnapshot("hmrc-receipts", hmrcLoaded.snapshot);
   const pesa = takeSnapshot("pesa", pesaLoaded.snapshot);
   const tax = takeSnapshot("hmrc-income-tax", taxLoaded.snapshot);
   const boe = takeSnapshot("boe-yields", boeLoaded.snapshot);
+  const obr = takeSnapshot("obr-databank", obrLoaded.snapshot);
+  const vintage = vintageLabel(obr?.data.round ?? null);
+  const psnb = obr?.data.series.find((item) => /net borrowing/i.test(item.name));
+  const nextYear = psnb?.points.find((point) => point.outturn == null && point.forecast != null);
+  const forecastLine = vintage
+    ? `ONS outturn against the OBR's ${vintage}${nextYear?.forecast != null ? ` (borrowing forecast ${formatBillions(forecastFor(psnb, nextYear.year) ?? nextYear.forecast)} for ${nextYear.year})` : ""}.`
+    : "ONS outturn. The OBR forecast is not loaded.";
 
   const latest: string[] = [];
   if (ons) {
@@ -90,7 +99,7 @@ export async function renderLlms(full: boolean): Promise<string> {
     `- [Borrowing](${SITE_URL}/borrowing): monthly public sector net borrowing and the financial year to date.`,
     `- [Debt and gilts](${SITE_URL}/debt): public sector net debt, the debt ratio, central government net interest, Bank Rate, gilt yields and the DMO portfolio.`,
     `- [Income taxpayers](${SITE_URL}/taxpayers): payers by band and the top 1% and top 10% shares.`,
-    `- [Forecasts](${SITE_URL}/forecasts): ONS outturn. Forecast vintage: pending.`,
+    `- [Forecasts](${SITE_URL}/forecasts): ${forecastLine}`,
     `- [Old money vs new](${SITE_URL}/old-money): revalue an amount with MNF2, L8GG, CPI, CPIH or RPI.`,
     `- [Glossary](${SITE_URL}/glossary)`,
     `- [FAQ](${SITE_URL}/faq)`,
