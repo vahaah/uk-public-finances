@@ -1,3 +1,5 @@
+import { StoryStepper } from "@/components/story-stepper";
+import { ChapterBar } from "@/components/chapter-bar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -50,25 +52,20 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
       <Breadcrumb current="Explained" parents={[{ href: "/budgets", label: "Budgets" }, { href: `/budgets/${slug}`, label }]} />
       <header className="mb-8 max-w-[68ch]">
         <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{label} explained</h1>
+        <div className="mt-3"><StoryStepper current={path} /></div>
         <p className="mt-3 text-base text-neutral-900 dark:text-neutral-100">
           {formatDateLong(event.date)} · {event.chancellor}. What the OBR&apos;s {efo.currentLabel} forecast says about the economy and the public finances, compared with its{" "}
           {efo.previousLabel} forecast, in four chapters.
         </p>
-        <ol className="mt-4 flex flex-wrap gap-2 text-sm">
-          {[
-            ["#squeeze", "1. Growth and incomes"],
-            ["#trap", "2. Borrowing and interest"],
-            ["#strategy", "3. The Budget's plan"],
-            ["#reality", "4. The measures"],
-          ].map(([href, text]) => (
-            <li key={href}>
-              <a className="inline-flex h-8 items-center rounded-md border border-neutral-300 px-3 dark:border-neutral-700" href={href}>
-                {text}
-              </a>
-            </li>
-          ))}
-        </ol>
       </header>
+      <ChapterBar
+        chapters={[
+          { id: "squeeze", label: "1. Growth and incomes" },
+          { id: "trap", label: "2. Borrowing and interest" },
+          { id: "strategy", label: "3. The Budget's plan" },
+          { id: "reality", label: "4. The measures" },
+        ]}
+      />
 
       <Chapter id="squeeze" title="1. Growth and incomes" lede="How the forecast for the economy, prices and household incomes has changed.">
         <GdpFigure {...props} />
@@ -107,7 +104,7 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
 
 function Chapter({ id, title, lede, children }: { id: string; title: string; lede: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="mt-10 scroll-mt-20" aria-labelledby={`${id}-title`}>
+    <section id={id} className="mt-10 scroll-mt-40 md:scroll-mt-28" aria-labelledby={`${id}-title`}>
       <h2 id={`${id}-title`} className="text-xl font-semibold tracking-tight">
         {title}
       </h2>

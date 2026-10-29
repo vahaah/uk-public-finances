@@ -1,4 +1,5 @@
 import { measureHeadLabel } from "@/lib/budgets/measure-heads";
+import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -140,6 +141,7 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
       <JsonLd data={eventJsonLd(event, label, borrowing)} />
       <Breadcrumb current={label} parents={[{ href: "/budgets", label: "Budgets" }]} />
       <PageIntro kicker="Budgets" title={eventHeading(event, label, borrowing)} lede={eventCite(event, label, when, borrowing, rule)} />
+      <StoryStepper current={`/budgets/${event.slug}`} />
       {regimes[0] ? (
         <p className="mb-3 text-sm">
           Fiscal rules in force at this event:{" "}

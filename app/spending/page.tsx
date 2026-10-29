@@ -1,4 +1,5 @@
 import { TopicStory } from "@/components/topic-story";
+import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
 import { SpendingFunctions } from "@/components/spending-functions";
@@ -74,6 +75,7 @@ export default async function SpendingPage() {
           </>
         }
       />
+      <StoryStepper current="/spending" />
       <CiteShare
         sentence={spendingCite(functions, growth)}
         citation={`${spendingCite(functions, growth)} Source: ${meta.publisher}, PESA, published ${snapshot.releaseDate ?? ""}. Via budget.vahaah.com/spending.`}
