@@ -151,25 +151,40 @@ export function ChartFrame({
   );
 }
 
-export function Sparkline({ values }: { values: number[] }) {
-  const slice = values.slice(-24);
-  if (slice.length < 2) return null;
+/** Small trend line for a number block. Fixed height so it never shifts layout; the label carries the trend in words. */
+export function Sparkline({ values, label, limit = 24, className = "mt-4" }: { values: number[]; label?: string; limit?: number; className?: string }) {
+  const slice = values.slice(-limit).filter((value) => Number.isFinite(value));
+  if (slice.length < 2) return <div className={`${className} h-10`} aria-hidden="true" />;
   const min = Math.min(...slice);
   const max = Math.max(...slice);
-  const width = 180;
-  const height = 56;
-  const points = slice
-    .map((value, index) => {
-      const x = (index / (slice.length - 1)) * width;
-      const y = height - ((value - min) / (max - min || 1)) * (height - 4) - 2;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+  const width = 200;
+  const height = 40;
+  const y = (value: number) => height - ((value - min) / (max - min || 1)) * (height - 6) - 3;
+  const points = slice.map((value, index) => `${((index / (slice.length - 1)) * width).toFixed(1)},${y(value).toFixed(1)}`).join(" ");
+  const zero = min < 0 && max > 0 ? y(0) : null;
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="mt-4 h-14 w-44 text-blue-700 dark:text-blue-300" aria-hidden="true">
-      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2" />
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      className={`${className} block h-10 w-full max-w-[220px] overflow-visible text-blue-700 dark:text-blue-300`}
+      role={label ? "img" : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+    >
+      {zero != null ? <line x1="0" x2={width} y1={zero} y2={zero} className="stroke-neutral-300 dark:stroke-neutral-700" strokeWidth="1" vectorEffect="non-scaling-stroke" /> : null}
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
+}
+
+/** Words for a sparkline: start, end and direction over the window. */
+export function trendWords(values: number[], format: (value: number) => string, span: string): string {
+  if (values.length < 2) return "";
+  const first = values[0];
+  const last = values[values.length - 1];
+  const change = last - first;
+  const direction = Math.abs(change) < Math.abs(first) * 0.02 ? "roughly flat" : change > 0 ? "up" : "down";
+  return `Trend over ${span}: ${direction}, from ${format(first)} to ${format(last)}.`;
 }
 
 export function DataTable({ columns, rows }: { columns: string[]; rows: (string | number)[][] }) {
