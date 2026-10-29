@@ -44,6 +44,10 @@ const ONS_BASE =
 export async function revalidateDashboard(): Promise<void> {
   "use step";
   for (const path of REVALIDATE_PATHS) revalidatePath(path);
+  // Event pages and their explained stories read the same snapshots; the sitemap lists the explained page once EFO charts load.
+  revalidatePath("/budgets/[slug]", "page");
+  revalidatePath("/budgets/[slug]/explained", "page");
+  revalidatePath("/sitemap.xml");
 }
 
 export async function recordValidationFailure(sourceId: SourceId, error: string): Promise<void> {
