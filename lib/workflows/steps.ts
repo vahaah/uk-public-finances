@@ -1,4 +1,4 @@
-import { head, put } from "@vercel/blob";
+import { head, list, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 
 import { boeSnapshot, dmoSnapshot } from "@/lib/workflows/builds";
@@ -20,8 +20,11 @@ import { ONS_FILES, parseOnsRecords } from "@/lib/parsers/ons";
 import { parsePriceRecords } from "@/lib/parsers/prices";
 import { applyContentDate, discoverEvents, type GovukHit } from "@/lib/budgets/events";
 import { loadSeedEvents } from "@/lib/budgets/seed";
+import { EFO_BLOB_PREFIX, efoVintages, parseEfoCharts } from "@/lib/budgets/efo";
+import { readXlsx } from "@/lib/sheets";
 import {
   OBR_BLOB,
+  type ForecastVintage,
   parseEvaluationWorkbook,
   parseHeadroomWorkbook,
   parseHistoricalForecasts,
@@ -417,10 +420,11 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
   const measures = await readOptionalBlob(OBR_BLOB.measures);
   const evaluation = await readOptionalBlob(OBR_BLOB.evaluation);
   const headroom = await readOptionalBlob(OBR_BLOB.headroom);
+  const efoFiles = await readEfoBlobs();
   return finish("budgets-obr", async () => {
     const historicalData = historical
       ? { loaded: true as const, ...(await parseHistoricalForecasts(historical.bytes)) }
-      : { loaded: false as const, asOf: null, vintages: [] };
+      : { loaded: false as const, asOf: null, vintages: [] as ForecastVintage[] };
     const measureEvents = loadSeedEvents().map((event) => ({ name: event.name, date: event.date }));
     const measuresData = measures
       ? { loaded: true as const, ...(await parseMeasuresWorkbook(measures.bytes, measureEvents)) }
@@ -433,6 +437,10 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
       parsedHeadroom.rows.length > 0
         ? { loaded: true as const, ...parsedHeadroom }
         : { loaded: false as const, asOf: null, rows: [] };
+    const efoParsed = efoFiles.length > 0 ? parseEfoCharts(await Promise.all(efoFiles.map((file) => readXlsx(file.bytes, 60)))) : null;
+    const efoEvent = efoParsed?.currentLabel ? efoEventDate(efoParsed.currentLabel, loadSeedEvents()) : null;
+    const efoData = efoParsed ? { ...efoParsed, eventDate: efoEvent } : null;
+    if (efoData?.eventDate) historicalData.vintages.push(...efoVintages(efoData, efoData.eventDate, historicalData.vintages));
     const asOf = [historicalData.asOf, measuresData.asOf, evaluationData.asOf, headroomData.asOf].filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
     return buildEnvelope({
       sourceId: "budgets-obr",
@@ -441,7 +449,7 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
       nextRelease: null,
       sourceUrl: "https://obr.uk/data/",
       sourceTitle: "OBR files uploaded to Blob",
-      data: { historical: historicalData, measures: measuresData, evaluation: evaluationData, headroom: headroomData },
+      data: { efo: { loaded: Boolean(efoData), files: efoFiles.map((file) => file.pathname), data: efoData }, historical: historicalData, measures: measuresData, evaluation: evaluationData, headroom: headroomData },
     });
   });
 }
@@ -454,6 +462,32 @@ async function searchFiscalEvents(): Promise<GovukHit[]> {
   url.searchParams.set("filter_organisations", "hm-treasury");
   const body = await getJson(url.toString());
   return (Array.isArray(body.results) ? body.results : []) as GovukHit[];
+}
+
+async function readEfoBlobs(): Promise<{ pathname: string; bytes: Buffer }[]> {
+  try {
+    const { blobs } = await list({ prefix: EFO_BLOB_PREFIX });
+    const files = blobs.filter((blob) => blob.pathname.endsWith(".xlsx"));
+    return Promise.all(
+      files.map(async (blob) => {
+        const response = await fetch(blob.url);
+        if (!response.ok) throw new Error(`${blob.pathname} returned ${response.status}`);
+        return { pathname: blob.pathname, bytes: Buffer.from(await response.arrayBuffer()) };
+      }),
+    );
+  } catch (error) {
+    if (isMissing(error)) return [];
+    throw error;
+  }
+}
+
+/** "October 2026" → the registry event in that month that carries an OBR forecast. */
+function efoEventDate(label: string, events: { date: string; obrForecast: string }[]): string | null {
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const [month, year] = label.split(" ");
+  const prefix = `${year}-${String(months.indexOf(month ?? "") + 1).padStart(2, "0")}`;
+  const matches = events.filter((event) => event.date.startsWith(prefix) && event.obrForecast !== "no");
+  return matches.length === 1 ? (matches[0]?.date ?? null) : null;
 }
 
 async function readOptionalBlob(pathname: string): Promise<{ bytes: Buffer } | null> {

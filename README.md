@@ -26,6 +26,16 @@ OBR fallback upload, when `obr.uk` returns 403:
 vercel blob put manual/obr-public-finances.xlsx ./public-finances-databank.xlsx --allow-overwrite
 ```
 
+Story charts (`/budgets/<event>/explained`, the long-run charts on topic pages, and the home page "What is happening in the UK" panel) come from the latest EFO "charts and tables" workbooks and the latest Forecast evaluation report charts workbook. After each EFO, upload them under `manual/obr/efo/` (any names, `.xlsx`) and replace the previous event's files. Sheets are matched by chart title, so renumbered charts still load. Then force the daily cron.
+
+```bash
+for f in efo-*-charts-and-tables-{executive-summary,chapter-2,chapter-3,chapter-4,chapter-5,chapter-6}.xlsx Forecast-evaluation-report-*-charts-and-tables.xlsx; do
+  vercel blob put "manual/obr/efo/$f" "./$f" --allow-overwrite
+done
+```
+
+Preview locally from files on disk: `npx tsx scripts/obr-local-snapshot.ts out.json historical=… measures=… evaluation=… efo=… efo=…`.
+
 Do not deploy from this repo's automation. Wire the project in Vercel separately.
 
 ## What is live in the snapshots

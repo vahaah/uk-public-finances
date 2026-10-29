@@ -1,3 +1,4 @@
+import { TopicStory } from "@/components/topic-story";
 import Link from "next/link";
 
 import { SpendingFunctions } from "@/components/spending-functions";
@@ -189,6 +190,7 @@ export default async function SpendingPage() {
           />
         </ChartFrame>
       </div>
+      <TopicStory path="/spending" figures={[]} title="" />
     </>
   );
 }

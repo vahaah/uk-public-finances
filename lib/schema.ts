@@ -316,11 +316,43 @@ export const budgetsEventsDataSchema = z.object({
 const vintageSchema = z.object({
   date: fiscalDate,
   precision: z.enum(["day", "month"]),
-  series: z.enum(["psnb", "receipts", "tme", "psnd_pct"]),
-  points: z.array(z.object({ fy: fiscalYear, value: finite })),
+  series: z.enum(["psnb", "receipts", "tme", "psnd_pct", "gdp", "cpi", "psnfl_pct"]),
+  /** Fiscal year ("2026-27"), or calendar year ("2026") for GDP growth and CPI inflation. */
+  points: z.array(z.object({ fy: z.string().regex(/^\d{4}(-\d{2})?$/), value: finite })),
+});
+
+const efoPeriod = z.string().regex(/^\d{4}(-\d{2})?$/);
+const efoCompare = z.object({
+  currentLabel: z.string(),
+  previousLabel: z.string(),
+  points: z.array(z.object({ period: efoPeriod, current: finite.nullable(), previous: finite.nullable() })),
+});
+const efoLine = z.array(z.object({ period: efoPeriod, value: finite }));
+export const efoDataSchema = z.object({
+  eventDate: fiscalDate.nullable(),
+  currentLabel: z.string().nullable(),
+  previousLabel: z.string().nullable(),
+  gdp: efoCompare.nullable(),
+  cpi: efoCompare.nullable(),
+  rhdiGrowth: efoCompare.nullable(),
+  rhdiRolling: efoLine,
+  psnb: efoCompare.nullable(),
+  psnfl: efoCompare.extend({ outturn: efoLine }).nullable(),
+  taxBurden: efoCompare.extend({ outturn: efoLine }).nullable(),
+  debtInterest: efoCompare.nullable(),
+  policy: z.array(
+    z.object({ period: efoPeriod, total: finite.nullable(), currentSpending: finite.nullable(), capitalSpending: finite.nullable(), receipts: finite.nullable() }),
+  ),
+  packages: z.array(z.object({ event: z.string(), pctGdp: finite })),
+  debtVsOutturn: z
+    .object({ vintages: z.array(z.string()), points: z.array(z.object({ period: efoPeriod, values: z.array(finite.nullable()), outturn: finite.nullable() })) })
+    .nullable(),
+  found: z.array(z.string()),
 });
 
 export const budgetsObrDataSchema = z.object({
+  /** Latest EFO and forecast evaluation charts, uploaded by hand under manual/obr/efo/. Older snapshots have none. */
+  efo: z.object({ loaded: z.boolean(), files: z.array(z.string()), data: efoDataSchema.nullable() }).optional(),
   historical: z.object({
     loaded: z.boolean(),
     asOf: z.string().nullable(),

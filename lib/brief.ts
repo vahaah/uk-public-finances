@@ -1,3 +1,5 @@
+import { eventLabel } from "@/lib/budgets/events";
+import { latestStory } from "@/lib/story";
 import {
   formatBillions,
   formatDateLong,
@@ -25,6 +27,7 @@ export async function renderLlms(full: boolean): Promise<string> {
   const tax = takeSnapshot("hmrc-income-tax", taxLoaded.snapshot);
   const boe = takeSnapshot("boe-yields", boeLoaded.snapshot);
   const obr = takeSnapshot("obr-databank", obrLoaded.snapshot);
+  const story = await latestStory();
   const vintage = vintageLabel(obr?.data.round ?? null);
   const psnb = obr?.data.series.find((item) => /net borrowing/i.test(item.name));
   const nextYear = psnb?.points.find((point) => point.outturn == null && point.forecast != null);
@@ -100,6 +103,11 @@ export async function renderLlms(full: boolean): Promise<string> {
     `- [Debt and gilts](${SITE_URL}/debt): public sector net debt, the debt ratio, central government net interest, Bank Rate, gilt yields and the DMO portfolio.`,
     `- [Income taxpayers](${SITE_URL}/taxpayers): payers by band and the top 1% and top 10% shares.`,
     `- [Forecasts](${SITE_URL}/forecasts): ${forecastLine}`,
+    ...(story
+      ? [
+          `- [${eventLabel(story.event)} explained](${SITE_URL}/budgets/${story.event.slug}/explained): the OBR's ${story.efo.currentLabel} forecast against ${story.efo.previousLabel} in charts: GDP growth, CPI inflation, household income, borrowing, debt interest, policy decisions by year, the tax burden, debt and past debt forecasts, and measures per event. Each chart has a CSV and a citation.`,
+        ]
+      : []),
     `- [Old money vs new](${SITE_URL}/old-money): revalue an amount with MNF2, L8GG, CPI, CPIH or RPI.`,
     `- [Glossary](${SITE_URL}/glossary)`,
     `- [FAQ](${SITE_URL}/faq)`,
@@ -119,7 +127,7 @@ export async function renderLlms(full: boolean): Promise<string> {
     ...pages,
     "",
     "## Data (JSON)",
-    ...["ons-psf", "hmrc-receipts", "pesa", "hmrc-income-tax", "dmo-gilts", "boe-yields"].map(
+    ...["ons-psf", "hmrc-receipts", "pesa", "hmrc-income-tax", "dmo-gilts", "boe-yields", "budgets-obr"].map(
       (id) => `- ${SITE_URL}/api/snapshots/${id}`,
     ),
     "",

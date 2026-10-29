@@ -1,3 +1,4 @@
+import { TopicStory } from "@/components/topic-story";
 import { BorrowingChart, CumulativeChart } from "@/components/charts";
 import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
 import { fiscalMarkers } from "@/lib/budgets/markers";
@@ -108,6 +109,7 @@ export default async function BorrowingPage() {
           ) : null}
         </ChartFrame>
       </div>
+      <TopicStory path="/borrowing" figures={["psnb", "policy"]} title="Borrowing in the latest forecast" />
     </>
   );
 }

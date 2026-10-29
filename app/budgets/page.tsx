@@ -1,3 +1,4 @@
+import { TopicStory } from "@/components/topic-story";
 import Link from "next/link";
 
 import { BudgetCaveats } from "@/components/budget-caveats";
@@ -95,6 +96,7 @@ export default async function BudgetsPage() {
         <BudgetScorecard rows={rows} ruleLabel={outcomeLabel("unreviewed")} />
       </section>
       <BudgetCaveats />
+      <TopicStory path="/budgets" figures={["packages", "measures"]} title="Fiscal events compared" />
     </>
   );
 }
