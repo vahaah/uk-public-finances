@@ -55,7 +55,7 @@ export async function HomeStory() {
       values: psnbLine,
       secondary: psnbPrevious,
       dot: indexOf(psnbPoints.map((point) => point.period), fy),
-      range: psnbPoints.length > 1 ? `${efo.psnb?.currentLabel} forecast (dashed: ${efo.psnb?.previousLabel}), ${range(psnbPoints.map((point) => point.period))}` : "",
+      range: psnbPoints.length > 1 ? `${range(psnbPoints.map((point) => point.period))}, dashed: ${efo.psnb?.previousLabel}` : "",
       label: `Borrowing forecast by year. ${trendWords(psnbLine, (v) => formatUnit(v, "bn"), "the forecast")}`,
     },
     {
