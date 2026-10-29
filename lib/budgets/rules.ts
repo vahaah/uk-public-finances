@@ -12,10 +12,6 @@ export const fiscalRuleSchema = z.object({
   source: z.string().url(),
   /** £ billion. Null until the reviewed file records a figure. */
   headroomBn: z.number().finite().nullable().optional(),
-  /** The forecast the headroom comes from, and the table it is cited from. */
-  headroomDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  headroomSource: z.string().url().optional(),
-  headroomCite: z.string().min(1).optional(),
 });
 
 export const ruleRegimeSchema = z.object({
@@ -55,14 +51,13 @@ export function regimesAt(regimes: RuleRegime[], isoDate: string): RuleRegime[] 
 }
 
 /** Headroom from the reviewed rules file. Each row keeps that rule's source. */
-export function reviewedHeadroom(regimes: RuleRegime[]): { eventDate: string; rule: string; headroomBn: number | null; source: string; cite: string | null }[] {
+export function reviewedHeadroom(regimes: RuleRegime[]): { eventDate: string; rule: string; headroomBn: number | null; source: string }[] {
   return regimes.flatMap((regime) =>
     regime.rules.map((rule) => ({
-      eventDate: rule.headroomDate ?? regime.from,
+      eventDate: regime.from,
       rule: rule.name,
       headroomBn: rule.headroomBn ?? null,
-      source: rule.headroomSource ?? rule.source,
-      cite: rule.headroomCite ?? null,
+      source: rule.source,
     })),
   );
 }

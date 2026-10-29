@@ -24,7 +24,7 @@ export default async function RulesPage() {
   const fromWorkbook = Boolean(uploaded?.loaded && uploaded.rows.length > 0);
   const headroomRows =
     uploaded?.loaded && uploaded.rows.length > 0
-      ? uploaded.rows.map((row) => ({ ...row, source: null as string | null, cite: null as string | null }))
+      ? uploaded.rows.map((row) => ({ ...row, source: null as string | null }))
       : reviewedHeadroom(regimes);
   return (
     <>
@@ -61,10 +61,10 @@ export default async function RulesPage() {
       <section>
         <h2 className="mb-3 text-sm font-medium">How much room did each Budget leave?</h2>
         {fromWorkbook ? (
-          <p className="mb-3 text-sm">OBR data as of {uploaded?.asOf ? formatDateLong(uploaded.asOf) : "the upload date"}.</p>
+          <p className="mb-3 text-sm">Margin against each rule in its target year, from Table 7.1 of the OBR Economic and fiscal outlook. OBR data as of {uploaded?.asOf ? formatDateLong(uploaded.asOf) : "the upload date"}.</p>
         ) : (
           <p className="mb-3 text-sm">
-            Headroom is the OBR&apos;s margin against each rule, taken from the reviewed rules file with the table it comes from. Earlier events show "Not published" until a reviewed figure is added.
+            Headroom comes from the OBR&apos;s fiscal targets table (Table 7.1 of the Economic and fiscal outlook). It is not loaded yet, so no figure is shown.
           </p>
         )}
         <ul className="divide-y divide-neutral-200 border border-neutral-200 text-sm dark:divide-neutral-800 dark:border-neutral-800">
@@ -72,7 +72,6 @@ export default async function RulesPage() {
             <li key={`${row.eventDate}-${row.rule}`} className="flex justify-between gap-3 px-3 py-2">
               <span>
                 {row.eventDate} {row.rule}
-                {row.cite ? <span className="text-neutral-700 dark:text-neutral-300"> ({row.cite})</span> : null}
                 {row.source ? (
                   <>
                     {" "}

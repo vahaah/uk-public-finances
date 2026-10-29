@@ -428,7 +428,7 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
     const evaluationData = evaluation
       ? { loaded: true as const, ...(await parseEvaluationWorkbook(evaluation.bytes)) }
       : { loaded: false as const, asOf: null, rows: [] };
-    const parsedHeadroom = headroom ? await parseHeadroomWorkbook(headroom.bytes) : { asOf: null, rows: [] };
+    const parsedHeadroom = headroom ? await parseHeadroomWorkbook(headroom.bytes, measureEvents) : { asOf: null, rows: [] };
     const headroomData =
       parsedHeadroom.rows.length > 0
         ? { loaded: true as const, ...parsedHeadroom }
