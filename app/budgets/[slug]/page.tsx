@@ -1,3 +1,4 @@
+import { measureHeadLabel } from "@/lib/budgets/measure-heads";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -243,7 +244,7 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
             {measures.length > 0 ? (
               <DataTable
                 columns={["Measure", "Category", `${measureYear}, £m`]}
-                rows={measures.map((row) => [row.name, row.category, formatMillions(row.year3 ?? 0)])}
+                rows={measures.map((row) => [row.name, measureHeadLabel(row.category), formatMillions(row.year3 ?? 0)])}
               />
             ) : (
               <p className="mt-2 text-sm">The OBR database lists no costed measures for this event in {measureYear}.</p>
