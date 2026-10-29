@@ -7,7 +7,7 @@ export function ChapterBar({ chapters }: { chapters: { id: string; label: string
   const [active, setActive] = useState<string | null>(null);
   useEffect(() => {
     const update = () => {
-      const line = window.innerHeight * 0.3;
+      const line = Math.max(window.innerHeight * 0.3, window.matchMedia("(min-width: 768px)").matches ? 120 : 170);
       let current: string | null = null;
       for (const chapter of chapters) {
         const element = document.getElementById(chapter.id);
