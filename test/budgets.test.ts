@@ -207,6 +207,7 @@ describe("EFO fiscal targets table", () => {
       ["October 2026 forecast", 0.41, 14.53, 55.77],
       ["Memo: excluding fuel duty rises3", 0.29, 10.24],
       ["Change in public sector net financial liabilities in 2029-30"],
+      ["November 2025 forecast2", 0.68, "-", 52],
       ["October 2026 forecast", 0.68, 24.39, 53.99],
       ["Welfare cap: specified welfare spending in 2029-30"],
       ["October 2026 forecast", 207.03, -2.82],

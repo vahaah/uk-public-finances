@@ -175,6 +175,8 @@ const TARGET_RULES: [RegExp, string][] = [
  */
 function parseTargetsTable(grid: Grid, events: MeasureEvent[]): HeadroomRow[] {
   if (!grid.slice(0, 4).some((row) => row.some((cell) => /performance against the government's fiscal targets/i.test(text(cell))))) return [];
+  const bnCol = grid.slice(0, 10).map((row) => row.findIndex((cell) => /^£ ?billion$/i.test(text(cell)))).find((index) => index >= 0) ?? -1;
+  if (bnCol < 0) return [];
   const rows: HeadroomRow[] = [];
   let rule: string | null = null;
   for (const row of grid) {
@@ -190,8 +192,7 @@ function parseTargetsTable(grid: Grid, events: MeasureEvent[]): HeadroomRow[] {
     if (!rule || !forecast?.[1]) continue;
     const month = parseLooseDate(forecast[1])?.date.slice(0, 7);
     const event = month ? events.filter((item) => item.date.startsWith(month)) : [];
-    const values = row.filter((cell) => typeof cell === "number") as number[];
-    const bn = values[1];
+    const bn = numberCell(row[bnCol]);
     if (event.length !== 1 || bn == null) continue;
     rows.push({ eventDate: event[0]!.date, rule, headroomBn: Math.round(bn * 10) / 10 });
   }
