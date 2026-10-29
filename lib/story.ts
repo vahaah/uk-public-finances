@@ -1,5 +1,6 @@
 import type { FiscalEvent } from "@/lib/budgets/events";
 import type { ForecastSeriesId } from "@/lib/budgets/forecasts";
+import { withSeedEvents } from "@/lib/budgets/seed";
 import type { SnapshotOf } from "@/lib/schema";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 
@@ -91,7 +92,6 @@ export function efoSourceTitle(efo: EfoData): string {
 export type SeriesId = ForecastSeriesId;
 
 export async function storyEvents(): Promise<FiscalEvent[]> {
-  const { withSeedEvents } = await import("@/lib/budgets/seed");
   const loaded = await readSnapshot("budgets-events");
   return withSeedEvents(takeSnapshot("budgets-events", loaded.snapshot)?.data.events);
 }

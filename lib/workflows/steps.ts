@@ -441,7 +441,7 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
     const efoEvent = efoParsed?.currentLabel ? efoEventDate(efoParsed.currentLabel, loadSeedEvents()) : null;
     const efoData = efoParsed ? { ...efoParsed, eventDate: efoEvent } : null;
     if (efoData?.eventDate) historicalData.vintages.push(...efoVintages(efoData, efoData.eventDate, historicalData.vintages));
-    const asOf = [historicalData.asOf, measuresData.asOf, evaluationData.asOf, headroomData.asOf].filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
+    const asOf = [efoData?.eventDate ?? null, historicalData.asOf, measuresData.asOf, evaluationData.asOf, headroomData.asOf].filter((value): value is string => Boolean(value)).sort().at(-1) ?? null;
     return buildEnvelope({
       sourceId: "budgets-obr",
       retrievedAt: new Date().toISOString(),

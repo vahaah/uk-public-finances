@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { BudgetCaveats } from "@/components/budget-caveats";
 import { CompareFigure, PolicyFigure } from "@/components/story-sections";
-import { eventComparisons, efoSourceTitle } from "@/lib/story";
+import { eventComparisons, efoSourceTitle, type ObrData } from "@/lib/story";
 import { AUTHOR_JSON_LD, Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
 import { formatSignedDifference, roundDifference } from "@/lib/budgets/compare";
 import { eventLabel, financialYearOf, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
@@ -427,7 +427,7 @@ function eventJsonLd(event: FiscalEvent, label: string, borrowing: YearAheadComp
 }
 
 /** This event's OBR forecast against the one before it: growth, inflation, borrowing and debt. */
-function ForecastChanges({ event, label, obr }: { event: FiscalEvent; label: string; obr: import("@/lib/story").ObrData | null }) {
+function ForecastChanges({ event, label, obr }: { event: FiscalEvent; label: string; obr: ObrData | null }) {
   if (!obr || event.obrForecast === "no") return null;
   const compares = eventComparisons(event, obr.historical.vintages);
   const efo = obr.efo?.data && obr.efo.data.eventDate === event.date ? obr.efo.data : null;

@@ -15,6 +15,7 @@ export async function HomeStory() {
   const base = `/budgets/${event.slug}/explained`;
   const rolling = efo.rhdiRolling.filter((point) => point.period >= "1990");
   const rollingNow = efo.rhdiRolling.find((point) => point.period === fy);
+  const psnbLine = (efo.psnb?.points ?? []).flatMap((point) => (point.current == null ? [] : [point.current]));
   const psnb = efo.psnb?.points.find((point) => point.period === fy);
   const interest = efo.debtInterest?.points.flatMap((point) => (point.current == null ? [] : [{ period: point.period, value: point.current }])) ?? [];
   const interestLong = interest.filter((point) => point.period >= "1990");
@@ -37,8 +38,8 @@ export async function HomeStory() {
       step: "More borrowing",
       value: psnb ? formatUnit(psnb.current, "bn") : "n/a",
       text: psnb ? `Borrowing forecast for ${fy}, up from ${formatUnit(psnb.previous, "bn")} in ${efo.psnb?.previousLabel}.` : "Borrowing forecast.",
-      values: (efo.psnb?.points ?? []).map((point) => point.current ?? 0),
-      label: `Borrowing forecast by year. ${trendWords((efo.psnb?.points ?? []).map((p) => p.current ?? 0), (v) => formatUnit(v, "bn"), "the forecast")}`,
+      values: psnbLine,
+      label: `Borrowing forecast by year. ${trendWords(psnbLine, (v) => formatUnit(v, "bn"), "the forecast")}`,
     },
     {
       href: `${base}#trap`,
