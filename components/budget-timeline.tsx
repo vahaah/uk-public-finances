@@ -6,10 +6,10 @@ export function BudgetTimeline({ events }: { events: FiscalEvent[] }) {
   const ordered = [...events].sort((left, right) => left.date.localeCompare(right.date));
   return (
     <div>
-      <ol className="hidden gap-3 lg:flex lg:flex-wrap">
+      <ol className="relative hidden gap-4 overflow-x-auto pb-2 [scrollbar-width:thin] before:absolute before:top-[5px] before:right-0 before:left-0 before:h-px before:bg-neutral-200 lg:flex dark:before:bg-neutral-800">
         {ordered.map((event) => (
-          <li key={event.slug}>
-            <Link href={`/budgets/${event.slug}`} className="group flex max-w-40 flex-col gap-1 text-xs" aria-label={ariaLabel(event)}>
+          <li key={event.slug} className="relative shrink-0">
+            <Link href={`/budgets/${event.slug}`} className="group flex w-24 flex-col gap-1 text-xs" aria-label={ariaLabel(event)}>
               <Marker event={event} />
               <span className="text-neutral-700 group-hover:text-neutral-950 dark:text-neutral-300 dark:group-hover:text-white">{event.date.slice(0, 4)}</span>
               <span className="font-medium">{eventLabel(event)}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { yearTickValues } from "@/lib/chart-time";
 import { formatBillions } from "@/lib/format";
@@ -51,7 +51,23 @@ export function PorcupineChart({ outturn, vintages }: { outturn: { fy: string; v
               dot={false}
               connectNulls={false}
               isAnimationActive={false}
-            />
+            >
+              {line.highlight ? (
+                <LabelList
+                  dataKey={line.id}
+                  content={(props) => {
+                    const { x, y, index } = props as { x?: number; y?: number; index?: number };
+                    const last = rows.reduce((at, row, i) => (row[line.id] != null ? i : at), -1);
+                    if (index !== last || x == null || y == null) return null;
+                    return (
+                      <text x={Number(x)} y={Number(y) - 8} textAnchor="end" fontSize={11} fill="#1d4ed8">
+                        {line.name}
+                      </text>
+                    );
+                  }}
+                />
+              ) : null}
+            </Line>
           ))}
           <Line type="linear" dataKey="outturn" name="Outturn" stroke="#111827" strokeWidth={2.5} dot={false} connectNulls={false} isAnimationActive={false} />
         </LineChart>
