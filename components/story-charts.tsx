@@ -176,7 +176,8 @@ export function SignedBars({
   negativeLabel: string;
   /** Period drawn in the accent colour; the others are gray (used when all bars share a sign). */
   highlight?: string;
-  tickLabel?: (period: string) => string;
+  /** "year": show only the year of a YYYY-MM period. */
+  tickLabel?: "year";
   height?: string;
   tickEvery?: number;
 }) {
@@ -190,7 +191,7 @@ export function SignedBars({
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 256 }}>
           <BarChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval={every - 1} tickFormatter={tickLabel ?? (isSm ? undefined : shortPeriod)} />
+            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval={every - 1} tickFormatter={tickLabel === "year" ? (period: string) => period.slice(0, 4) : isSm ? undefined : shortPeriod} />
             <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={40} ticks={y.ticks} domain={y.domain} tickFormatter={y.tickFormatter} />
             <ReferenceLine y={0} stroke={theme.muted} />
             <Tooltip

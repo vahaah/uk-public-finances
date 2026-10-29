@@ -308,7 +308,6 @@ export function MeasuresFigure({ rows, path, releaseDate }: { rows: { name: stri
   const latest = recent.at(-1)!;
   const counts = recent.map((row) => ({ period: row.date.slice(0, 7), value: row.count, label: row.name }));
   const sizes = recent.flatMap((row) => (row.averageBn == null ? [] : [{ period: row.date.slice(0, 7), value: row.averageBn, label: row.name }]));
-  const year = (period: string) => period.slice(0, 4);
   return (
     <StoryFigure
       id="measures-per-event"
@@ -319,11 +318,11 @@ export function MeasuresFigure({ rows, path, releaseDate }: { rows: { name: stri
       csv={{ header: ["event", "date", "measures", "average size in year 3, £bn"], rows: recent.map((row) => [row.name, row.date, row.count, row.averageBn == null ? null : Number(row.averageBn.toFixed(3))]) }}
       source={{ ...OBR_SOURCE, title: "Policy measures database", releaseDate }}
     >
-      <SignedBars points={counts} unit="count" name="Measures" positiveLabel={`Measures (${latest.name} in blue)`} negativeLabel="" highlight={counts.at(-1)!.period} tickLabel={year} tickEvery={4} />
+      <SignedBars points={counts} unit="count" name="Measures" positiveLabel={`Measures (${latest.name} in blue)`} negativeLabel="" highlight={counts.at(-1)!.period} tickLabel="year" tickEvery={4} />
       {sizes.length >= 2 ? (
         <div className="mt-4">
           <p className="text-xs font-medium">Average size of a measure in its third year, £ billion</p>
-          <SignedBars points={sizes} unit="bn" name="Average size" positiveLabel="Average size, either sign" negativeLabel="" highlight={sizes.at(-1)!.period} tickLabel={year} tickEvery={4} height="h-40" />
+          <SignedBars points={sizes} unit="bn" name="Average size" positiveLabel="Average size, either sign" negativeLabel="" highlight={sizes.at(-1)!.period} tickLabel="year" tickEvery={4} height="h-40" />
         </div>
       ) : null}
     </StoryFigure>
