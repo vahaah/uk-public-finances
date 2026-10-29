@@ -120,7 +120,7 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
   const regimes = regimesAt(loadRuleRegimes(), event.date);
   const label = eventLabel(event);
   const when = event.dateStatus === "verified" ? formatDateLong(event.date) : null;
-  const asOf = loaded ? `OBR data as of ${obr?.data.historical.asOf ? formatMonthYear(obr.data.historical.asOf) : "the loaded file"} · loaded ${formatDateLong(obr?.retrievedAt ?? null)}.` : "OBR forecasts not loaded yet.";
+  const asOf = loaded ? `OBR data as of ${(obr?.releaseDate ?? obr?.data.historical.asOf) ? formatMonthYear((obr?.releaseDate ?? obr?.data.historical.asOf)!) : "the loaded file"} · loaded ${formatDateLong(obr?.retrievedAt ?? null)}.` : "OBR forecasts not loaded yet.";
   const rule = regimes[0]?.rules[0];
   const measureYear = fiscalYearPlus(financialYearOf(event.date), 2) ?? "the third year";
   const measures = (obr?.data.measures.rows ?? [])

@@ -1,4 +1,5 @@
 import {
+  clearValidationFailure,
   recordPending,
   recordValidationFailure,
   revalidateDashboard,
@@ -21,7 +22,9 @@ type Runner = (force: boolean) => Promise<Record<string, unknown>>;
 async function settle(sourceId: SourceId, run: Runner, force: boolean): Promise<Record<string, unknown>> {
   try {
     const result = await run(force);
+    // Every successful check rewrites the journal, so its timestamp shows the update step is still running.
     if (result.status === "pending") await recordPending(sourceId);
+    else await clearValidationFailure(sourceId);
     if (result.status === "updated") await revalidateDashboard();
     return result;
   } catch (error) {
