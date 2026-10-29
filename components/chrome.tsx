@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { LogoMark } from "@/components/logo";
 import { FOOTER, NAV, SITE_NAME } from "@/lib/site";
 
 export function ThemeScript() {
@@ -26,7 +27,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-black/90">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-        <Link href="/" className="shrink-0 text-sm font-semibold tracking-tight">
+        <Link href="/" className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold tracking-tight">
+          <LogoMark className="size-5" />
           {SITE_NAME}
         </Link>
         <nav className="relative hidden min-w-0 flex-1 items-center md:flex">
@@ -99,7 +101,10 @@ export function Footer() {
         <a href="/llms-full.txt" className="underline decoration-neutral-400 underline-offset-4">
           llms-full.txt
         </a>
-        <span>UK public finances from official statistics</span>
+        <span className="inline-flex items-center gap-1.5">
+          <LogoMark className="size-4" />
+          UK public finances from official statistics
+        </span>
         <span>
           Made by{" "}
           <a href="https://vahaah.com" rel="author" className="underline decoration-neutral-400 underline-offset-4">
