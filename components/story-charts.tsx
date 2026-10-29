@@ -64,13 +64,14 @@ export function CompareBars({
   const isSm = useIsSm();
   const y = yAxisFor(points.flatMap((point) => [point.current, point.previous]), true);
   const missing = points.filter((point) => point.previous == null && point.current != null).map((point) => point.period);
-  const label = (value: unknown) => formatUnit(Number(value), unit).replace(" of GDP", "");
+  const tagged = points.map((point) => ({ ...point, currentTag: point.period === highlight ? point.current : null, previousTag: point.period === highlight ? point.previous : null }));
+  const label = (value: unknown) => (value == null ? "" :  formatUnit(Number(value), unit).replace(" of GDP", ""));
   return (
     <div>
       {small ? null : <Swatches items={[{ label: `${previousLabel} forecast`, className: "bg-neutral-400 dark:bg-neutral-500" }, { label: `${currentLabel} forecast`, className: "bg-blue-700 dark:bg-blue-300" }]} />}
     <div className={small ? "h-40" : "h-64"}>
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: small ? 160 : 256 }}>
-        <BarChart data={points} margin={{ top: highlight ? 18 : 8, right: 8, left: 0, bottom: 0 }} barGap={2} barCategoryGap="20%">
+        <BarChart data={tagged} margin={{ top: highlight ? 18 : 8, right: 8, left: 0, bottom: 0 }} barGap={2} barCategoryGap="20%">
           <CartesianGrid stroke={theme.grid} vertical={false} />
           <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval={0} tickFormatter={isSm && !small ? undefined : shortPeriod} />
           <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={40} ticks={y.ticks} domain={y.domain} tickFormatter={y.tickFormatter} />
@@ -82,10 +83,10 @@ export function CompareBars({
             )}
           />
           <Bar dataKey="previous" name={`${previousLabel} forecast`} fill={theme.surplus} isAnimationActive={false}>
-            {highlight ? <LabelList dataKey="previous" position="top" fontSize={11} fill={theme.tick} formatter={label} valueAccessor={(entry: { payload?: { period?: string; previous?: number | null } }) => (entry.payload?.period === highlight ? entry.payload?.previous ?? undefined : undefined)} /> : null}
+            {highlight ? <LabelList dataKey="previousTag" position="top" fontSize={11} fill={theme.tick} formatter={label} /> : null}
           </Bar>
           <Bar dataKey="current" name={`${currentLabel} forecast`} fill={theme.bar} isAnimationActive={false}>
-            {highlight ? <LabelList dataKey="current" position="top" fontSize={11} fill={theme.tick} formatter={label} valueAccessor={(entry: { payload?: { period?: string; current?: number | null } }) => (entry.payload?.period === highlight ? entry.payload?.current ?? undefined : undefined)} /> : null}
+            {highlight ? <LabelList dataKey="currentTag" position="top" fontSize={11} fill={theme.tick} formatter={label} /> : null}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
