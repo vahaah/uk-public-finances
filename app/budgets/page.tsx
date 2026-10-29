@@ -7,7 +7,7 @@ import { Breadcrumb, EmptySource, JsonLd, PageIntro, breadcrumbJsonLd } from "@/
 import { PorcupineChart, type PorcupineLine } from "@/components/porcupine-chart";
 import { differenceWords, roundDifference, withoutPartYear } from "@/lib/budgets/compare";
 import { eventLabel } from "@/lib/budgets/events";
-import { loadSeedEvents } from "@/lib/budgets/seed";
+import { loadSeedEvents, withSeedEvents } from "@/lib/budgets/seed";
 import { outcomeLabel } from "@/lib/budgets/rules";
 import { outturnByFy, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
 import { formatDateLong, formatMonthYear } from "@/lib/format";
@@ -31,7 +31,7 @@ export default async function BudgetsPage() {
     readSnapshot("budgets-obr"),
     readSnapshot("ons-psf"),
   ]);
-  const events = takeSnapshot("budgets-events", eventsLoaded.snapshot)?.data.events ?? loadSeedEvents();
+  const events = withSeedEvents(takeSnapshot("budgets-events", eventsLoaded.snapshot)?.data.events);
   const obr = takeSnapshot("budgets-obr", obrLoaded.snapshot);
   const ons = takeSnapshot("ons-psf", onsLoaded.snapshot);
   const vintages = obr?.data.historical.loaded ? obr.data.historical.vintages : [];

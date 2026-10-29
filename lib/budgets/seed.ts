@@ -34,3 +34,24 @@ export function loadRuleRegimes(): RuleRegime[] {
   const parsed = z.object({ regimes: z.array(ruleRegimeSchema).min(1) }).parse(parseRegistryYaml(readFileSync(file, "utf8")));
   return parsed.regimes;
 }
+
+/**
+ * Events to show: the registry in code first, then any events the daily GOV.UK check found
+ * that the registry does not have yet. A registry change (a new event, a renamed one) shows on
+ * deploy, without waiting for the next ingest run to rewrite the snapshot.
+ */
+export function withSeedEvents(snapshotEvents: FiscalEvent[] | undefined): FiscalEvent[] {
+  const seed = loadSeedEvents();
+  const slugs = new Set(seed.map((event) => event.slug));
+  const paths = new Set(seed.map((event) => event.govukPath).filter(Boolean));
+  const snapshot = snapshotEvents ?? [];
+  const bySlug = new Map(snapshot.map((event) => [event.slug, event]));
+  // Keep the ingest's date check (mismatch, observed date) when the registered date and path are unchanged.
+  const merged = seed.map((event) => {
+    const seen = bySlug.get(event.slug);
+    if (!seen || seen.date !== event.date || (seen.govukPath ?? null) !== (event.govukPath ?? null)) return event;
+    return { ...event, dateStatus: seen.dateStatus, observedDate: seen.observedDate };
+  });
+  const discovered = snapshot.filter((event) => !slugs.has(event.slug) && !(event.govukPath && paths.has(event.govukPath)));
+  return [...merged, ...discovered].sort((left, right) => left.date.localeCompare(right.date));
+}

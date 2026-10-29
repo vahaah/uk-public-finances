@@ -7,7 +7,7 @@ import { formatSignedDifference, roundDifference } from "@/lib/budgets/compare";
 import { eventLabel, financialYearOf, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
 import { fiscalYearPlus, type ForecastSeriesId } from "@/lib/budgets/forecasts";
 import { outcomeLabel, regimesAt } from "@/lib/budgets/rules";
-import { loadRuleRegimes, loadSeedEvents } from "@/lib/budgets/seed";
+import { loadRuleRegimes, loadSeedEvents, withSeedEvents } from "@/lib/budgets/seed";
 import { seriesPoints, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
 import { formatBillions, formatDateLong, formatMillions, formatMonthYear, formatPercent } from "@/lib/format";
 import { forecastFor, vintageLabel } from "@/lib/forecasts-view";
@@ -344,7 +344,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 
 async function allEvents(): Promise<FiscalEvent[]> {
   const loaded = await readSnapshot("budgets-events");
-  return takeSnapshot("budgets-events", loaded.snapshot)?.data.events ?? loadSeedEvents();
+  return withSeedEvents(takeSnapshot("budgets-events", loaded.snapshot)?.data.events);
 }
 
 async function findEvent(slug: string): Promise<FiscalEvent | null> {
