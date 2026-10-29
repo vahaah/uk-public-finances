@@ -3,7 +3,11 @@
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense } from "react";
 
+import { Sparkline } from "@/components/blocks";
 import { reconcileSignedDisplay } from "@/lib/display-rounding";
+
+export type EquationTrend = { values: number[]; label: string };
+export type EquationTrends = { spending: EquationTrend; receipts: EquationTrend; borrowing: EquationTrend };
 
 export type EquationView = {
   periodLabel: string;
@@ -14,15 +18,15 @@ export type EquationView = {
   spoken: string;
 };
 
-export function EquationRow({ month, yearToDate }: { month: EquationView; yearToDate: EquationView }) {
+export function EquationRow({ month, yearToDate, trends }: { month: EquationView; yearToDate: EquationView; trends?: EquationTrends }) {
   return (
     <Suspense fallback={<div className="h-40 border border-neutral-200 dark:border-neutral-800" />}>
-      <EquationRowInner month={month} yearToDate={yearToDate} />
+      <EquationRowInner month={month} yearToDate={yearToDate} trends={trends} />
     </Suspense>
   );
 }
 
-function EquationRowInner({ month, yearToDate }: { month: EquationView; yearToDate: EquationView }) {
+function EquationRowInner({ month, yearToDate, trends }: { month: EquationView; yearToDate: EquationView; trends?: EquationTrends }) {
   const [which, setWhich] = useQueryState("eq", parseAsStringLiteral(["month", "ytd"] as const).withDefault("month"));
   const view = which === "ytd" ? yearToDate : month;
   const rounded = reconcileSignedDisplay([
@@ -43,16 +47,16 @@ function EquationRowInner({ month, yearToDate }: { month: EquationView; yearToDa
         </button>
       </div>
       <div className="hidden items-end gap-x-4 lg:grid lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
-        <Term label="Spending" value={spending} />
+        <Term label="Spending" value={spending} trend={trends?.spending} />
         <Operator symbol="−" />
-        <Term label="Receipts" value={receipts} />
+        <Term label="Receipts" value={receipts} trend={trends?.receipts} />
         <Operator symbol="=" />
-        <Term label="Borrowing" value={borrowing} />
+        <Term label="Borrowing" value={borrowing} trend={trends?.borrowing} />
       </div>
       <dl className="divide-y divide-neutral-200 lg:hidden dark:divide-neutral-800">
-        <Ledger label="Spending" value={spending} />
-        <Ledger label="Receipts" value={receipts} />
-        <Ledger label="Borrowing" value={borrowing} />
+        <Ledger label="Spending" value={spending} trend={trends?.spending} />
+        <Ledger label="Receipts" value={receipts} trend={trends?.receipts} />
+        <Ledger label="Borrowing" value={borrowing} trend={trends?.borrowing} />
       </dl>
       <p className="sr-only">{view.spoken}</p>
       <p className="mt-4 text-sm text-neutral-800 dark:text-neutral-200">
@@ -72,7 +76,7 @@ function chip(on: boolean): string {
   return `h-11 min-w-11 px-3 text-xs ${on ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200"}`;
 }
 
-function Term({ label, value }: { label: string; value: number }) {
+function Term({ label, value, trend }: { label: string; value: number; trend?: EquationTrend }) {
   return (
     <div>
       <p className="text-sm text-neutral-800 dark:text-neutral-200">{label}</p>
@@ -80,6 +84,7 @@ function Term({ label, value }: { label: string; value: number }) {
         {signedBillions(value)}
         <span className="ml-1 text-[0.6875rem] font-normal">bn</span>
       </p>
+      {trend ? <Sparkline values={trend.values} label={trend.label} className="mt-3" /> : null}
     </div>
   );
 }
@@ -88,10 +93,15 @@ function Operator({ symbol }: { symbol: string }) {
   return <p className="pb-2 text-2xl text-neutral-900 dark:text-neutral-100">{symbol}</p>;
 }
 
-function Ledger({ label, value }: { label: string; value: number }) {
+function Ledger({ label, value, trend }: { label: string; value: number; trend?: EquationTrend }) {
   return (
-    <div className="flex items-baseline justify-between py-2">
+    <div className="flex items-center justify-between gap-3 py-2">
       <dt className="text-sm">{label}</dt>
+      {trend ? (
+        <dd className="w-24 shrink-0">
+          <Sparkline values={trend.values} label={trend.label} className="" />
+        </dd>
+      ) : null}
       <dd className="text-xl font-semibold tabular-nums">
         {signedBillions(value)}bn
       </dd>

@@ -8,7 +8,9 @@ import {
   EmptySource,
   JsonLd,
   SourceNote,
+  Sparkline,
   Stat,
+  trendWords,
   websiteJsonLd,
 } from "@/components/blocks";
 import { formatDateLong, formatGbpFromMillions, formatMonth, formatMonthLong, formatPercent, previousFinancialYear } from "@/lib/format";
@@ -90,6 +92,19 @@ export default async function HomePage() {
               : `From April to ${formatMonth(month)}, spending minus receipts equals borrowing.`,
         }
       : null;
+  const tail = (points: { value: number }[] | undefined, n: number) => (points ?? []).slice(-n).map((point) => point.value);
+  const bn = (millions: number) => `£${(millions / 1000).toLocaleString("en-GB", { maximumFractionDigits: 1 })}bn`;
+  const pct = (value: number) => `${value.toFixed(1)}%`;
+  const borrowingMonths = tail(data.series.j5ii?.months, 24).map((value) => -value);
+  const trends = {
+    spending: { values: tail(data.series.kx5q?.months, 24), label: `Monthly spending, last 24 months. ${trendWords(tail(data.series.kx5q?.months, 24), bn, "24 months")}` },
+    receipts: { values: tail(data.series.jw2o?.months, 24), label: `Monthly receipts, last 24 months. ${trendWords(tail(data.series.jw2o?.months, 24), bn, "24 months")}` },
+    borrowing: { values: borrowingMonths, label: `Monthly borrowing, last 24 months. ${trendWords(borrowingMonths, bn, "24 months")}` },
+  };
+  const debtTrend = tail(data.series.kse6?.months, 120);
+  const ratioTrend = tail(data.series.hf6x?.months, 120);
+  const interestTrend = tail(data.series.nmfx?.months, 24);
+  const shareTrend = interestShareSeries(data.series.nmfx?.years ?? [], data.series.jw2o?.years ?? []).slice(-10);
   const interestShare = calendarInterestShare(data.series.nmfx?.years ?? [], data.series.jw2o?.years ?? []);
   const overviewRecords = buildRecords({
     borrowingMonths: data.series.j5ii?.months ?? [],
@@ -138,7 +153,7 @@ export default async function HomePage() {
         </p>
         <CiteShare sentence={cite} citation={citation} url={`${SITE_URL}/`} />
       </header>
-      {equationMonth && equationYtd ? <EquationRow month={equationMonth} yearToDate={equationYtd} /> : null}
+      {equationMonth && equationYtd ? <EquationRow month={equationMonth} yearToDate={equationYtd} trends={trends} /> : null}
       {data.financialYear ? (
         <div className="mt-4">
           <ChartFrame
@@ -170,24 +185,28 @@ export default async function HomePage() {
           label={debt ? `Net debt at end of ${formatMonthLong(debt.period)}` : "Net debt"}
           value={debt ? formatGbpFromMillions(debt.value) : "Not available"}
           detail="Public sector net debt, excluding public sector banks. The latest month is provisional."
+        sparkline={<Sparkline values={debtTrend} limit={120} label={`Net debt, last 10 years of months. ${trendWords(debtTrend, bn, "10 years")}`} />}
         />
         <Stat
           href="/debt"
           label={ratio ? `Net debt, ${formatMonthLong(ratio.period)}` : "Net debt as a share of GDP"}
           value={ratio ? `${formatPercent(ratio.value)} of GDP` : "Not available"}
           detail="Share of calendar-year GDP is on the debt page. This month's ratio is HF6X."
+        sparkline={<Sparkline values={ratioTrend} limit={120} label={`Net debt as a share of GDP, last 10 years. ${trendWords(ratioTrend, pct, "10 years")}`} />}
         />
         <Stat
           href="/debt"
           label={interest ? `Debt interest in ${formatMonthLong(interest.period)}` : "Debt interest"}
           value={interest ? formatGbpFromMillions(interest.value) : "Not available"}
           detail="Central government interest paid, net of interest received, including inflation uplift on index-linked gilts."
+        sparkline={<Sparkline values={interestTrend} label={`Monthly debt interest, last 24 months. ${trendWords(interestTrend, bn, "24 months")}`} />}
         />
         <Stat
           href="/debt"
           label={interestShare ? `Interest share of receipts, calendar year ${interestShare.year}` : "Interest share of receipts"}
           value={interestShare ? formatPercent(interestShare.share) : "Not available"}
           detail="Debt interest (NMFX) divided by public sector receipts (JW2O). Both annual series are calendar years, not financial years."
+        sparkline={<Sparkline values={shareTrend.map((point) => point.share)} label={`Interest share of receipts by calendar year, ${shareTrend[0]?.year ?? ""} to ${shareTrend.at(-1)?.year ?? ""}. ${trendWords(shareTrend.map((point) => point.share), pct, "10 years")}`} />}
         />
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -198,6 +217,11 @@ export default async function HomePage() {
             </p>
             <p className="mt-2 text-2xl font-semibold tabular-nums">{record.valueLabel}</p>
             <p className="mt-1 text-neutral-800 dark:text-neutral-200">in {formatMonth(record.period)}</p>
+            {record.id === "highest-debt-ratio" ? (
+              <Sparkline values={ratioTrend} limit={120} className="mt-3" label={`Net debt as a share of GDP, last 10 years. ${trendWords(ratioTrend, pct, "10 years")}`} />
+            ) : (
+              <Sparkline values={borrowingMonths} className="mt-3" label={`Monthly borrowing, last 24 months. ${trendWords(borrowingMonths, bn, "24 months")}`} />
+            )}
           </a>
         ))}
       </div>
@@ -256,4 +280,14 @@ function calendarInterestShare(
   if (!latest) return null;
   const base = byYear.get(latest.period) ?? 0;
   return { year: latest.period, share: (latest.value / base) * 100 };
+}
+
+function interestShareSeries(
+  interest: { period: string; value: number }[],
+  receipts: { period: string; value: number }[],
+): { year: string; share: number }[] {
+  const byYear = new Map(receipts.map((point) => [point.period, point.value]));
+  return interest
+    .filter((point) => (byYear.get(point.period) ?? 0) > 0)
+    .map((point) => ({ year: point.period, share: (point.value / (byYear.get(point.period) ?? 1)) * 100 }));
 }
