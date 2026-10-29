@@ -5,7 +5,10 @@ import { notFound } from "next/navigation";
 import { BudgetCaveats } from "@/components/budget-caveats";
 import { StoryNav } from "@/components/story-nav";
 import { CompareFigure, PolicyFigure } from "@/components/story-sections";
-import { eventComparisons, efoSourceTitle, type ObrData } from "@/lib/story";
+import { CompareBars } from "@/components/story-charts";
+import { SourceNote } from "@/components/blocks";
+import { formatUnit } from "@/lib/story-format";
+import { eventComparisons, efoSourceTitle, OBR_SOURCE, SERIES_META, type ObrData } from "@/lib/story";
 import { AUTHOR_JSON_LD, Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
 import { formatSignedDifference, roundDifference } from "@/lib/budgets/compare";
 import { eventLabel, financialYearOf, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
@@ -139,15 +142,15 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
       <PageIntro kicker="Budgets" title={eventHeading(event, label, borrowing)} lede={eventCite(event, label, when, borrowing, rule)} />
       {regimes[0] ? (
         <p className="mb-3 text-sm">
-          The fiscal rules in force at the time were{" "}
+          Fiscal rules in force at this event:{" "}
           <Link className="underline decoration-neutral-500 underline-offset-4" href={`/budgets/rules#${regimes[0].id}`}>
             {regimes[0].name}
           </Link>
-          . Other events are on{" "}
+          . Every other event is on the{" "}
           <Link className="underline decoration-neutral-500 underline-offset-4" href="/budgets">
-            how each UK Budget turned out
-          </Link>
-          .
+            Budgets
+          </Link>{" "}
+          page.
         </p>
       ) : null}
       <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{event.obrForecast === "no" ? "The OBR did not publish a forecast for this event." : asOf}</p>
@@ -437,6 +440,9 @@ function ForecastChanges({ event, label, obr }: { event: FiscalEvent; label: str
   const path = `/budgets/${event.slug}`;
   const sourceTitle = efo ? efoSourceTitle(efo) : "Historical official forecasts database";
   const releaseDate = efo ? efo.eventDate : obr.historical.asOf;
+  const fy = financialYearOf(event.date);
+  const psnbCompare = compares.find((compare) => compare.series === "psnb");
+  const thisYear = efo ? psnbCompare?.points.find((point) => point.period === fy) : undefined;
   return (
     <section className="mb-8" aria-labelledby="forecast-changes">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -450,12 +456,44 @@ function ForecastChanges({ event, label, obr }: { event: FiscalEvent; label: str
         ) : null}
       </div>
       <p className="mt-1 mb-3 text-sm text-neutral-800 dark:text-neutral-200">Each chart sets this event&apos;s OBR forecast against the forecast before it.</p>
+      {thisYear && thisYear.current != null ? (
+        <p className="mb-3 max-w-[68ch] text-sm">
+          The figures above use the year ahead, {yearAheadFy(event.date)}, to match every other event. For this year, {fy}, the OBR forecasts borrowing of {formatUnit(thisYear.current, "bn")}
+          {thisYear.previous != null && thisYear.previous !== thisYear.current
+            ? `, ${thisYear.current > thisYear.previous ? "up" : "down"} from ${formatUnit(thisYear.previous, "bn")} in its ${psnbCompare?.previousLabel} forecast`
+            : ""}
+          . That is the figure used on the home page and in {label} explained.
+        </p>
+      ) : null}
+      {efo ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            {compares.map((compare) => (
+              <figure key={compare.series} id={`forecast-${compare.series}`} className="min-w-0 border border-neutral-200 p-3 dark:border-neutral-800">
+                <figcaption className="mb-1 text-xs font-medium">{SERIES_META[compare.series].title}</figcaption>
+                <CompareBars points={compare.points} currentLabel={compare.currentLabel} previousLabel={compare.previousLabel} unit={SERIES_META[compare.series].unit} small />
+              </figure>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
+            Gray: {compares[0]?.previousLabel} forecast. Blue: {compares[0]?.currentLabel} forecast. Full charts, with CSV downloads, are in{" "}
+            <Link className="underline underline-offset-4" href={`/budgets/${event.slug}/explained`}>
+              {label} explained
+            </Link>
+            .
+          </p>
+          <SourceNote {...OBR_SOURCE} title={sourceTitle} releaseDate={releaseDate} />
+          <div className="mt-4">
+            <PolicyFigure efo={efo} path={path} />
+          </div>
+        </>
+      ) : (
       <div className="grid gap-4 lg:grid-cols-2">
         {compares.map((compare) => (
           <CompareFigure key={compare.series} id={`forecast-${compare.series}`} compare={compare} path={path} sourceTitle={sourceTitle} releaseDate={releaseDate} />
         ))}
-        {efo ? <PolicyFigure efo={efo} path={path} /> : null}
       </div>
+      )}
     </section>
   );
 }

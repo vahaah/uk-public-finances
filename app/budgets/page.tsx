@@ -84,7 +84,7 @@ export default async function BudgetsPage() {
           <>
             <PorcupineChart outturn={outturn} vintages={lines} />
             <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
-              £bn, borrowing. Each thin line is one OBR forecast. The thick line is borrowing as recorded by the ONS (J5II, financial years, bulletin sign). The blue line is the latest loaded vintage. Debt comparisons on an event page use HF6X. {asOf}
+              £bn, borrowing. Each thin line is one OBR forecast. The thick line is borrowing as recorded by the ONS (J5II, financial years, bulletin sign). The blue line is the latest loaded vintage{latestVintageDate(obr?.data) ? `, ${formatMonthYear(latestVintageDate(obr?.data)!)}` : ""}. Debt comparisons on an event page use HF6X. {asOf}
             </p>
           </>
         ) : (
@@ -121,7 +121,16 @@ function indexCite(rows: YearAheadComparison[], firstEvent: string, asOf: string
 function obrFreshness(data: z.infer<typeof budgetsObrDataSchema> | undefined, retrievedAt: string | null): string {
   if (!data?.historical.loaded) return "OBR data not loaded.";
   const when = data.historical.asOf ?? retrievedAt;
+  const newest = latestVintageDate(data);
+  if (when && newest && newest.slice(0, 7) > when.slice(0, 7)) {
+    return `Scorecard: OBR forecasts database as of ${formatMonthYear(when)}; latest forecast loaded: ${formatMonthYear(newest)}.`;
+  }
   return when ? `OBR data as of ${formatMonthYear(when)}.` : "OBR data as of an unknown date.";
+}
+
+function latestVintageDate(data: z.infer<typeof budgetsObrDataSchema> | undefined): string | null {
+  const dates = (data?.historical.vintages ?? []).filter((vintage) => vintage.series === "psnb").map((vintage) => vintage.date).sort();
+  return dates.at(-1) ?? null;
 }
 
 function porcupineLines(

@@ -15,7 +15,9 @@ export async function HomeStory() {
   const base = `/budgets/${event.slug}/explained`;
   const rolling = efo.rhdiRolling.filter((point) => point.period >= "1990");
   const rollingNow = efo.rhdiRolling.find((point) => point.period === fy);
-  const psnbLine = (efo.psnb?.points ?? []).flatMap((point) => (point.current == null ? [] : [point.current]));
+  const psnbPoints = (efo.psnb?.points ?? []).filter((point) => point.current != null);
+  const psnbLine = psnbPoints.map((point) => point.current!);
+  const psnbPrevious = psnbPoints.map((point) => point.previous);
   const psnb = efo.psnb?.points.find((point) => point.period === fy);
   const interest = efo.debtInterest?.points.flatMap((point) => (point.current == null ? [] : [{ period: point.period, value: point.current }])) ?? [];
   const interestLong = interest.filter((point) => point.period >= "1990");
@@ -29,6 +31,11 @@ export async function HomeStory() {
   const psnbMove = psnb && psnb.current != null && psnb.previous != null && psnb.current !== psnb.previous ? (psnb.current > psnb.previous ? "higher" : "lower") : undefined;
   const outturnMax = Math.max(...(efo.taxBurden?.outturn ?? []).map((point) => point.value));
   const taxRecord = (tax.at(-1)?.value ?? 0) > outturnMax;
+  const range = (periods: string[]) => (periods.length > 1 ? `${periods[0]} to ${periods.at(-1)}` : "");
+  const indexOf = (periods: string[], period: string | undefined) => {
+    const index = period ? periods.indexOf(period) : -1;
+    return index >= 0 ? index : undefined;
+  };
   const cards = [
     {
       href: `${base}#squeeze`,
@@ -36,6 +43,8 @@ export async function HomeStory() {
       value: rollingNow ? formatUnit(rollingNow.value, "pct") : "n/a",
       text: `Average yearly growth in real household income per person over the ten years to ${fy}.`,
       values: rolling.map((point) => point.value),
+      dot: indexOf(rolling.map((point) => point.period), fy),
+      range: range(rolling.map((point) => point.period)),
       label: `Ten-year average growth in real household income per person since 1990. ${trendWords(rolling.map((p) => p.value), (v) => formatUnit(v, "pct"), "1990 to the forecast")}`,
     },
     {
@@ -44,6 +53,9 @@ export async function HomeStory() {
       value: psnb ? formatUnit(psnb.current, "bn") : "n/a",
       text: psnb && psnb.previous != null && psnbMove ? `Borrowing forecast for ${fy}, ${psnbMove === "higher" ? "up" : "down"} from ${formatUnit(psnb.previous, "bn")} in the ${efo.psnb?.previousLabel} forecast.` : `Borrowing forecast for ${fy}.`,
       values: psnbLine,
+      secondary: psnbPrevious,
+      dot: indexOf(psnbPoints.map((point) => point.period), fy),
+      range: psnbPoints.length > 1 ? `${efo.psnb?.currentLabel} forecast (dashed: ${efo.psnb?.previousLabel}), ${range(psnbPoints.map((point) => point.period))}` : "",
       label: `Borrowing forecast by year. ${trendWords(psnbLine, (v) => formatUnit(v, "bn"), "the forecast")}`,
     },
     {
@@ -52,6 +64,8 @@ export async function HomeStory() {
       value: interestNow ? formatUnit(interestNow.value, "pctGdp") : "n/a",
       text: interestNow && interestThen ? `Debt interest in ${fy} as a share of GDP, against ${formatUnit(interestThen.value, "pctGdp")} in ${interestThen.period}.` : `Debt interest in ${fy} as a share of GDP.`,
       values: interestLong.map((point) => point.value),
+      dot: indexOf(interestLong.map((point) => point.period), fy),
+      range: range(interestLong.map((point) => point.period)),
       label: `Debt interest as a share of GDP since 1990. ${trendWords(interestLong.map((p) => p.value), (v) => formatUnit(v, "pctGdp"), "1990 to the forecast")}`,
     },
     {
@@ -60,6 +74,8 @@ export async function HomeStory() {
       value: tax.at(-1) ? formatUnit(tax.at(-1)!.value, "pctGdp") : "n/a",
       text: `Taxes forecast for ${tax.at(-1)?.period ?? "the end of the forecast"}, as a share of GDP.${taxRecord ? " Higher than any year since the series starts in 1948-49." : ""}`,
       values: tax.map((point) => point.value),
+      dot: tax.length ? tax.length - 1 : undefined,
+      range: range(tax.map((point) => point.period)),
       label: `National Accounts taxes as a share of GDP since 1990. ${trendWords(tax.map((p) => p.value), (v) => formatUnit(v, "pctGdp"), "1990 to the forecast")}`,
     },
   ];
@@ -76,13 +92,14 @@ export async function HomeStory() {
         {psnbMove ? ` Borrowing for ${fy} is forecast ${psnbMove} than in the ${efo.psnb?.previousLabel} forecast.` : ""}
         {taxMove && taxEnd ? ` Taxes are forecast to ${taxMove} as a share of GDP by ${taxEnd.period}.` : ""} Each card links to the chart behind it.
       </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {cards.map((card) => (
-          <Link key={card.step} href={card.href} className="flex flex-col border border-neutral-200 p-4 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-950">
-            <span className="text-sm text-neutral-800 dark:text-neutral-200">{card.step}</span>
-            <span className="mt-1 text-2xl font-semibold tabular-nums">{card.value}</span>
-            <Sparkline values={card.values} limit={80} label={card.label} className="mt-3" />
-            <span className="mt-2 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{card.text}</span>
+          <Link key={card.step} href={card.href} className="flex flex-col border border-neutral-200 p-3 hover:bg-neutral-50 sm:p-4 dark:border-neutral-800 dark:hover:bg-neutral-950">
+            <span className="text-xs text-neutral-800 sm:text-sm dark:text-neutral-200">{card.step}</span>
+            <span className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">{card.value}</span>
+            <Sparkline values={card.values} limit={80} label={card.label} className="mt-2 sm:mt-3" dot={card.dot} secondary={card.secondary} />
+            {card.range ? <span className="mt-1 text-xs text-neutral-700 dark:text-neutral-300">{card.range}</span> : null}
+            <span className="sr-only text-sm leading-6 text-neutral-800 sm:not-sr-only sm:mt-2 dark:text-neutral-200">{card.text}</span>
           </Link>
         ))}
       </div>
