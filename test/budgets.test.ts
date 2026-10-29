@@ -202,4 +202,15 @@ describe("withSeedEvents", () => {
     expect(merged.some((event) => event.slug === "2026-10-budget")).toBe(true);
     expect(merged.at(-1)?.slug).toBe("2027-03-budget");
   });
+
+  it("keeps the ingest's date mismatch when the registered date is unchanged", async () => {
+    const { loadSeedEvents, withSeedEvents } = await import("@/lib/budgets/seed");
+    const base = loadSeedEvents().find((event) => event.slug === "2022-09-growth-plan")!;
+    const checked = { ...base, dateStatus: "mismatch" as const, observedDate: "2022-09-24" };
+    const merged = withSeedEvents([checked]).find((event) => event.slug === base.slug)!;
+    expect(merged.dateStatus).toBe("mismatch");
+    expect(merged.observedDate).toBe("2022-09-24");
+    const moved = withSeedEvents([{ ...checked, date: "2022-09-01" }]).find((event) => event.slug === base.slug)!;
+    expect(moved.dateStatus).toBe(base.dateStatus);
+  });
 });

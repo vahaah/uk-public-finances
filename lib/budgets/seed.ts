@@ -44,6 +44,14 @@ export function withSeedEvents(snapshotEvents: FiscalEvent[] | undefined): Fisca
   const seed = loadSeedEvents();
   const slugs = new Set(seed.map((event) => event.slug));
   const paths = new Set(seed.map((event) => event.govukPath).filter(Boolean));
-  const discovered = (snapshotEvents ?? []).filter((event) => !slugs.has(event.slug) && !(event.govukPath && paths.has(event.govukPath)));
-  return [...seed, ...discovered].sort((left, right) => left.date.localeCompare(right.date));
+  const snapshot = snapshotEvents ?? [];
+  const bySlug = new Map(snapshot.map((event) => [event.slug, event]));
+  // Keep the ingest's date check (mismatch, observed date) when the registered date and path are unchanged.
+  const merged = seed.map((event) => {
+    const seen = bySlug.get(event.slug);
+    if (!seen || seen.date !== event.date || (seen.govukPath ?? null) !== (event.govukPath ?? null)) return event;
+    return { ...event, dateStatus: seen.dateStatus, observedDate: seen.observedDate };
+  });
+  const discovered = snapshot.filter((event) => !slugs.has(event.slug) && !(event.govukPath && paths.has(event.govukPath)));
+  return [...merged, ...discovered].sort((left, right) => left.date.localeCompare(right.date));
 }
