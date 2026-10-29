@@ -67,6 +67,7 @@ export async function readJournal(sourceId: SourceId): Promise<{
   validationError: string | null;
   usingLastGood: boolean;
   pending: boolean;
+  checkedAt: string | null;
 } | null> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   try {
@@ -75,11 +76,15 @@ export async function readJournal(sourceId: SourceId): Promise<{
       validationError: typeof body.validationError === "string" ? body.validationError : null,
       usingLastGood: body.usingLastGood === true,
       pending: body.pending === true,
+      checkedAt: typeof body.at === "string" ? body.at : null,
     };
   } catch {
     return null;
   }
 }
+
+/** Daily cron, so three missed runs in a row. */
+export const UPDATE_STOPPED_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
 
 export async function loadHealth(now = new Date()): Promise<HealthReport> {
   const sources: HealthSource[] = [];
@@ -125,9 +130,12 @@ function toHealthSource(
   const reference = loaded.snapshot.releaseDate ?? loaded.snapshot.retrievedAt;
   const age = now.getTime() - new Date(reference).getTime();
   const stale = Number.isFinite(age) && age > SOURCES[source].staleAfterMs;
+  // The daily run writes the journal on every check. A journal older than this means the update step itself has stopped running or is crashing.
+  const checkedAge = journal?.checkedAt ? now.getTime() - new Date(journal.checkedAt).getTime() : Number.NaN;
+  const notRefreshing = Number.isFinite(checkedAge) && checkedAge > UPDATE_STOPPED_AFTER_MS;
   let status: HealthSource["status"] = "ok";
   if (validationError && usingLastGood) status = "validation_failed";
-  else if (stale) status = "stale";
+  else if (stale || notRefreshing) status = "stale";
   // A fixture served while Blob is configured means ingest never wrote a snapshot. Do not report that as fresh.
   const fixtureFallback = loaded.origin === "fixture" && loaded.fallbackReason != null && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
   if (status === "ok" && fixtureFallback) status = "stale";
@@ -140,7 +148,7 @@ function toHealthSource(
     origin: loaded.origin,
     validationError: status === "validation_failed" ? validationError : null,
     usingLastGood: status === "validation_failed",
-    stale: stale || (status === "stale" && fixtureFallback),
+    stale: stale || notRefreshing || (status === "stale" && fixtureFallback),
     fallbackReason: loaded.fallbackReason,
   };
 }
