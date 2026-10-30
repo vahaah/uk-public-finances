@@ -45,3 +45,13 @@ describe("real-terms spending", () => {
     expect(sum).toBeCloseTo(row.total / 1000, 0);
   });
 });
+
+describe("HMT comparison of independent forecasts", () => {
+  it("reads the GDP average, median and range for each year", async () => {
+    const { parseIndependentForecasts } = await import("@/lib/parsers/extras");
+    const years = await parseIndependentForecasts(readFileSync("fixtures/raw/hmt/independent-forecasts.xlsx"));
+    expect(years.map((y) => y.year)).toEqual(["2026", "2027"]);
+    expect(years[0]).toMatchObject({ average: 1.31, median: 1.37, highest: 1.58, lowest: 0.9 });
+    expect(years[1]).toMatchObject({ average: 1.19, highest: 1.53, lowest: 1 });
+  });
+});

@@ -193,6 +193,15 @@ export const pesaDataSchema = z.object({
       years: z.array(z.object({ year: fiscalYear, index: finite.positive(), forecast: z.boolean() })).min(10),
     })
     .optional(),
+  /** HM Treasury comparison of independent forecasts: GDP growth average, median and range by calendar year. Optional. */
+  independent: z
+    .object({
+      title: z.string(),
+      url: z.string(),
+      releaseDate: z.string().nullable(),
+      years: z.array(z.object({ year: z.string().regex(/^\d{4}$/), average: finite.nullable(), median: finite.nullable(), highest: finite.nullable(), lowest: finite.nullable(), count: z.number().int().nonnegative() })).min(1),
+    })
+    .optional(),
   /** DfE school funding statistics: national revenue funding per pupil aged 5-16, England. Optional. */
   perPupil: z
     .object({

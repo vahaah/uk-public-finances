@@ -11,6 +11,7 @@ import {
   DebtInterestFigure,
   DebtVsOutturnFigure,
   GdpFigure,
+  IndependentForecastsFigure,
   MeasuresFigure,
   PolicyFigure,
   PsnbFigure,
@@ -58,7 +59,8 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
   const { event, efo, obr } = story;
   const label = eventLabel(event);
   const path = `/budgets/${slug}/explained`;
-  const [events, pricesLoaded] = await Promise.all([storyEvents(), readSnapshot("ons-prices")]);
+  const [events, pricesLoaded, pesaLoaded] = await Promise.all([storyEvents(), readSnapshot("ons-prices"), readSnapshot("pesa")]);
+  const independent = takeSnapshot("pesa", pesaLoaded.snapshot)?.data.independent;
   const measures = measuresPerEvent(obr.measures.rows, events);
   const crxx = takeSnapshot("ons-prices", pricesLoaded.snapshot)?.data.crxx;
   const decades = crxx ? rhdiByDecade(crxx.years) : [];
@@ -87,6 +89,7 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
 
       <Chapter id="squeeze" title="1. Growth and incomes" lede="How the forecast for the economy, prices and household incomes has changed.">
         <GdpFigure {...props} />
+        <IndependentForecastsFigure {...props} independent={independent} />
         <CpiFigure {...props} />
         <RhdiDecadesFigure decades={decades} path={path} releaseDate={crxx?.releaseDate.slice(0, 10) ?? null} priceYear={priceYear} />
         <RhdiGrowthFigure {...props} />

@@ -388,3 +388,60 @@ export function MultiLine({
     </div>
   );
 }
+
+/** One row per year: the range of independent forecasts as a floating bar, their average and median as ticks, and one highlighted forecast as a dot. */
+export function RangeCompare({
+  points,
+  unit,
+  dotName,
+}: {
+  points: { period: string; lowest: number | null; highest: number | null; average: number | null; median: number | null; dot: number | null }[];
+  unit: Unit;
+  dotName: string;
+}) {
+  const theme = useChartTheme();
+  const data = points.map((point) => ({ ...point, range: point.lowest != null && point.highest != null ? [point.lowest, point.highest] : null }));
+  const y = yAxisFor(points.flatMap((point) => [point.lowest, point.highest, point.dot, point.average]), true);
+  return (
+    <div>
+      <Swatches
+        items={[
+          { label: "Range of independent forecasts", className: "bg-neutral-300 dark:bg-neutral-600" },
+          { label: "Independent average", className: "h-0.5 bg-neutral-900 dark:bg-neutral-50" },
+          { label: dotName, className: "rounded-full bg-blue-700 dark:bg-blue-300" },
+        ]}
+      />
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 256 }}>
+          <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="45%">
+            <CartesianGrid stroke={theme.grid} vertical={false} />
+            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval={0} />
+            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={40} ticks={y.ticks} domain={y.domain} tickFormatter={y.tickFormatter} />
+            <ReferenceLine y={0} stroke={theme.muted} />
+            <Tooltip
+              cursor={{ fill: theme.cursor }}
+              content={({ active, label, payload }) => {
+                const row = payload?.[0]?.payload as (typeof data)[number] | undefined;
+                return (
+                  <ChartTooltip
+                    active={active}
+                    label={String(label ?? "")}
+                    rows={row ? [
+                      { name: dotName, value: formatUnit(row.dot, unit) },
+                      { name: "Independent average", value: formatUnit(row.average, unit) },
+                      { name: "Independent median", value: formatUnit(row.median, unit) },
+                      { name: "Lowest to highest", value: `${formatUnit(row.lowest, unit)} to ${formatUnit(row.highest, unit)}` },
+                    ] : []}
+                  />
+                );
+              }}
+            />
+            <Bar dataKey="range" name="Range of independent forecasts" fill={theme.surplus} fillOpacity={0.55} isAnimationActive={false} />
+            <Scatter dataKey="average" name="Independent average" fill={theme.stroke} shape={(props: { cx?: number; cy?: number }) => <rect x={(props.cx ?? 0) - 18} y={(props.cy ?? 0) - 1} width={36} height={2.5} fill={theme.stroke} />} isAnimationActive={false} />
+            <Scatter dataKey="dot" name={dotName} fill={theme.bar} isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}

@@ -33,7 +33,7 @@ import {
 } from "@/lib/budgets/forecasts";
 import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
-import { eesAllFilesUrl, parseDfePerPupil, parseHmtDeflators } from "@/lib/parsers/extras";
+import { eesAllFilesUrl, parseDfePerPupil, parseHmtDeflators, parseIndependentForecasts } from "@/lib/parsers/extras";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
 import { snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
 import { buildEnvelope, decidePublish, shouldWriteSnapshot } from "@/lib/snapshot";
@@ -178,6 +178,7 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
   // Extras for real-terms and per-pupil charts. Either can fail without blocking PESA.
   const deflators = await fetchHmtDeflators().catch(() => undefined);
   const perPupil = await fetchDfePerPupil().catch(() => undefined);
+  const independent = await fetchIndependentForecasts().catch(() => undefined);
   return finish("pesa", () =>
     Promise.resolve(chapter4).then(async () =>
       buildEnvelope({
@@ -186,7 +187,7 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
         releaseDate,
         nextRelease: null,
         sourceUrl: `https://www.gov.uk${hit.link}`,
-        data: { ...(await parsePesa(chapter4, chapter6, `https://www.gov.uk${hit.link}`)), ...(deflators ? { deflators } : {}), ...(perPupil ? { perPupil } : {}) },
+        data: { ...(await parsePesa(chapter4, chapter6, `https://www.gov.uk${hit.link}`)), ...(deflators ? { deflators } : {}), ...(perPupil ? { perPupil } : {}), ...(independent ? { independent } : {}) },
       }),
     ),
   );
@@ -204,6 +205,20 @@ async function fetchHmtDeflators() {
   if (!workbook?.url) throw new Error("GDP deflator publication has no spreadsheet");
   const parsed = await parseHmtDeflators(await getBytes(workbook.url));
   return { ...parsed, url: `https://www.gov.uk${latest.base_path}`, releaseDate: content.public_updated_at ?? null };
+}
+
+/** Latest monthly "Forecasts for the UK economy" (HMT comparison of independent forecasts). */
+async function fetchIndependentForecasts() {
+  const collection = (await getJson(`https://www.gov.uk/api/content${GOVUK_PATHS.independentCollection}`)) as GovukContent & GovukCollection;
+  const latest = (collection.links?.documents ?? [])
+    .filter((doc) => !doc.withdrawn && /-(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/.test(doc.base_path ?? "") && (doc.base_path ?? "").startsWith(GOVUK_PATHS.independentPrefix))
+    .sort((a, b) => (b.public_updated_at ?? "").localeCompare(a.public_updated_at ?? ""))[0];
+  if (!latest?.base_path) throw new Error("No monthly comparison of independent forecasts in the collection");
+  const content = await getJson(`https://www.gov.uk/api/content${latest.base_path}`);
+  const workbook = spreadsheetAttachments(content as GovukContent)[0];
+  if (!workbook?.url) throw new Error("Independent forecasts publication has no spreadsheet");
+  const years = await parseIndependentForecasts(await getBytes(workbook.url));
+  return { title: content.title ?? latest.title ?? "Forecasts for the UK economy", url: `https://www.gov.uk${latest.base_path}`, releaseDate: content.public_updated_at ?? null, years };
 }
 
 const DFE_SCHOOL_FUNDING = "https://explore-education-statistics.service.gov.uk/find-statistics/school-funding-statistics";
