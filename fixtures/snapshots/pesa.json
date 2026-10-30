@@ -9,7 +9,7 @@
   "publisher": "HM Treasury",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "a8e2d43c1617286d56b6b521d60475cf80b714d5d106f224c53e311f5da657b3",
+  "contentHash": "584111896c988ed7312ae05bc026d0af72451184702f73a950f3738e47d14373",
   "data": {
     "contentUrl": "https://www.gov.uk/government/statistics/public-expenditure-statistical-analyses-2026",
     "functions": {
@@ -2096,6 +2096,507 @@
           }
         ]
       }
-    ]
+    ],
+    "deflators": {
+      "base": "2025-26",
+      "url": "https://www.gov.uk/government/statistics/gdp-deflators-at-market-prices-and-money-gdp-october-2026-budget",
+      "releaseDate": "2026-10-29T12:28:09Z",
+      "years": [
+        {
+          "year": "1955-56",
+          "index": 3.0806,
+          "forecast": false
+        },
+        {
+          "year": "1956-57",
+          "index": 3.2717,
+          "forecast": false
+        },
+        {
+          "year": "1957-58",
+          "index": 3.4223,
+          "forecast": false
+        },
+        {
+          "year": "1958-59",
+          "index": 3.506,
+          "forecast": false
+        },
+        {
+          "year": "1959-60",
+          "index": 3.5238,
+          "forecast": false
+        },
+        {
+          "year": "1960-61",
+          "index": 3.5948,
+          "forecast": false
+        },
+        {
+          "year": "1961-62",
+          "index": 3.7267,
+          "forecast": false
+        },
+        {
+          "year": "1962-63",
+          "index": 3.8429,
+          "forecast": false
+        },
+        {
+          "year": "1963-64",
+          "index": 3.9075,
+          "forecast": false
+        },
+        {
+          "year": "1964-65",
+          "index": 4.0914,
+          "forecast": false
+        },
+        {
+          "year": "1965-66",
+          "index": 4.3117,
+          "forecast": false
+        },
+        {
+          "year": "1966-67",
+          "index": 4.5314,
+          "forecast": false
+        },
+        {
+          "year": "1967-68",
+          "index": 4.6552,
+          "forecast": false
+        },
+        {
+          "year": "1968-69",
+          "index": 4.8986,
+          "forecast": false
+        },
+        {
+          "year": "1969-70",
+          "index": 5.2373,
+          "forecast": false
+        },
+        {
+          "year": "1970-71",
+          "index": 5.7545,
+          "forecast": false
+        },
+        {
+          "year": "1971-72",
+          "index": 6.1902,
+          "forecast": false
+        },
+        {
+          "year": "1972-73",
+          "index": 6.7164,
+          "forecast": false
+        },
+        {
+          "year": "1973-74",
+          "index": 7.3065,
+          "forecast": false
+        },
+        {
+          "year": "1974-75",
+          "index": 8.7915,
+          "forecast": false
+        },
+        {
+          "year": "1975-76",
+          "index": 10.9419,
+          "forecast": false
+        },
+        {
+          "year": "1976-77",
+          "index": 12.4677,
+          "forecast": false
+        },
+        {
+          "year": "1977-78",
+          "index": 14.1811,
+          "forecast": false
+        },
+        {
+          "year": "1978-79",
+          "index": 15.778,
+          "forecast": false
+        },
+        {
+          "year": "1979-80",
+          "index": 18.4415,
+          "forecast": false
+        },
+        {
+          "year": "1980-81",
+          "index": 21.9639,
+          "forecast": false
+        },
+        {
+          "year": "1981-82",
+          "index": 24.276,
+          "forecast": false
+        },
+        {
+          "year": "1982-83",
+          "index": 26.064,
+          "forecast": false
+        },
+        {
+          "year": "1983-84",
+          "index": 27.3034,
+          "forecast": false
+        },
+        {
+          "year": "1984-85",
+          "index": 28.9007,
+          "forecast": false
+        },
+        {
+          "year": "1985-86",
+          "index": 30.4766,
+          "forecast": false
+        },
+        {
+          "year": "1986-87",
+          "index": 31.7144,
+          "forecast": false
+        },
+        {
+          "year": "1987-88",
+          "index": 33.562,
+          "forecast": false
+        },
+        {
+          "year": "1988-89",
+          "index": 35.8499,
+          "forecast": false
+        },
+        {
+          "year": "1989-90",
+          "index": 38.7513,
+          "forecast": false
+        },
+        {
+          "year": "1990-91",
+          "index": 42.0032,
+          "forecast": false
+        },
+        {
+          "year": "1991-92",
+          "index": 44.5275,
+          "forecast": false
+        },
+        {
+          "year": "1992-93",
+          "index": 45.747,
+          "forecast": false
+        },
+        {
+          "year": "1993-94",
+          "index": 47.0487,
+          "forecast": false
+        },
+        {
+          "year": "1994-95",
+          "index": 47.8281,
+          "forecast": false
+        },
+        {
+          "year": "1995-96",
+          "index": 49.3461,
+          "forecast": false
+        },
+        {
+          "year": "1996-97",
+          "index": 51.0041,
+          "forecast": false
+        },
+        {
+          "year": "1997-98",
+          "index": 51.0876,
+          "forecast": false
+        },
+        {
+          "year": "1998-99",
+          "index": 51.8797,
+          "forecast": false
+        },
+        {
+          "year": "1999-00",
+          "index": 52.5153,
+          "forecast": false
+        },
+        {
+          "year": "2000-01",
+          "index": 52.9443,
+          "forecast": false
+        },
+        {
+          "year": "2001-02",
+          "index": 54.0349,
+          "forecast": false
+        },
+        {
+          "year": "2002-03",
+          "index": 55.1525,
+          "forecast": false
+        },
+        {
+          "year": "2003-04",
+          "index": 56.48,
+          "forecast": false
+        },
+        {
+          "year": "2004-05",
+          "index": 58.1847,
+          "forecast": false
+        },
+        {
+          "year": "2005-06",
+          "index": 59.8047,
+          "forecast": false
+        },
+        {
+          "year": "2006-07",
+          "index": 61.5765,
+          "forecast": false
+        },
+        {
+          "year": "2007-08",
+          "index": 62.7943,
+          "forecast": false
+        },
+        {
+          "year": "2008-09",
+          "index": 65.1553,
+          "forecast": false
+        },
+        {
+          "year": "2009-10",
+          "index": 65.9715,
+          "forecast": false
+        },
+        {
+          "year": "2010-11",
+          "index": 67.0587,
+          "forecast": false
+        },
+        {
+          "year": "2011-12",
+          "index": 68.4164,
+          "forecast": false
+        },
+        {
+          "year": "2012-13",
+          "index": 69.5581,
+          "forecast": false
+        },
+        {
+          "year": "2013-14",
+          "index": 70.9258,
+          "forecast": false
+        },
+        {
+          "year": "2014-15",
+          "index": 71.8702,
+          "forecast": false
+        },
+        {
+          "year": "2015-16",
+          "index": 72.2622,
+          "forecast": false
+        },
+        {
+          "year": "2016-17",
+          "index": 73.7129,
+          "forecast": false
+        },
+        {
+          "year": "2017-18",
+          "index": 74.6091,
+          "forecast": false
+        },
+        {
+          "year": "2018-19",
+          "index": 76.2884,
+          "forecast": false
+        },
+        {
+          "year": "2019-20",
+          "index": 78.3047,
+          "forecast": false
+        },
+        {
+          "year": "2020-21",
+          "index": 82.3141,
+          "forecast": false
+        },
+        {
+          "year": "2021-22",
+          "index": 82.6648,
+          "forecast": false
+        },
+        {
+          "year": "2022-23",
+          "index": 88.4564,
+          "forecast": false
+        },
+        {
+          "year": "2023-24",
+          "index": 93.1026,
+          "forecast": false
+        },
+        {
+          "year": "2024-25",
+          "index": 96.757,
+          "forecast": false
+        },
+        {
+          "year": "2025-26",
+          "index": 100,
+          "forecast": false
+        },
+        {
+          "year": "2026-27",
+          "index": 102.6328,
+          "forecast": true
+        },
+        {
+          "year": "2027-28",
+          "index": 104.8078,
+          "forecast": true
+        },
+        {
+          "year": "2028-29",
+          "index": 106.8617,
+          "forecast": true
+        },
+        {
+          "year": "2029-30",
+          "index": 108.9538,
+          "forecast": true
+        },
+        {
+          "year": "2030-31",
+          "index": 111.1013,
+          "forecast": true
+        },
+        {
+          "year": "2031-32",
+          "index": 113.2226,
+          "forecast": true
+        }
+      ]
+    },
+    "perPupil": {
+      "priceYear": "2025-26",
+      "url": "https://explore-education-statistics.service.gov.uk/find-statistics/school-funding-statistics",
+      "releaseDate": "2026-10-26",
+      "rows": [
+        {
+          "year": "2010-11",
+          "cashGbp": 5190,
+          "realGbp": 7760,
+          "pupils": 6761000
+        },
+        {
+          "year": "2011-12",
+          "cashGbp": 5300,
+          "realGbp": 7760,
+          "pupils": 6788000
+        },
+        {
+          "year": "2012-13",
+          "cashGbp": 5390,
+          "realGbp": 7760,
+          "pupils": 6834000
+        },
+        {
+          "year": "2013-14",
+          "cashGbp": 5490,
+          "realGbp": 7740,
+          "pupils": 6902000
+        },
+        {
+          "year": "2014-15",
+          "cashGbp": 5560,
+          "realGbp": 7720,
+          "pupils": 6967000
+        },
+        {
+          "year": "2015-16",
+          "cashGbp": 5620,
+          "realGbp": 7760,
+          "pupils": 7063000
+        },
+        {
+          "year": "2016-17",
+          "cashGbp": 5610,
+          "realGbp": 7600,
+          "pupils": 7183000
+        },
+        {
+          "year": "2017-18",
+          "cashGbp": 5610,
+          "realGbp": 7500,
+          "pupils": 7305000
+        },
+        {
+          "year": "2018-19",
+          "cashGbp": 5730,
+          "realGbp": 7480,
+          "pupils": 7404000
+        },
+        {
+          "year": "2019-20",
+          "cashGbp": 5920,
+          "realGbp": 7530,
+          "pupils": 7502000
+        },
+        {
+          "year": "2020-21",
+          "cashGbp": 6250,
+          "realGbp": 7560,
+          "pupils": 7581000
+        },
+        {
+          "year": "2021-22",
+          "cashGbp": 6490,
+          "realGbp": 7830,
+          "pupils": 7613000
+        },
+        {
+          "year": "2022-23",
+          "cashGbp": 6930,
+          "realGbp": 7820,
+          "pupils": 7673000
+        },
+        {
+          "year": "2023-24",
+          "cashGbp": 7420,
+          "realGbp": 7950,
+          "pupils": 7745000
+        },
+        {
+          "year": "2024-25",
+          "cashGbp": 7910,
+          "realGbp": 8140,
+          "pupils": 7772000
+        },
+        {
+          "year": "2025-26",
+          "cashGbp": 8400,
+          "realGbp": 8400,
+          "pupils": 7725000
+        },
+        {
+          "year": "2026-27",
+          "cashGbp": 8580,
+          "realGbp": 8390,
+          "pupils": 7685000
+        }
+      ]
+    }
   }
 }

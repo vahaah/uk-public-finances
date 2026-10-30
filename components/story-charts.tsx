@@ -320,3 +320,71 @@ export function StackedBars({
     </div>
   );
 }
+
+/** Several named lines. Periods from `forecastFrom` on are drawn dashed (plans or projections). */
+export function MultiLine({
+  points,
+  series,
+  unit,
+  forecastFrom,
+  forecastLabel = "Plans",
+}: {
+  points: Record<string, string | number | null>[];
+  series: { key: string; name: string }[];
+  unit: Unit;
+  forecastFrom?: string | null;
+  forecastLabel?: string;
+}) {
+  const theme = useChartTheme();
+  const isSm = useIsSm();
+  const dark = theme.bar !== "#1d4ed8";
+  const palette = dark ? ["#93c5fd", "#fbbf24", "#a3a3a3", "#c4b5fd", "#6ee7b7"] : ["#1d4ed8", "#d97706", "#525252", "#7c3aed", "#059669"];
+  const periods = points.map((point) => String(point.period));
+  const joinIndex = forecastFrom ? periods.indexOf(forecastFrom) - 1 : -1;
+  const data = points.map((point, index) => {
+    const isForecast = forecastFrom ? String(point.period) >= forecastFrom : false;
+    const row: Record<string, string | number | null> = { period: point.period };
+    for (const item of series) {
+      row[item.key] = isForecast ? null : (point[item.key] ?? null);
+      row[`${item.key}__f`] = isForecast || index === joinIndex ? (point[item.key] ?? null) : null;
+    }
+    return row;
+  });
+  const y = yAxisFor(points.flatMap((point) => series.map((item) => (typeof point[item.key] === "number" ? (point[item.key] as number) : null))), true);
+  const every = Math.max(1, Math.ceil(periods.length / (isSm ? 8 : 4)));
+  return (
+    <div>
+      <Swatches items={series.map((item, index) => ({ label: item.name, className: "", color: palette[index % palette.length] }))} />
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 256 }}>
+          <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid stroke={theme.grid} vertical={false} />
+            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval={every - 1} tickFormatter={isSm ? undefined : shortPeriod} />
+            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={44} ticks={y.ticks} domain={y.domain} tickFormatter={y.tickFormatter} />
+            <Tooltip
+              cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
+              content={({ active, payload, label }) => {
+                const seen = new Set<string>();
+                const rows = (payload ?? [])
+                  .filter((item) => item.value != null)
+                  .map((item) => ({ key: String(item.dataKey).replace(/__f$/, ""), value: Number(item.value) }))
+                  .filter((item) => (seen.has(item.key) ? false : (seen.add(item.key), true)))
+                  .map((item) => ({ name: series.find((s) => s.key === item.key)?.name ?? item.key, value: formatUnit(item.value, unit) }));
+                return <ChartTooltip active={active} label={`${String(label ?? "")}${forecastFrom && String(label) >= forecastFrom ? ` (${forecastLabel.toLowerCase()})` : ""}`} rows={rows} />;
+              }}
+            />
+            {forecastFrom ? <ReferenceLine x={forecastFrom} stroke={theme.grid} label={{ value: forecastLabel, position: "insideTopRight", fontSize: 11, fill: theme.tick }} /> : null}
+            {series.map((item, index) => (
+              <Line key={item.key} dataKey={item.key} name={item.name} stroke={palette[index % palette.length]} dot={false} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
+            ))}
+            {forecastFrom
+              ? series.map((item, index) => (
+                  <Line key={`${item.key}__f`} dataKey={`${item.key}__f`} name={`${item.name} (${forecastLabel.toLowerCase()})`} stroke={palette[index % palette.length]} strokeDasharray="5 4" dot={false} strokeWidth={2} isAnimationActive={false} legendType="none" />
+                ))
+              : null}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}

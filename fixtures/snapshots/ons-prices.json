@@ -9,7 +9,7 @@
   "publisher": "Office for National Statistics",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "6af0970dbd14a810fe83f3c17a014cb2209ddad3aec5bdb15d575cf30e6c41ab",
+  "contentHash": "eac93c4b6f50cb37f40a25c0387afdb9e89b3bea900e925ee56e3ec6dfc520e8",
   "data": {
     "mnf2": {
       "cdid": "MNF2",
@@ -13508,6 +13508,236 @@
           "value": 6577
         }
       ],
+      "months": []
+    },
+    "ukpop": {
+      "cdid": "UKPOP",
+      "title": "United Kingdom population mid-year estimate",
+      "unit": "",
+      "releaseDate": "2026-09-30T23:00:00.000Z",
+      "years": [
+        {
+          "period": "1971",
+          "value": 55928000
+        },
+        {
+          "period": "1972",
+          "value": 56096700
+        },
+        {
+          "period": "1973",
+          "value": 56222900
+        },
+        {
+          "period": "1974",
+          "value": 56235600
+        },
+        {
+          "period": "1975",
+          "value": 56225700
+        },
+        {
+          "period": "1976",
+          "value": 56216100
+        },
+        {
+          "period": "1977",
+          "value": 56189900
+        },
+        {
+          "period": "1978",
+          "value": 56178000
+        },
+        {
+          "period": "1979",
+          "value": 56240100
+        },
+        {
+          "period": "1980",
+          "value": 56329700
+        },
+        {
+          "period": "1981",
+          "value": 56357500
+        },
+        {
+          "period": "1982",
+          "value": 56290700
+        },
+        {
+          "period": "1983",
+          "value": 56315700
+        },
+        {
+          "period": "1984",
+          "value": 56409300
+        },
+        {
+          "period": "1985",
+          "value": 56554000
+        },
+        {
+          "period": "1986",
+          "value": 56683800
+        },
+        {
+          "period": "1987",
+          "value": 56804000
+        },
+        {
+          "period": "1988",
+          "value": 56916400
+        },
+        {
+          "period": "1989",
+          "value": 57076500
+        },
+        {
+          "period": "1990",
+          "value": 57237500
+        },
+        {
+          "period": "1991",
+          "value": 57438700
+        },
+        {
+          "period": "1992",
+          "value": 57584500
+        },
+        {
+          "period": "1993",
+          "value": 57713900
+        },
+        {
+          "period": "1994",
+          "value": 57862100
+        },
+        {
+          "period": "1995",
+          "value": 58024800
+        },
+        {
+          "period": "1996",
+          "value": 58164400
+        },
+        {
+          "period": "1997",
+          "value": 58314200
+        },
+        {
+          "period": "1998",
+          "value": 58474900
+        },
+        {
+          "period": "1999",
+          "value": 58684400
+        },
+        {
+          "period": "2000",
+          "value": 58886100
+        },
+        {
+          "period": "2001",
+          "value": 59113000
+        },
+        {
+          "period": "2002",
+          "value": 59365700
+        },
+        {
+          "period": "2003",
+          "value": 59636700
+        },
+        {
+          "period": "2004",
+          "value": 59950400
+        },
+        {
+          "period": "2005",
+          "value": 60413300
+        },
+        {
+          "period": "2006",
+          "value": 60827000
+        },
+        {
+          "period": "2007",
+          "value": 61319100
+        },
+        {
+          "period": "2008",
+          "value": 61823800
+        },
+        {
+          "period": "2009",
+          "value": 62260500
+        },
+        {
+          "period": "2010",
+          "value": 62759500
+        },
+        {
+          "period": "2011",
+          "value": 63285100
+        },
+        {
+          "period": "2012",
+          "value": 63710500
+        },
+        {
+          "period": "2013",
+          "value": 64138200
+        },
+        {
+          "period": "2014",
+          "value": 64618700
+        },
+        {
+          "period": "2015",
+          "value": 65087000
+        },
+        {
+          "period": "2016",
+          "value": 65605800
+        },
+        {
+          "period": "2017",
+          "value": 65964300
+        },
+        {
+          "period": "2018",
+          "value": 66286700
+        },
+        {
+          "period": "2019",
+          "value": 66627500
+        },
+        {
+          "period": "2020",
+          "value": 66739900
+        },
+        {
+          "period": "2021",
+          "value": 66978000
+        },
+        {
+          "period": "2022",
+          "value": 67680000
+        },
+        {
+          "period": "2023",
+          "value": 68588000
+        },
+        {
+          "period": "2024",
+          "value": 69256300
+        },
+        {
+          "period": "2025",
+          "value": 69483900
+        }
+      ],
+      "quarters": [],
       "months": []
     }
   }

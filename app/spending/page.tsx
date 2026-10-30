@@ -1,4 +1,5 @@
 import { TopicStory } from "@/components/topic-story";
+import { DepartmentsRealFigure, PerPersonFigure, PerPupilFigure } from "@/components/spending-figures";
 import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
@@ -55,6 +56,7 @@ export default async function SpendingPage() {
           { href: "#functions", label: "By function" },
           { href: "#growth", label: "Real growth" },
           { href: "#departments", label: "Departments" },
+          { href: "#per-person-real", label: "Per person" },
         ]}
       />
       <PageIntro
@@ -192,6 +194,15 @@ export default async function SpendingPage() {
           />
         </ChartFrame>
       </div>
+      <section id="per-person-real" className="mt-10 scroll-mt-28" aria-labelledby="per-person-title">
+        <h2 id="per-person-title" className="text-xl font-semibold tracking-tight">Per person, per pupil and in real terms</h2>
+        <p className="mt-1 max-w-[68ch] text-neutral-900 dark:text-neutral-100">Spending adjusted for prices and population, and departmental plans in real terms.</p>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PerPersonFigure pesa={snapshot} population={prices?.data.ukpop?.years} path="/spending" />
+          <DepartmentsRealFigure pesa={snapshot} path="/spending" />
+          <PerPupilFigure pesa={snapshot} path="/spending" />
+        </div>
+      </section>
       <TopicStory path="/spending" figures={[]} title="" />
     </>
   );
