@@ -34,6 +34,13 @@ for f in efo-*-charts-and-tables-{executive-summary,chapter-2,chapter-3,chapter-
 done
 ```
 
+HM Treasury's distributional analysis ("Impact on households") is published as a PDF of charts with no data table. Its decile figures are read from the chart geometry and shown on the event page, `/taxpayers` and linked from the explained page, captioned "Values read from HM Treasury's published charts; not an official table." After each Budget:
+
+1. Download the "Impact on households" PDF from the Budget's supporting documents page on GOV.UK.
+2. Copy `scripts/hmt-distributional/budget-2026.spec.json` to a new spec. Set the event slug and name, URLs, publication date, and for each figure its page number, frame (0 for the upper chart on a page) and the top and bottom y-axis tick labels. Check figure numbers and titles against the PDF.
+3. Run `python3 scripts/hmt-distributional/digitise.py Impact_on_households.pdf <spec> > budget-YYYY.json` (needs poppler-utils and numpy). Each row's `check` is the sum of segments minus the Overall marker; it should be near zero. If a chart's colours or layout change, update the script.
+4. Upload: `vercel blob put manual/hmt/distributional/budget-YYYY.json ./budget-YYYY.json --allow-overwrite`. Keep earlier files; the newest by publication date is used. Then force the daily cron.
+
 Preview locally from files on disk: `npx tsx scripts/obr-local-snapshot.ts out.json historical=… measures=… evaluation=… efo=… efo=…`.
 
 Do not deploy from this repo's automation. Wire the project in Vercel separately.

@@ -9,8 +9,570 @@
   "publisher": "Office for Budget Responsibility",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "9f2b695fb2e63d1e7ea67779735415cf0a505948f2ad96d9a4d3a94ab4dd1e71",
+  "contentHash": "c3dad16d8e14c242272f67f5b7f602ea5386775c2cc8f4aa542293ce85422ada",
   "data": {
+    "distributional": {
+      "file": "manual/hmt/distributional/budget-2026.json",
+      "data": {
+        "version": 1,
+        "eventSlug": "2026-10-budget",
+        "eventName": "Budget 2026",
+        "publisher": "HM Treasury",
+        "title": "Impact on households: distributional analysis to accompany Budget 2026",
+        "documentUrl": "https://assets.publishing.service.gov.uk/media/6ae1850f16428df53760627d/Impact_on_households.pdf",
+        "pageUrl": "https://www.gov.uk/government/publications/supporting-documents-for-budget-2026",
+        "published": "2026-10-28",
+        "readFromCharts": true,
+        "method": "Read from the vector chart geometry in the PDF (pdftocairo SVG): bar segment edges and Overall markers converted to values by interpolating between the y-axis ticks. Each Overall marker matches the sum of its segments to within 0.01 percentage points (1.A, 1.C), £0.3 (1.B), £5 (1.D) and 0.2 points (1.E).",
+        "figures": [
+          {
+            "figure": "1.A",
+            "title": "Impact of decisions at Budget 2026 on households in 2027-28, as a percentage of net income",
+            "year": "2027-28",
+            "unit": "pct",
+            "scope": "budget",
+            "rounding": "0.01 percentage points",
+            "rows": [
+              {
+                "group": "Bottom decile",
+                "tax": 0.15,
+                "welfare": 0.03,
+                "publicServices": 0.38,
+                "overall": 0.57,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "2",
+                "tax": 0.09,
+                "welfare": 0.04,
+                "publicServices": 0.15,
+                "overall": 0.28,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "3",
+                "tax": 0.06,
+                "welfare": 0.03,
+                "publicServices": 0.14,
+                "overall": 0.24,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "4",
+                "tax": 0.05,
+                "welfare": 0.02,
+                "publicServices": 0.07,
+                "overall": 0.15,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "5",
+                "tax": 0.04,
+                "welfare": 0.01,
+                "publicServices": 0.05,
+                "overall": 0.11,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "6",
+                "tax": 0.04,
+                "welfare": 0.01,
+                "publicServices": 0.04,
+                "overall": 0.08,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "7",
+                "tax": 0.02,
+                "welfare": 0,
+                "publicServices": 0.03,
+                "overall": 0.05,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "8",
+                "tax": 0,
+                "welfare": 0,
+                "publicServices": 0.02,
+                "overall": 0.03,
+                "overallFrom": "marker",
+                "check": 0.001
+              },
+              {
+                "group": "9",
+                "tax": -0.03,
+                "welfare": 0,
+                "publicServices": 0.02,
+                "overall": -0.01,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "Top decile",
+                "tax": -0.09,
+                "welfare": 0,
+                "publicServices": 0.01,
+                "overall": -0.08,
+                "overallFrom": "marker",
+                "check": 0
+              },
+              {
+                "group": "All households",
+                "tax": 0,
+                "welfare": 0.01,
+                "publicServices": 0.05,
+                "overall": 0.06,
+                "overallFrom": "marker",
+                "check": 0
+              }
+            ]
+          },
+          {
+            "figure": "1.B",
+            "title": "Impact of decisions at Budget 2026 on households in 2027-28, £ per year",
+            "year": "2027-28",
+            "unit": "gbp",
+            "scope": "budget",
+            "rounding": "£1",
+            "rows": [
+              {
+                "group": "Bottom decile",
+                "tax": 20,
+                "welfare": 4,
+                "publicServices": 51,
+                "overall": 75,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "2",
+                "tax": 22,
+                "welfare": 10,
+                "publicServices": 38,
+                "overall": 70,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "3",
+                "tax": 19,
+                "welfare": 10,
+                "publicServices": 41,
+                "overall": 70,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "4",
+                "tax": 19,
+                "welfare": 8,
+                "publicServices": 25,
+                "overall": 53,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "5",
+                "tax": 18,
+                "welfare": 6,
+                "publicServices": 20,
+                "overall": 43,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "6",
+                "tax": 17,
+                "welfare": 4,
+                "publicServices": 18,
+                "overall": 39,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "7",
+                "tax": 9,
+                "welfare": 2,
+                "publicServices": 15,
+                "overall": 26,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "8",
+                "tax": 0,
+                "welfare": 1,
+                "publicServices": 15,
+                "overall": 17,
+                "overallFrom": "marker",
+                "check": 0.3
+              },
+              {
+                "group": "9",
+                "tax": -19,
+                "welfare": 1,
+                "publicServices": 12,
+                "overall": -6,
+                "overallFrom": "marker",
+                "check": 0.1
+              },
+              {
+                "group": "Top decile",
+                "tax": -120,
+                "welfare": 0,
+                "publicServices": 15,
+                "overall": -105,
+                "overallFrom": "marker",
+                "check": -0.1
+              },
+              {
+                "group": "All households",
+                "tax": -2,
+                "welfare": 5,
+                "publicServices": 25,
+                "overall": 28,
+                "overallFrom": "marker",
+                "check": -0.2
+              }
+            ]
+          },
+          {
+            "figure": "1.C",
+            "title": "Impact of decisions from Autumn Budget 2024 onwards on households in 2028-29, as a percentage of net income",
+            "year": "2028-29",
+            "unit": "pct",
+            "scope": "cumulative",
+            "rounding": "0.01 percentage points",
+            "rows": [
+              {
+                "group": "Bottom decile",
+                "tax": -1.06,
+                "welfare": 2.75,
+                "publicServices": 5.91,
+                "overall": 7.6,
+                "overallFrom": "marker",
+                "check": -0.007
+              },
+              {
+                "group": "2",
+                "tax": -0.83,
+                "welfare": 2.41,
+                "publicServices": 4.68,
+                "overall": 6.27,
+                "overallFrom": "marker",
+                "check": -0.001
+              },
+              {
+                "group": "3",
+                "tax": -0.89,
+                "welfare": 1,
+                "publicServices": 4.24,
+                "overall": 4.36,
+                "overallFrom": "marker",
+                "check": -0.005
+              },
+              {
+                "group": "4",
+                "tax": -0.94,
+                "welfare": 0.56,
+                "publicServices": 3.56,
+                "overall": 3.19,
+                "overallFrom": "marker",
+                "check": -0.009
+              },
+              {
+                "group": "5",
+                "tax": -0.98,
+                "welfare": 0.27,
+                "publicServices": 2.92,
+                "overall": 2.22,
+                "overallFrom": "marker",
+                "check": -0.003
+              },
+              {
+                "group": "6",
+                "tax": -1,
+                "welfare": 0.16,
+                "publicServices": 2.44,
+                "overall": 1.6,
+                "overallFrom": "marker",
+                "check": -0.008
+              },
+              {
+                "group": "7",
+                "tax": -1.05,
+                "welfare": 0.1,
+                "publicServices": 2,
+                "overall": 1.06,
+                "overallFrom": "marker",
+                "check": -0.004
+              },
+              {
+                "group": "8",
+                "tax": -1.19,
+                "welfare": 0.09,
+                "publicServices": 1.59,
+                "overall": 0.5,
+                "overallFrom": "marker",
+                "check": -0.006
+              },
+              {
+                "group": "9",
+                "tax": -1.51,
+                "welfare": 0.06,
+                "publicServices": 1.22,
+                "overall": -0.21,
+                "overallFrom": "marker",
+                "check": -0.007
+              },
+              {
+                "group": "Top decile",
+                "tax": -1.86,
+                "welfare": 0.05,
+                "publicServices": 0.6,
+                "overall": -1.2,
+                "overallFrom": "marker",
+                "check": -0.003
+              },
+              {
+                "group": "All households",
+                "tax": -1.31,
+                "welfare": 0.36,
+                "publicServices": 2.05,
+                "overall": 1.1,
+                "overallFrom": "sum of segments",
+                "check": 0
+              }
+            ]
+          },
+          {
+            "figure": "1.D",
+            "title": "Impact of decisions from Autumn Budget 2024 onwards on households in 2028-29, £ per year",
+            "year": "2028-29",
+            "unit": "gbp",
+            "scope": "cumulative",
+            "rounding": "£1 (read accuracy about £5)",
+            "rows": [
+              {
+                "group": "Bottom decile",
+                "tax": -149,
+                "welfare": 377,
+                "publicServices": 819,
+                "overall": 1048,
+                "overallFrom": "marker",
+                "check": -0.6
+              },
+              {
+                "group": "2",
+                "tax": -210,
+                "welfare": 605,
+                "publicServices": 1180,
+                "overall": 1580,
+                "overallFrom": "marker",
+                "check": -5
+              },
+              {
+                "group": "3",
+                "tax": -264,
+                "welfare": 297,
+                "publicServices": 1261,
+                "overall": 1294,
+                "overallFrom": "marker",
+                "check": -0.7
+              },
+              {
+                "group": "4",
+                "tax": -330,
+                "welfare": 196,
+                "publicServices": 1250,
+                "overall": 1120,
+                "overallFrom": "marker",
+                "check": -4.2
+              },
+              {
+                "group": "5",
+                "tax": -399,
+                "welfare": 109,
+                "publicServices": 1196,
+                "overall": 906,
+                "overallFrom": "marker",
+                "check": -0.6
+              },
+              {
+                "group": "6",
+                "tax": -467,
+                "welfare": 72,
+                "publicServices": 1145,
+                "overall": 751,
+                "overallFrom": "marker",
+                "check": -0.6
+              },
+              {
+                "group": "7",
+                "tax": -565,
+                "welfare": 58,
+                "publicServices": 1083,
+                "overall": 577,
+                "overallFrom": "marker",
+                "check": -0.2
+              },
+              {
+                "group": "8",
+                "tax": -759,
+                "welfare": 58,
+                "publicServices": 1014,
+                "overall": 316,
+                "overallFrom": "marker",
+                "check": -2.4
+              },
+              {
+                "group": "9",
+                "tax": -1167,
+                "welfare": 51,
+                "publicServices": 949,
+                "overall": -170,
+                "overallFrom": "marker",
+                "check": 3
+              },
+              {
+                "group": "Top decile",
+                "tax": -2540,
+                "welfare": 62,
+                "publicServices": 830,
+                "overall": -1648,
+                "overallFrom": "marker",
+                "check": -0.5
+              },
+              {
+                "group": "All households",
+                "tax": -683,
+                "welfare": 188,
+                "publicServices": 1073,
+                "overall": 580,
+                "overallFrom": "marker",
+                "check": -2.3
+              }
+            ]
+          },
+          {
+            "figure": "1.E",
+            "title": "Overall level of public spending received, and tax paid, as a percentage of net income, in 2028-29",
+            "year": "2028-29",
+            "unit": "pct",
+            "scope": "levels",
+            "rounding": "0.1 percentage points",
+            "rows": [
+              {
+                "group": "Bottom decile",
+                "tax": -43.3,
+                "welfare": 76.2,
+                "publicServices": 99.6,
+                "overall": 132.6,
+                "overallFrom": "marker",
+                "check": -0.04
+              },
+              {
+                "group": "2",
+                "tax": -31,
+                "welfare": 62.7,
+                "publicServices": 59.1,
+                "overall": 90.6,
+                "overallFrom": "marker",
+                "check": 0.08
+              },
+              {
+                "group": "3",
+                "tax": -30.9,
+                "welfare": 52.5,
+                "publicServices": 48.8,
+                "overall": 70.5,
+                "overallFrom": "marker",
+                "check": -0.01
+              },
+              {
+                "group": "4",
+                "tax": -32.6,
+                "welfare": 42.1,
+                "publicServices": 39,
+                "overall": 48.7,
+                "overallFrom": "marker",
+                "check": -0.09
+              },
+              {
+                "group": "5",
+                "tax": -34.7,
+                "welfare": 33.7,
+                "publicServices": 32.4,
+                "overall": 31.4,
+                "overallFrom": "marker",
+                "check": -0.01
+              },
+              {
+                "group": "6",
+                "tax": -36.6,
+                "welfare": 25.1,
+                "publicServices": 24.3,
+                "overall": 13,
+                "overallFrom": "marker",
+                "check": -0.11
+              },
+              {
+                "group": "7",
+                "tax": -39.4,
+                "welfare": 17,
+                "publicServices": 19.4,
+                "overall": -2.9,
+                "overallFrom": "marker",
+                "check": -0.18
+              },
+              {
+                "group": "8",
+                "tax": -41.5,
+                "welfare": 12.2,
+                "publicServices": 16,
+                "overall": -13.4,
+                "overallFrom": "marker",
+                "check": 0.11
+              },
+              {
+                "group": "9",
+                "tax": -46.5,
+                "welfare": 7.8,
+                "publicServices": 11.4,
+                "overall": -27.2,
+                "overallFrom": "marker",
+                "check": -0.07
+              },
+              {
+                "group": "Top decile",
+                "tax": -65.1,
+                "welfare": 3.6,
+                "publicServices": 5.7,
+                "overall": -55.7,
+                "overallFrom": "marker",
+                "check": -0.06
+              },
+              {
+                "group": "All households",
+                "tax": -45.6,
+                "welfare": 21,
+                "publicServices": 22.7,
+                "overall": -1.7,
+                "overallFrom": "marker",
+                "check": -0.18
+              }
+            ]
+          }
+        ]
+      }
+    },
     "historical": {
       "loaded": false,
       "asOf": null,

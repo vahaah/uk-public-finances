@@ -129,11 +129,23 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
       <Chapter id="reality" title="4. The measures" lede="How many measures each event had, as scored by the OBR.">
         <MeasuresFigure rows={measures} path={path} releaseDate={obr.measures.asOf} />
         <p className="text-sm text-neutral-800 dark:text-neutral-200">
-          HM Treasury&apos;s analysis of the effect on households by income is not loaded here yet. Every scored measure is on the{" "}
-          <Link className="underline underline-offset-4" href={`/budgets/${slug}`}>
-            {label} page
-          </Link>
-          .
+          {obr.distributional?.data?.eventSlug === slug ? (
+            <>
+              HM Treasury&apos;s estimate of the effect on households by income decile, read from its published charts, is on the{" "}
+              <Link className="underline underline-offset-4" href={`/budgets/${slug}#households-by-income`}>
+                {label} page
+              </Link>
+              , beside every scored measure.
+            </>
+          ) : (
+            <>
+              HM Treasury&apos;s analysis of the effect on households by income is not loaded here yet. Every scored measure is on the{" "}
+              <Link className="underline underline-offset-4" href={`/budgets/${slug}`}>
+                {label} page
+              </Link>
+              .
+            </>
+          )}
         </p>
       </Chapter>
 

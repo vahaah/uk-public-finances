@@ -5,6 +5,7 @@ import { formatBillions, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
+import { DistributionalImpactFigure, DistributionalLevelsFigure } from "@/components/distributional-figures";
 
 export const metadata = pageMeta({
   title: "How many people pay income tax in the UK?",
@@ -14,7 +15,8 @@ export const metadata = pageMeta({
 });
 
 export default async function TaxpayersPage() {
-  const loaded = await readSnapshot("hmrc-income-tax");
+  const [loaded, obrLoaded] = await Promise.all([readSnapshot("hmrc-income-tax"), readSnapshot("budgets-obr")]);
+  const distributional = takeSnapshot("budgets-obr", obrLoaded.snapshot)?.data.distributional?.data ?? null;
   const snapshot = takeSnapshot("hmrc-income-tax", loaded.snapshot);
   const meta = SOURCES["hmrc-income-tax"];
   if (!snapshot) return <EmptySource name="HMRC income tax liabilities" />;
@@ -110,6 +112,22 @@ export default async function TaxpayersPage() {
           ])}
         />
       </ChartFrame>
+      {distributional ? (
+        <section id="households-by-income" className="mt-8 scroll-mt-40 md:scroll-mt-28">
+          <h2 className="mb-1 text-sm font-medium">Tax and spending by household income</h2>
+          <p className="mb-3 max-w-[68ch] text-sm text-neutral-800 dark:text-neutral-200">
+            HM Treasury&apos;s distributional analysis for {distributional.eventName} covers households rather than individual taxpayers, and includes welfare and public services as well as tax. The values are read from its published charts. More on the{" "}
+            <Link className="underline underline-offset-4" href={`/budgets/${distributional.eventSlug}#households-by-income`}>
+              {distributional.eventName} page
+            </Link>
+            .
+          </p>
+          <div className="grid gap-4">
+            <DistributionalImpactFigure data={distributional} path="/taxpayers" />
+            <DistributionalLevelsFigure data={distributional} path="/taxpayers" />
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }

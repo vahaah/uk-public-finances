@@ -158,6 +158,10 @@ async function main(): Promise<void> {
       measures: { loaded: false, asOf: null, rows: [] },
       evaluation: { loaded: false, asOf: null, rows: [] },
       headroom: { loaded: false, asOf: null, rows: [] },
+      distributional: {
+        file: "manual/hmt/distributional/budget-2026.json",
+        data: JSON.parse(readFileSync(path.join(root, "fixtures/raw/hmt/distributional/budget-2026.json"), "utf8")) as unknown,
+      },
     },
   }));
 

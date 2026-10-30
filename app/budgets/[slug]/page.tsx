@@ -7,6 +7,7 @@ import { BudgetCaveats } from "@/components/budget-caveats";
 import { StoryNav } from "@/components/story-nav";
 import { CompareFigure, PolicyFigure } from "@/components/story-sections";
 import { CompareBars } from "@/components/story-charts";
+import { DistributionalCumulativeFigure, DistributionalImpactFigure, DistributionalLevelsFigure } from "@/components/distributional-figures";
 import { SourceNote } from "@/components/blocks";
 import { formatUnit } from "@/lib/story-format";
 import { eventComparisons, efoSourceTitle, OBR_SOURCE, SERIES_META, type ObrData } from "@/lib/story";
@@ -263,6 +264,23 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
           <EmptySource title="Measures not loaded yet" name="Measures" detail="Measures appear once the OBR policy measures database is loaded." />
         )}
       </section>
+      {obr?.data.distributional?.data?.eventSlug === event.slug ? (
+        <section id="households-by-income" className="mt-8 scroll-mt-40 md:scroll-mt-28">
+          <h2 className="mb-1 text-sm font-medium">Effect on households by income</h2>
+          <p className="mb-3 max-w-[68ch] text-sm text-neutral-800 dark:text-neutral-200">
+            HM Treasury&apos;s distributional analysis published with {label}. It publishes these estimates as charts only, so the values here are read from those charts. Who pays income tax at each rate is on{" "}
+            <Link className="underline underline-offset-4" href="/taxpayers">
+              income taxpayers
+            </Link>
+            .
+          </p>
+          <div className="grid gap-4">
+            <DistributionalImpactFigure data={obr.data.distributional.data} path={`/budgets/${event.slug}`} />
+            <DistributionalCumulativeFigure data={obr.data.distributional.data} path={`/budgets/${event.slug}`} />
+            <DistributionalLevelsFigure data={obr.data.distributional.data} path={`/budgets/${event.slug}`} />
+          </div>
+        </section>
+      ) : null}
       <BudgetCaveats />
       <StoryNav current={`/budgets/${event.slug}`} />
     </>
