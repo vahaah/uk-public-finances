@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumb, JsonLd, breadcrumbJsonLd } from "@/components/blocks";
 import { StoryNav } from "@/components/story-nav";
 import {
+  BorrowingChangesFigure,
   CpiFigure,
   DebtInterestFigure,
   DebtVsOutturnFigure,
@@ -94,7 +95,15 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
 
       <Chapter id="trap" title="2. Borrowing and interest" lede="How much the government is forecast to borrow, and what its debt costs.">
         <PsnbFigure {...props} />
+        <BorrowingChangesFigure {...props} />
         <DebtInterestFigure {...props} />
+        <p className="text-sm text-neutral-800 dark:text-neutral-200 lg:col-span-2">
+          Past forecasts of borrowing have often differed from what happened.{" "}
+          <Link className="underline underline-offset-4" href="/budgets#borrowing-forecasts">
+            See every OBR borrowing forecast against the outturn
+          </Link>
+          .
+        </p>
       </Chapter>
 
       <Chapter id="strategy" title="3. The Budget's plan" lede="What the Budget's decisions do to borrowing, and the forecast for taxes and debt.">

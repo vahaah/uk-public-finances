@@ -111,7 +111,7 @@ export default async function BorrowingPage() {
           ) : null}
         </ChartFrame>
       </div>
-      <TopicStory path="/borrowing" figures={["psnb", "policy"]} title="Borrowing in the latest forecast" />
+      <TopicStory path="/borrowing" figures={["psnb", "borrowingChanges", "policy"]} title="Borrowing in the latest forecast" />
     </>
   );
 }
