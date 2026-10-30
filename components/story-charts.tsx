@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, LabelList, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 
 import { useChartTheme } from "@/components/charts";
 import { ChartTooltip } from "@/components/chart-tooltip";
@@ -29,12 +29,12 @@ function yAxisFor(values: (number | null | undefined)[], zero: boolean) {
   return { ticks, domain: [ticks[0]!, ticks.at(-1)!] as [number, number], tickFormatter: tickFormatter(ticks) };
 }
 
-function Swatches({ items }: { items: { label: string; className: string; dashed?: boolean }[] }) {
+function Swatches({ items }: { items: { label: string; className: string; color?: string; diamond?: boolean }[] }) {
   return (
     <p className="mb-2 flex flex-wrap gap-4 text-xs text-neutral-950 dark:text-neutral-50">
       {items.map((item) => (
         <span key={item.label}>
-          <span className={`mr-1 inline-block size-2.5 align-middle ${item.className}`} aria-hidden="true" />
+          <span className={`mr-1 inline-block size-2.5 align-middle ${item.diamond ? "rotate-45 scale-75 bg-neutral-900 dark:bg-neutral-50" : ""} ${item.className}`} style={item.color ? { backgroundColor: item.color } : undefined} aria-hidden="true" />
           {item.label}
         </span>
       ))}
@@ -250,6 +250,73 @@ export function VintagesLine({ vintages, points, unit }: { vintages: string[]; p
           <Line dataKey="outturn" name="Outturn" stroke={theme.stroke} dot={false} strokeWidth={2.5} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+/**
+ * Stacked bars that split above and below zero (positive parts stack up, negative parts
+ * down), with an optional net marker per period. Segment colours are given by the caller.
+ */
+export function StackedBars({
+  points,
+  segments,
+  unit,
+  netKey,
+  netName = "Net change",
+  height = "h-64",
+}: {
+  points: Record<string, string | number | null>[];
+  segments: { key: string; name: string; color: string; darkColor?: string }[];
+  unit: Unit;
+  netKey?: string;
+  netName?: string;
+  height?: string;
+}) {
+  const theme = useChartTheme();
+  const isSm = useIsSm();
+  const dark = theme.bar !== "#1d4ed8";
+  const values: number[] = [];
+  for (const point of points) {
+    let up = 0;
+    let down = 0;
+    for (const segment of segments) {
+      const value = Number(point[segment.key] ?? 0);
+      if (value > 0) up += value;
+      else down += value;
+    }
+    values.push(up, down);
+    if (netKey && point[netKey] != null) values.push(Number(point[netKey]));
+  }
+  const y = yAxisFor(values, true);
+  return (
+    <div>
+      <Swatches
+        items={[
+          ...segments.map((segment) => ({ label: segment.name, className: "", color: dark ? (segment.darkColor ?? segment.color) : segment.color })),
+          ...(netKey ? [{ label: netName, className: "", diamond: true }] : []),
+        ]}
+      />
+      <div className={height}>
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 256 }}>
+          <ComposedChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} stackOffset="sign">
+            <CartesianGrid stroke={theme.grid} vertical={false} />
+            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval={0} tickFormatter={isSm ? undefined : shortPeriod} />
+            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={40} ticks={y.ticks} domain={y.domain} tickFormatter={y.tickFormatter} />
+            <ReferenceLine y={0} stroke={theme.muted} />
+            <Tooltip
+              cursor={{ fill: theme.cursor }}
+              content={({ active, payload, label }) => (
+                <ChartTooltip active={active} label={String(label ?? "")} rows={(payload ?? []).filter((item) => item.value != null).map((item) => ({ name: String(item.name), value: formatUnit(Number(item.value), unit) }))} />
+              )}
+            />
+            {segments.map((segment) => (
+              <Bar key={segment.key} dataKey={segment.key} name={segment.name} stackId="s" fill={dark ? segment.darkColor ?? segment.color : segment.color} isAnimationActive={false} />
+            ))}
+            {netKey ? <Scatter dataKey={netKey} name={netName} fill={theme.stroke} shape="diamond" isAnimationActive={false} /> : null}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

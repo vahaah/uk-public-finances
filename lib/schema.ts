@@ -347,6 +347,9 @@ export const efoDataSchema = z.object({
   debtVsOutturn: z
     .object({ vintages: z.array(z.string()), points: z.array(z.object({ period: efoPeriod, values: z.array(finite.nullable()), outturn: finite.nullable() })) })
     .nullable(),
+  borrowingChanges: z
+    .array(z.object({ period: efoPeriod, total: finite.nullable(), debtInterest: finite.nullable(), welfare: finite.nullable(), otherSpending: finite.nullable(), receipts: finite.nullable(), policy: finite.nullable() }))
+    .default([]),
   found: z.array(z.string()),
 });
 

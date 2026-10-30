@@ -80,7 +80,7 @@ export default async function BudgetsPage() {
           </Link>
         </p>
       </section>
-      <section className="mb-8">
+      <section id="borrowing-forecasts" className="mb-8 scroll-mt-28">
         <h2 className="mb-3 text-sm font-medium">OBR borrowing forecasts against what happened</h2>
         {obr?.data.historical.loaded && lines.length > 0 ? (
           <>

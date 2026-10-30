@@ -5,7 +5,7 @@ import * as F from "@/components/story-sections";
 import { eventLabel } from "@/lib/budgets/events";
 import { latestStory, measuresPerEvent, storyEvents } from "@/lib/story";
 
-type FigureName = "gdp" | "cpi" | "rhdiRolling" | "psnb" | "debtInterest" | "policy" | "taxBurden" | "psnfl" | "debtVsOutturn" | "packages" | "measures";
+type FigureName = "gdp" | "cpi" | "rhdiRolling" | "psnb" | "debtInterest" | "policy" | "taxBurden" | "psnfl" | "debtVsOutturn" | "packages" | "measures" | "borrowingChanges";
 
 /** Long-run and latest-forecast charts on a topic page, then the story links. */
 export async function TopicStory({ path, figures, title }: { path: string; figures: FigureName[]; title: string }) {
@@ -25,6 +25,7 @@ export async function TopicStory({ path, figures, title }: { path: string; figur
           case "psnfl": return <F.PsnflFigure key={name} {...props} />;
           case "debtVsOutturn": return <F.DebtVsOutturnFigure key={name} {...props} />;
           case "packages": return <F.PackagesFigure key={name} {...props} />;
+          case "borrowingChanges": return <F.BorrowingChangesFigure key={name} {...props} />;
           case "measures": return <F.MeasuresFigure key={name} rows={measuresPerEvent(story.obr.measures.rows, events)} path={path} releaseDate={story.obr.measures.asOf} />;
         }
       })

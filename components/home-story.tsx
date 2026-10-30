@@ -103,6 +103,12 @@ export async function HomeStory() {
           </Link>
         ))}
       </div>
+      <p className="mt-4 text-sm text-neutral-800 dark:text-neutral-200">
+        Forecasts are not outcomes.{" "}
+        <Link className="underline decoration-neutral-400 underline-offset-4" href="/budgets#borrowing-forecasts">
+          Every OBR borrowing forecast since 2010 against what happened →
+        </Link>
+      </p>
     </section>
   );
 }
