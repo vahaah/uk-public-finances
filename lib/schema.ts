@@ -11,6 +11,7 @@ export const SOURCE_IDS = [
   "obr-databank",
   "budgets-events",
   "budgets-obr",
+  "ofgem-cap",
 ] as const;
 
 export type SourceId = (typeof SOURCE_IDS)[number];
@@ -384,6 +385,16 @@ export const efoDataSchema = z.object({
   found: z.array(z.string()),
 });
 
+export const ofgemCapDataSchema = z.object({
+  pageUrl: z.string(),
+  workbookUrl: z.string(),
+  consumptionNote: z.string().nullable(),
+  /** Workbook publication date from its version control table; older snapshots have none. */
+  published: dayPeriod.nullable().optional(),
+  /** Typical dual fuel Direct Debit cap level, £ a year inc VAT, at the latest typical consumption values. */
+  periods: z.array(z.object({ period: z.string().min(1), start: dayPeriod, gbp: finite.positive() })).min(8),
+});
+
 export const budgetsObrDataSchema = z.object({
   /** Latest EFO and forecast evaluation charts, uploaded by hand under manual/obr/efo/. Older snapshots have none. */
   efo: z.object({ loaded: z.boolean(), files: z.array(z.string()), data: efoDataSchema.nullable() }).optional(),
@@ -475,6 +486,7 @@ export const snapshotSchemas = {
   "obr-databank": envelope(obrDataSchema),
   "budgets-events": envelope(budgetsEventsDataSchema),
   "budgets-obr": envelope(budgetsObrDataSchema),
+  "ofgem-cap": envelope(ofgemCapDataSchema),
 } as const;
 
 export type SnapshotOf<T extends SourceId> = z.infer<(typeof snapshotSchemas)[T]>;

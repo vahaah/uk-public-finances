@@ -33,6 +33,7 @@ import {
 } from "@/lib/budgets/forecasts";
 import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
+import { parseAnnex9, pickAnnex9 } from "@/lib/parsers/ofgem";
 import { eesAllFilesUrl, parseDfePerPupil, parseHmtDeflators, parseIndependentForecasts } from "@/lib/parsers/extras";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
 import { pesaDataSchema, priceSeriesSchema, snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
@@ -277,6 +278,27 @@ async function fetchDfePerPupil() {
   const lastModified = response.headers.get("last-modified");
   const parsed = parseDfePerPupil(new Uint8Array(await response.arrayBuffer()));
   return { ...parsed, url: DFE_SCHOOL_FUNDING, releaseDate: lastModified ? new Date(lastModified).toISOString().slice(0, 10) : null };
+}
+
+const OFGEM_LEVELS = "https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels";
+
+export async function runOfgem(force: boolean): Promise<Record<string, unknown>> {
+  "use step";
+  const workbookUrl = pickAnnex9(await getText(OFGEM_LEVELS));
+  if (!workbookUrl) throw new Error("Ofgem price cap page has no Annex 9 workbook");
+  const bytes = await getBytes(workbookUrl);
+  return finish("ofgem-cap", async () => {
+    const parsed = await parseAnnex9(bytes);
+    const latest = parsed.published ?? parsed.periods.at(-1)?.start ?? null;
+    return buildEnvelope({
+      sourceId: "ofgem-cap",
+      retrievedAt: new Date().toISOString(),
+      releaseDate: latest,
+      nextRelease: null,
+      sourceUrl: OFGEM_LEVELS,
+      data: { pageUrl: OFGEM_LEVELS, workbookUrl, ...parsed },
+    });
+  });
 }
 
 export async function runIncomeTax(force: boolean): Promise<Record<string, unknown>> {

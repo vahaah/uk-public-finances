@@ -1,5 +1,5 @@
 import { StoryFigure } from "@/components/story-figure";
-import { CompareBars, LongRunLine, RangeCompare, SignedBars, StackedBars, VintagesLine } from "@/components/story-charts";
+import { CompareBars, LongRunLine, MultiLine, RangeCompare, SignedBars, StackedBars, VintagesLine } from "@/components/story-charts";
 import { formatUnit } from "@/lib/story-format";
 import type { RhdiDecade } from "@/lib/rhdi-decades";
 import { financialYearOf } from "@/lib/budgets/events";
@@ -413,6 +413,39 @@ export function IndependentForecastsFigure({ efo, independent, path }: Props & {
     >
       <RangeCompare points={points} unit="pct" dotName={`OBR ${label}`} />
       <p className="mt-1 text-xs text-neutral-700 dark:text-neutral-300">All of these are forecasts, not outturns. The independent range covers forecasts received in the three months before HM Treasury&apos;s publication, so some predate the OBR forecast.</p>
+    </StoryFigure>
+  );
+}
+
+/** Ofgem price cap for a typical dual fuel household, cash and real terms (CPI). Cap levels before any government support. */
+export function EnergyCapFigure({ cap, cpi, path }: { cap: { pageUrl: string; consumptionNote: string | null; published?: string | null; periods: { period: string; start: string; gbp: number }[] } | undefined; cpi: { period: string; value: number }[] | undefined; path: string }) {
+  if (!cap || cap.periods.length < 8) return null;
+  const latestCpi = cpi?.at(-1);
+  const cpiAt = (month: string) => cpi?.find((point) => point.period === month)?.value ?? null;
+  const points = cap.periods.map((row) => {
+    const month = row.start.slice(0, 7);
+    const index = cpiAt(month);
+    return { period: month, label: row.period, cash: row.gbp, real: index && latestCpi ? Math.round((row.gbp * latestCpi.value) / index) : null };
+  });
+  const latest = points.at(-1)!;
+  const peak = [...points].sort((a, b) => b.cash - a.cash)[0]!;
+  const before = points.find((point) => point.period === "2021-04");
+  const hasReal = points.some((point) => point.real != null) && latestCpi;
+  const series = hasReal ? [{ key: "cash", name: "Cash" }, { key: "real", name: `Real terms (${latestCpi!.period} prices, CPI)` }] : [{ key: "cash", name: "Cash" }];
+  return (
+    <StoryFigure
+      id="energy-price-cap"
+      path={path}
+      title={before && latest.cash > before.cash ? `The energy price cap is ${Math.round(((latest.cash - before.cash) / before.cash) * 100)}% above its April 2021 level in cash terms` : "The energy price cap since 2017"}
+      subtitle={`Ofgem price cap for a typical dual fuel household paying by Direct Debit, £ a year including VAT, GB average. ${cap.consumptionNote ?? ""}. Cap levels before any government support.`}
+      takeaway={`The cap for ${latest.label} is ${formatUnit(latest.cash, "gbp")} a year for a typical household. Its highest level was ${formatUnit(peak.cash, "gbp")}, for ${peak.label}, on the same consumption basis.`}
+      csv={{ header: ["cap period", "start", "£ a year cash", hasReal ? `£ a year, ${latestCpi!.period} prices (CPI)` : "real"], rows: points.map((point) => [point.label, point.period, point.cash, point.real]) }}
+      source={{ publisher: "Ofgem; ONS for CPI", title: "Energy price cap, Annex 9 levelised cap levels, sheet 1c (consumption adjusted levels); CPI index D7BT", url: cap.pageUrl, releaseDate: cap.published ?? cap.periods.at(-1)!.start, licenceUrl: OBR_SOURCE.licenceUrl }}
+    >
+      <MultiLine points={points} series={series} unit="gbp" />
+      <p className="mt-1 text-xs text-neutral-700 dark:text-neutral-300">
+        From October 2022 to June 2023 the Energy Price Guarantee set lower unit rates than the cap, so households paid less than the levels shown for those periods. No forecast of future cap levels is shown.
+      </p>
     </StoryFigure>
   );
 }

@@ -12,6 +12,7 @@ import {
   runObr,
   runOns,
   runPesa,
+  runOfgem,
   runPrices,
 } from "@/lib/workflows/steps";
 import type { SourceId } from "@/lib/schema";
@@ -85,6 +86,11 @@ export async function budgetsObrWorkflow(input: Input): Promise<Record<string, u
   return settle("budgets-obr", runBudgetsObr, Boolean(input.force));
 }
 
+export async function ofgemCapWorkflow(input: Input): Promise<Record<string, unknown>> {
+  "use workflow";
+  return settle("ofgem-cap", runOfgem, Boolean(input.force));
+}
+
 export const DAILY_WORKFLOWS = [
   onsPsfWorkflow,
   pricesWorkflow,
@@ -96,4 +102,5 @@ export const DAILY_WORKFLOWS = [
   obrDatabankWorkflow,
   budgetsEventsWorkflow,
   budgetsObrWorkflow,
+  ofgemCapWorkflow,
 ] as const;

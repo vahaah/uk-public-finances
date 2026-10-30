@@ -1,0 +1,161 @@
+{
+  "sourceId": "ofgem-cap",
+  "schemaVersion": 1,
+  "retrievedAt": "2026-10-28T06:45:00.000Z",
+  "releaseDate": "2026-08-26",
+  "nextRelease": null,
+  "sourceUrl": "https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels",
+  "sourceTitle": "Energy price cap levels (Annex 9, levelised cap levels)",
+  "publisher": "Ofgem",
+  "licence": "Open Government Licence v3.0",
+  "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+  "contentHash": "e80eaa157b5674c61947cd3969871de03cc9542a226662c68470c93ac458a818",
+  "data": {
+    "pageUrl": "https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels",
+    "workbookUrl": "https://www.ofgem.gov.uk/sites/default/files/2026-08/Annex-9-Levelisation-allowance-methodology-and-levelised-cap-levels-v1.11.xlsx",
+    "consumptionNote": "Restated at Ofgem's latest typical domestic consumption values",
+    "published": "2026-08-26",
+    "periods": [
+      {
+        "period": "Apr 2017 to Sep 2017",
+        "start": "2017-04-01",
+        "gbp": 832
+      },
+      {
+        "period": "Oct 2017 to Mar 2018",
+        "start": "2017-10-01",
+        "gbp": 827
+      },
+      {
+        "period": "Apr 2018 to Sep 2018",
+        "start": "2018-04-01",
+        "gbp": 885
+      },
+      {
+        "period": "Oct 2018 to Mar 2019",
+        "start": "2018-10-01",
+        "gbp": 945
+      },
+      {
+        "period": "Apr 2019 to Sep 2019",
+        "start": "2019-04-01",
+        "gbp": 1039
+      },
+      {
+        "period": "Oct 2019 to Mar 2020",
+        "start": "2019-10-01",
+        "gbp": 979
+      },
+      {
+        "period": "Apr 2020 to Sep 2020",
+        "start": "2020-04-01",
+        "gbp": 967
+      },
+      {
+        "period": "Oct 2020 to Mar 2021",
+        "start": "2020-10-01",
+        "gbp": 899
+      },
+      {
+        "period": "Apr 2021 to Sep 2021",
+        "start": "2021-04-01",
+        "gbp": 979
+      },
+      {
+        "period": "Oct 2021 to Mar 2022",
+        "start": "2021-10-01",
+        "gbp": 1093
+      },
+      {
+        "period": "Apr 2022 to Sep 2022",
+        "start": "2022-04-01",
+        "gbp": 1673
+      },
+      {
+        "period": "Oct 2022 to Dec 2022",
+        "start": "2022-10-01",
+        "gbp": 2972
+      },
+      {
+        "period": "Jan 2023 to Mar 2023",
+        "start": "2023-01-01",
+        "gbp": 3582
+      },
+      {
+        "period": "Apr 2023 to June 2023",
+        "start": "2023-04-01",
+        "gbp": 2762
+      },
+      {
+        "period": "Jul 2023 to Sept 2023",
+        "start": "2023-07-01",
+        "gbp": 1766
+      },
+      {
+        "period": "Oct 2023 to Dec 2023",
+        "start": "2023-10-01",
+        "gbp": 1641
+      },
+      {
+        "period": "Jan 2024 to Mar 2024",
+        "start": "2024-01-01",
+        "gbp": 1723
+      },
+      {
+        "period": "April 2024 to June 2024",
+        "start": "2024-04-01",
+        "gbp": 1520
+      },
+      {
+        "period": "July 2024 to September 2024",
+        "start": "2024-07-01",
+        "gbp": 1414
+      },
+      {
+        "period": "Oct 2024 to Dec 2024",
+        "start": "2024-10-01",
+        "gbp": 1543
+      },
+      {
+        "period": "Jan 2025 to Mar 2025",
+        "start": "2025-01-01",
+        "gbp": 1561
+      },
+      {
+        "period": "Apr 2025 to June 2025",
+        "start": "2025-04-01",
+        "gbp": 1655
+      },
+      {
+        "period": "Jul 2025 to Sept 2025",
+        "start": "2025-07-01",
+        "gbp": 1541
+      },
+      {
+        "period": "Oct 2025 to Dec 2025",
+        "start": "2025-10-01",
+        "gbp": 1576
+      },
+      {
+        "period": "Jan 2026 to Mar 2026",
+        "start": "2026-01-01",
+        "gbp": 1584
+      },
+      {
+        "period": "Apr 2026 to June 2026",
+        "start": "2026-04-01",
+        "gbp": 1477
+      },
+      {
+        "period": "Jul 2026 to Sept 2026",
+        "start": "2026-07-01",
+        "gbp": 1663
+      },
+      {
+        "period": "Oct 2026 to Dec 2026",
+        "start": "2026-10-01",
+        "gbp": 1723
+      }
+    ]
+  }
+}

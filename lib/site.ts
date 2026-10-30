@@ -152,6 +152,15 @@ export const SOURCES: Record<SourceId, SourceMeta> = {
     page: "https://obr.uk/data/",
     staleAfterMs: 200 * 24 * 60 * 60 * 1000,
   },
+  "ofgem-cap": {
+    id: "ofgem-cap",
+    title: "Energy price cap levels (Annex 9, levelised cap levels)",
+    publisher: "Ofgem",
+    licence: "Open Government Licence v3.0",
+    licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    page: "https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels",
+    staleAfterMs: 120 * 24 * 60 * 60 * 1000,
+  },
 };
 
 export function assertNever(value: never): never {

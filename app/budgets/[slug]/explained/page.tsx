@@ -8,6 +8,7 @@ import { StoryNav } from "@/components/story-nav";
 import {
   BorrowingChangesFigure,
   CpiFigure,
+  EnergyCapFigure,
   DebtInterestFigure,
   DebtVsOutturnFigure,
   GdpFigure,
@@ -59,7 +60,8 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
   const { event, efo, obr } = story;
   const label = eventLabel(event);
   const path = `/budgets/${slug}/explained`;
-  const [events, pricesLoaded, pesaLoaded] = await Promise.all([storyEvents(), readSnapshot("ons-prices"), readSnapshot("pesa")]);
+  const [events, pricesLoaded, pesaLoaded, ofgemLoaded] = await Promise.all([storyEvents(), readSnapshot("ons-prices"), readSnapshot("pesa"), readSnapshot("ofgem-cap")]);
+  const cap = takeSnapshot("ofgem-cap", ofgemLoaded.snapshot)?.data;
   const independent = takeSnapshot("pesa", pesaLoaded.snapshot)?.data.independent;
   const measures = measuresPerEvent(obr.measures.rows, events);
   const crxx = takeSnapshot("ons-prices", pricesLoaded.snapshot)?.data.crxx;
@@ -91,6 +93,7 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
         <GdpFigure {...props} />
         <IndependentForecastsFigure {...props} independent={independent} />
         <CpiFigure {...props} />
+        <EnergyCapFigure cap={cap} cpi={takeSnapshot("ons-prices", pricesLoaded.snapshot)?.data.d7bt.months} path={path} />
         <RhdiDecadesFigure decades={decades} path={path} releaseDate={crxx?.releaseDate.slice(0, 10) ?? null} priceYear={priceYear} />
         <RhdiGrowthFigure {...props} />
         <RhdiRollingFigure {...props} />

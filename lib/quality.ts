@@ -45,6 +45,8 @@ export function snapshotRows(snapshot: AnySnapshot): number {
         data.headroom.rows.length
       );
     }
+    case "ofgem-cap":
+      return (snapshot as SnapshotOf<"ofgem-cap">).data.periods.length;
     default:
       return assertNever(sourceId);
   }
