@@ -1,5 +1,5 @@
 import { StoryFigure } from "@/components/story-figure";
-import { CompareBars, LongRunLine, SignedBars, VintagesLine } from "@/components/story-charts";
+import { CompareBars, LongRunLine, SignedBars, StackedBars, VintagesLine } from "@/components/story-charts";
 import { formatUnit } from "@/lib/story-format";
 import { financialYearOf } from "@/lib/budgets/events";
 import { efoSourceTitle, OBR_SOURCE, SERIES_META, type EfoData, type EventCompare } from "@/lib/story";
@@ -325,6 +325,37 @@ export function MeasuresFigure({ rows, path, releaseDate }: { rows: { name: stri
           <SignedBars points={sizes} unit="bn" name="Average size" positiveLabel="Average size, either sign" negativeLabel="" highlight={sizes.at(-1)!.period} tickLabel="year" tickEvery={4} height="h-40" />
         </div>
       ) : null}
+    </StoryFigure>
+  );
+}
+
+const CHANGE_SEGMENTS = [
+  { key: "debtInterest", name: "Debt interest", color: "#1d4ed8", darkColor: "#93c5fd" },
+  { key: "welfare", name: "Welfare", color: "#3b82f6", darkColor: "#60a5fa" },
+  { key: "otherSpending", name: "Other spending", color: "#93c5fd", darkColor: "#bfdbfe" },
+  { key: "receipts", name: "Receipts", color: "#a3a3a3", darkColor: "#737373" },
+  { key: "policy", name: "Policy decisions", color: "#d97706", darkColor: "#fbbf24" },
+] as const;
+
+/** What moved the borrowing forecast since the previous OBR forecast: the economy and other forecast changes against this event's decisions. */
+export function BorrowingChangesFigure({ efo, path }: Props) {
+  const points = efo.borrowingChanges ?? [];
+  if (points.length < 2 || !efo.previousLabel) return null;
+  const first = points[0]!;
+  const forecastPart = (point: (typeof points)[number]) => (point.total ?? 0) - (point.policy ?? 0);
+  const forecastBigger = Math.abs(forecastPart(first)) > Math.abs(first.policy ?? 0);
+  const debt = first.debtInterest ?? 0;
+  return (
+    <StoryFigure
+      id="what-moved-borrowing"
+      path={path}
+      title={forecastBigger ? `Forecast changes moved borrowing more than the decisions in ${first.period}` : `The decisions moved borrowing more than forecast changes in ${first.period}`}
+      subtitle={`Change in borrowing since the ${efo.previousLabel} forecast, £ billion, by financial year. Above zero adds to borrowing; below zero reduces it. Policy decisions include their indirect effects on the economy.`}
+      takeaway={`Borrowing for ${first.period} is forecast ${formatUnit(Math.abs(first.total ?? 0), "bn")} ${(first.total ?? 0) >= 0 ? "higher" : "lower"} than in the ${efo.previousLabel} forecast. Changes other than policy account for ${formatUnit(forecastPart(first), "bn")} of that, including ${formatUnit(debt, "bn")} from debt interest; policy decisions account for ${formatUnit(first.policy ?? 0, "bn")}.`}
+      csv={{ header: ["period", "total change £bn", "debt interest £bn", "welfare £bn", "other spending £bn", "receipts £bn", "policy decisions £bn"], rows: points.map((p) => [p.period, p.total, p.debtInterest, p.welfare, p.otherSpending, p.receipts, p.policy]) }}
+      source={src(efo, `${efo.currentLabel ?? "Latest"} Economic and fiscal outlook, table "Public sector net borrowing: changes since ${efo.previousLabel}"`)}
+    >
+      <StackedBars points={points} segments={[...CHANGE_SEGMENTS]} unit="bn" netKey="total" netName="Total change" />
     </StoryFigure>
   );
 }

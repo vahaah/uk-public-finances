@@ -28,8 +28,67 @@ export type EfoData = {
   policy: { period: string; total: number | null; currentSpending: number | null; capitalSpending: number | null; receipts: number | null }[];
   packages: { event: string; pctGdp: number }[];
   debtVsOutturn: { vintages: string[]; points: { period: string; values: (number | null)[]; outturn: number | null }[] } | null;
+  /** What moved the borrowing forecast since the previous one, from the OBR table "PSNB ... changes since". £ billion; positive adds to borrowing. */
+  borrowingChanges: BorrowingChange[];
   found: string[];
 };
+
+export type BorrowingChange = {
+  period: string;
+  total: number | null;
+  debtInterest: number | null;
+  welfare: number | null;
+  otherSpending: number | null;
+  receipts: number | null;
+  policy: number | null;
+};
+
+/**
+ * Rows of the OBR "changes since" PSNB table, above the current budget deficit block
+ * (which repeats "Difference" and "Capital spending"). Spending sub-rows are summed into
+ * debt interest, welfare and other spending; receipts is the receipts total; policy is
+ * direct plus indirect effects of policy decisions.
+ */
+export function parseBorrowingChanges(grid: Grid | null): BorrowingChange[] {
+  if (!grid) return [];
+  let years: { index: number; period: string }[] = [];
+  for (const row of grid) {
+    const found = row.map((cell, index) => ({ index, period: periodLabel(cell) })).filter((item): item is { index: number; period: string } => item.period != null);
+    if (found.length > years.length) years = found;
+  }
+  const rows: [string, Cell[]][] = [];
+  for (const row of grid) {
+    const label = text(row[1]).replace(/\s+/g, " ").replace(/\d+$/, "").trim();
+    if (/^(Table|Chart) /.test(label)) continue;
+    if (/current budget deficit/i.test(label)) break;
+    if (label) rows.push([label, row]);
+  }
+  const first = (pattern: RegExp) => rows.find(([label]) => pattern.test(label))?.[1];
+  const total = first(/^Difference$/i);
+  const debtInterest = first(/^Debt interest/i);
+  const capital = first(/^Capital spending$/i);
+  const welfare = first(/^Welfare$/i);
+  const other = first(/^Other spending$/i);
+  const receipts = first(/^Receipts$/i);
+  const direct = first(/^Direct effects of policy/i);
+  const indirect = first(/^Indirect effects of policy/i);
+  if (!total || !debtInterest || !receipts || !direct) return [];
+  const sum = (...cells: (Cell | undefined)[]) => {
+    const values = cells.map(num);
+    return values.every((value) => value == null) ? null : round(values.reduce<number>((acc, value) => acc + (value ?? 0), 0));
+  };
+  return years
+    .map(({ index, period }) => ({
+      period,
+      total: round(num(total[index])),
+      debtInterest: round(num(debtInterest[index])),
+      welfare: round(num(welfare?.[index])),
+      otherSpending: sum(capital?.[index], other?.[index]),
+      receipts: round(num(receipts[index])),
+      policy: sum(direct[index], indirect?.[index]),
+    }))
+    .filter((point) => point.debtInterest != null && point.receipts != null && point.policy != null);
+}
 
 const text = (cell: Cell | undefined) => (cell == null ? "" : String(cell).trim());
 const num = (cell: Cell | undefined): number | null => (typeof cell === "number" && Number.isFinite(cell) ? cell : null);
@@ -159,6 +218,7 @@ export function parseEfoCharts(workbooks: Record<string, Grid>[]): EfoData {
     }
   }
   void psnbWide;
+  const borrowingChanges = parseBorrowingChanges(psnbGrid);
 
   const psnfl = wideCompare(sheet("psnfl", /^Chart [\d.A-Z]+: Public sector net financial liabilities$/), /^[A-Z][a-z]+ \d{4} forecast$/, /^[A-Z][a-z]+ \d{4} forecast$/, /^Outturn$/);
   let psnflOrdered = psnfl;
@@ -253,6 +313,7 @@ export function parseEfoCharts(workbooks: Record<string, Grid>[]): EfoData {
     policy,
     packages,
     debtVsOutturn,
+    borrowingChanges,
     found,
   };
 }
