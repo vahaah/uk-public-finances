@@ -1,6 +1,7 @@
 import { StoryFigure } from "@/components/story-figure";
 import { CompareBars, LongRunLine, SignedBars, StackedBars, VintagesLine } from "@/components/story-charts";
 import { formatUnit } from "@/lib/story-format";
+import type { RhdiDecade } from "@/lib/rhdi-decades";
 import { financialYearOf } from "@/lib/budgets/events";
 import { efoSourceTitle, OBR_SOURCE, SERIES_META, type EfoData, type EventCompare } from "@/lib/story";
 
@@ -356,6 +357,34 @@ export function BorrowingChangesFigure({ efo, path }: Props) {
       source={src(efo, `${efo.currentLabel ?? "Latest"} Economic and fiscal outlook, table "Public sector net borrowing: changes since ${efo.previousLabel}"`)}
     >
       <StackedBars points={points} segments={[...CHANGE_SEGMENTS]} unit="bn" netKey="total" netName="Total change" />
+    </StoryFigure>
+  );
+}
+
+/** Household income per head by decade, ONS outturn only. */
+export function RhdiDecadesFigure({ decades, path, releaseDate, priceYear }: { decades: RhdiDecade[]; path: string; releaseDate: string | null; priceYear: string | null }) {
+  if (decades.length < 3) return null;
+  const latest = decades.at(-1)!;
+  const slowest = [...decades].sort((a, b) => a.growthPct - b.growthPct)[0]!;
+  const fastest = [...decades].sort((a, b) => b.growthPct - a.growthPct)[0]!;
+  const label = (row: RhdiDecade) => (row.partial ? `${row.decade} (${row.from}–${String(row.to).slice(2)})` : row.decade);
+  const growth = decades.map((row) => ({ period: label(row), value: row.growthPct, label: `${row.from} to ${row.to}` }));
+  const cash = decades.map((row) => ({ period: label(row), value: row.changeGbp, label: `${row.from} to ${row.to}` }));
+  return (
+    <StoryFigure
+      id="income-by-decade"
+      path={path}
+      title={slowest.decade === latest.decade ? `Household income per head has grown more slowly since ${latest.from} than in any decade since the 1960s` : "Growth in household income per head, decade by decade"}
+      subtitle={`Real household disposable income per head, average yearly growth, per cent. ${latest.partial ? `The ${latest.decade} run from ${latest.from} to ${latest.to}, the latest annual figure.` : ""} ONS outturn only.`}
+      takeaway={`Real household disposable income per head grew by an average of ${formatUnit(latest.growthPct, "pct")} a year from ${latest.from} to ${latest.to}, or ${formatUnit(latest.changeGbp, "gbp")} per person${priceYear ? ` in ${priceYear} prices` : ""}. The fastest decade was the ${fastest.decade}, at ${formatUnit(fastest.growthPct, "pct")} a year.`}
+      csv={{ header: ["decade", "from", "to", "average yearly growth %", "change per head £ (CVM)", "partial"], rows: decades.map((row) => [row.decade, row.from, row.to, row.growthPct, row.changeGbp, row.partial ? "yes" : "no"]) }}
+      source={{ publisher: "Office for National Statistics", title: "UK Economic Accounts, series CRXX: real households' disposable income per head, chained volume measure", url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/crxx/ukea", licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/", releaseDate }}
+    >
+      <SignedBars points={growth} unit="pct" name="Average yearly growth" positiveLabel={latest.partial ? `Average yearly growth (${latest.decade} so far in blue)` : "Average yearly growth"} negativeLabel="" highlight={growth.at(-1)!.period} />
+      <div className="mt-4">
+        <p className="text-xs font-medium">Change in income per head over the period, £{priceYear ? `, ${priceYear} prices` : ""}</p>
+        <SignedBars points={cash} unit="gbp" name="Change per head" positiveLabel="£ per head" negativeLabel="" highlight={cash.at(-1)!.period} height="h-40" />
+      </div>
     </StoryFigure>
   );
 }

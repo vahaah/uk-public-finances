@@ -269,6 +269,8 @@ export const priceDataSchema = z
     d7bt: priceSeriesSchema,
     l522: priceSeriesSchema,
     chaw: priceSeriesSchema,
+    /** RHDI per head, CVM £. Optional so snapshots from before it was added still validate. */
+    crxx: priceSeriesSchema.optional(),
   })
   .superRefine((data, context) => {
     if (data.mnf2.cdid !== "MNF2" || data.mnf2.years.length < 1) {

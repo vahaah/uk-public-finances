@@ -108,13 +108,17 @@ const PRICE_URLS = {
   d7bt: "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7bt/mm23/data",
   l522: "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23/data",
   chaw: "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/chaw/mm23/data",
+  /** Real household disposable income per head, chained volume £, from the UK Economic Accounts. */
+  crxx: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/crxx/ukea/data",
 } as const;
 
 export async function runPrices(force: boolean): Promise<Record<string, unknown>> {
   "use step";
   const records: Record<string, unknown> = {};
   for (const [code, url] of Object.entries(PRICE_URLS)) {
-    records[code] = await getJson(url);
+    // CRXX only feeds one story chart; a failed fetch must not block the deflators.
+    if (code === "crxx") records[code] = await getJson(url).catch(() => undefined);
+    else records[code] = await getJson(url);
   }
   return finish("ons-prices", () => {
     const data = parsePriceRecords(records as never);
