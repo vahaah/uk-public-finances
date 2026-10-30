@@ -25,6 +25,7 @@ async function settle(sourceId: SourceId, run: Runner, force: boolean): Promise<
     const result = await run(force);
     // Every successful check rewrites the journal, so its timestamp shows the update step is still running.
     if (result.status === "pending") await recordPending(sourceId);
+    else if (result.status === "validation_failed") await recordValidationFailure(sourceId, typeof result.error === "string" ? result.error : "Validation failed");
     else if (typeof result.partialError === "string") await recordValidationFailure(sourceId, result.partialError);
     else await clearValidationFailure(sourceId);
     if (result.status === "updated") await revalidateDashboard();

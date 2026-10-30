@@ -23,6 +23,7 @@ import { applyContentDate, discoverEvents, type GovukHit } from "@/lib/budgets/e
 import { loadSeedEvents } from "@/lib/budgets/seed";
 import { EFO_BLOB_PREFIX, efoVintages, parseEfoCharts } from "@/lib/budgets/efo";
 import { readXlsx } from "@/lib/sheets";
+import { HMT_DISTRIBUTIONAL_PREFIX, pickDistributional } from "@/lib/hmt-distributional";
 import {
   OBR_BLOB,
   type ForecastVintage,
@@ -545,7 +546,11 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
   const evaluation = await readOptionalBlob(OBR_BLOB.evaluation);
   const headroom = await readOptionalBlob(OBR_BLOB.headroom);
   const efoFiles = await readEfoBlobs();
-  return finish("budgets-obr", async () => {
+  const distributionalFiles = await readJsonBlobs(HMT_DISTRIBUTIONAL_PREFIX);
+  const picked = pickDistributional(distributionalFiles);
+  const result = await finish("budgets-obr", async () => {
+    if (picked.errors.length > 0 && !picked.data) throw new Error(`HM Treasury distributional file invalid: ${picked.errors.join("; ")}`);
+    const distributional = picked.data ? { file: picked.file, data: picked.data } : (previous?.distributional ?? { file: null, data: null });
     const historicalData = historical
       ? { loaded: true as const, ...(await parseHistoricalForecasts(historical.bytes)) }
       : { loaded: false as const, asOf: null, vintages: [] as ForecastVintage[] };
@@ -573,9 +578,10 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
       nextRelease: null,
       sourceUrl: "https://obr.uk/data/",
       sourceTitle: "OBR files uploaded to Blob",
-      data: { efo: { loaded: Boolean(efoData), files: efoFiles.map((file) => file.pathname), data: efoData }, historical: historicalData, measures: measuresData, evaluation: evaluationData, headroom: headroomData },
+      data: { efo: { loaded: Boolean(efoData), files: efoFiles.map((file) => file.pathname), data: efoData }, distributional, historical: historicalData, measures: measuresData, evaluation: evaluationData, headroom: headroomData },
     });
   });
+  return withPartialErrors(result, picked.errors.map((error) => `HM Treasury distributional file (${error})`));
 }
 
 async function searchFiscalEvents(): Promise<GovukHit[]> {
@@ -612,6 +618,24 @@ function efoEventDate(label: string, events: { date: string; obrForecast: string
   const prefix = `${year}-${String(months.indexOf(month ?? "") + 1).padStart(2, "0")}`;
   const matches = events.filter((event) => event.date.startsWith(prefix) && event.obrForecast !== "no");
   return matches.length === 1 ? (matches[0]?.date ?? null) : null;
+}
+
+async function readJsonBlobs(prefix: string): Promise<{ pathname: string; body: unknown }[]> {
+  try {
+    const { blobs } = await list({ prefix });
+    return Promise.all(
+      blobs
+        .filter((blob) => blob.pathname.endsWith(".json"))
+        .map(async (blob) => {
+          const response = await fetch(blob.url);
+          if (!response.ok) throw new Error(`${blob.pathname} returned ${response.status}`);
+          return { pathname: blob.pathname, body: (await response.json()) as unknown };
+        }),
+    );
+  } catch (error) {
+    if (isMissing(error)) return [];
+    throw error;
+  }
 }
 
 async function readOptionalBlob(pathname: string): Promise<{ bytes: Buffer } | null> {

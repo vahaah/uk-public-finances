@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "eventSlug": "2026-10-budget",
+  "eventName": "Budget 2026",
+  "publisher": "HM Treasury",
+  "title": "Impact on households: distributional analysis to accompany Budget 2026",
+  "documentUrl": "https://assets.publishing.service.gov.uk/media/6ae1850f16428df53760627d/Impact_on_households.pdf",
+  "pageUrl": "https://www.gov.uk/government/publications/supporting-documents-for-budget-2026",
+  "published": "2026-10-28",
+  "readFromCharts": true,
+  "method": "Read from the vector chart geometry in the PDF (pdftocairo SVG): bar segment edges and Overall markers converted to values by interpolating between the y-axis ticks. Each Overall marker matches the sum of its segments to within 0.01 percentage points (1.A, 1.C), £0.3 (1.B), £5 (1.D) and 0.2 points (1.E).",
+  "figures": [
+    { "figure": "1.A", "page": 9, "top": 0.6, "bottom": -0.1, "digits": 2, "rounding": "0.01 percentage points", "title": "Impact of decisions at Budget 2026 on households in 2027-28, as a percentage of net income", "year": "2027-28", "unit": "pct", "scope": "budget" },
+    { "figure": "1.B", "page": 10, "top": 100, "bottom": -140, "digits": 0, "rounding": "£1", "title": "Impact of decisions at Budget 2026 on households in 2027-28, £ per year", "year": "2027-28", "unit": "gbp", "scope": "budget" },
+    { "figure": "1.C", "page": 11, "frame": 0, "top": 9, "bottom": -2, "digits": 2, "rounding": "0.01 percentage points", "title": "Impact of decisions from Autumn Budget 2024 onwards on households in 2028-29, as a percentage of net income", "year": "2028-29", "unit": "pct", "scope": "cumulative" },
+    { "figure": "1.D", "page": 11, "frame": 1, "top": 2000, "bottom": -3000, "digits": 0, "rounding": "£1 (read accuracy about £5)", "title": "Impact of decisions from Autumn Budget 2024 onwards on households in 2028-29, £ per year", "year": "2028-29", "unit": "gbp", "scope": "cumulative" },
+    { "figure": "1.E", "page": 12, "top": 200, "bottom": -80, "digits": 1, "rounding": "0.1 percentage points", "title": "Overall level of public spending received, and tax paid, as a percentage of net income, in 2028-29", "year": "2028-29", "unit": "pct", "scope": "levels" }
+  ]
+}

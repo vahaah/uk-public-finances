@@ -395,9 +395,43 @@ export const ofgemCapDataSchema = z.object({
   periods: z.array(z.object({ period: z.string().min(1), start: dayPeriod, gbp: finite.positive() })).min(8),
 });
 
+export const DISTRIBUTIONAL_GROUPS = ["Bottom decile", "2", "3", "4", "5", "6", "7", "8", "9", "Top decile", "All households"] as const;
+
+/** HM Treasury distributional analysis, read from the published charts (manual/hmt/distributional/). */
+export const hmtDistributionalSchema = z.object({
+  version: z.literal(1),
+  eventSlug: z.string().min(1),
+  eventName: z.string().min(1),
+  publisher: z.string().min(1),
+  title: z.string().min(1),
+  documentUrl: z.string().url(),
+  pageUrl: z.string().url(),
+  published: dayPeriod,
+  readFromCharts: z.literal(true),
+  method: z.string().min(1),
+  figures: z
+    .array(
+      z.object({
+        figure: z.string().min(1),
+        title: z.string().min(1),
+        year: z.string().min(1),
+        unit: z.enum(["pct", "gbp"]),
+        scope: z.enum(["budget", "cumulative", "levels"]),
+        rounding: z.string(),
+        rows: z
+          .array(z.object({ group: z.string().min(1), tax: finite, welfare: finite, publicServices: finite, overall: finite, overallFrom: z.string().optional(), check: finite.optional() }))
+          .length(11)
+          .refine((rows) => rows.every((row, index) => row.group === DISTRIBUTIONAL_GROUPS[index]), { message: `rows must be ${DISTRIBUTIONAL_GROUPS.join(", ")} in that order` }),
+      }),
+    )
+    .min(1),
+});
+
 export const budgetsObrDataSchema = z.object({
   /** Latest EFO and forecast evaluation charts, uploaded by hand under manual/obr/efo/. Older snapshots have none. */
   efo: z.object({ loaded: z.boolean(), files: z.array(z.string()), data: efoDataSchema.nullable() }).optional(),
+  /** Latest HM Treasury distributional analysis file from manual/hmt/distributional/. Older snapshots have none. */
+  distributional: z.object({ file: z.string().nullable(), data: hmtDistributionalSchema.nullable() }).optional(),
   historical: z.object({
     loaded: z.boolean(),
     asOf: z.string().nullable(),
