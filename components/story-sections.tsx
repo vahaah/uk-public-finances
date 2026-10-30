@@ -1,5 +1,5 @@
 import { StoryFigure } from "@/components/story-figure";
-import { CompareBars, LongRunLine, SignedBars, StackedBars, VintagesLine } from "@/components/story-charts";
+import { CompareBars, LongRunLine, RangeCompare, SignedBars, StackedBars, VintagesLine } from "@/components/story-charts";
 import { formatUnit } from "@/lib/story-format";
 import type { RhdiDecade } from "@/lib/rhdi-decades";
 import { financialYearOf } from "@/lib/budgets/events";
@@ -385,6 +385,34 @@ export function RhdiDecadesFigure({ decades, path, releaseDate, priceYear }: { d
         <p className="text-xs font-medium">Change in income per head over the period, £{priceYear ? `, ${priceYear} prices` : ""}</p>
         <SignedBars points={cash} unit="gbp" name="Change per head" positiveLabel="£ per head" negativeLabel="" highlight={cash.at(-1)!.period} height="h-40" />
       </div>
+    </StoryFigure>
+  );
+}
+
+/** The OBR's GDP growth forecast against the range of independent forecasts compiled by HM Treasury. */
+export function IndependentForecastsFigure({ efo, independent, path }: Props & { independent: { title: string; url: string; releaseDate: string | null; years: { year: string; average: number | null; median: number | null; highest: number | null; lowest: number | null; count: number }[] } | undefined }) {
+  if (!independent || !efo.gdp) return null;
+  const points = independent.years.flatMap((row) => {
+    const obr = efo.gdp!.points.find((point) => point.period === row.year)?.current ?? null;
+    return obr == null ? [] : [{ period: row.year, lowest: row.lowest, highest: row.highest, average: row.average, median: row.median, dot: obr }];
+  });
+  if (points.length === 0) return null;
+  const position = (point: (typeof points)[number]) => (point.dot == null || point.average == null ? null : point.dot < point.average ? "below" : point.dot > point.average ? "above" : "in line with");
+  const last = points.at(-1)!;
+  const atBottom = last.lowest != null && last.dot != null && last.dot <= last.lowest;
+  const label = efo.gdp.currentLabel;
+  return (
+    <StoryFigure
+      id="independent-forecasts"
+      path={path}
+      title={atBottom ? `The OBR's ${last.period} growth forecast is at the low end of independent forecasts` : `The OBR's growth forecast against independent forecasts`}
+      subtitle={`Real GDP growth, per cent, by calendar year. The OBR ${label} forecast against independent forecasts compiled by HM Treasury (${independent.title.replace(/^Forecasts for the UK economy:?\s*/i, "")}), which excludes the OBR, IMF and OECD.`}
+      takeaway={points.map((point) => `For ${point.period}, the OBR forecasts ${formatUnit(point.dot, "pct")}, ${position(point) ?? "against"} the independent average of ${formatUnit(point.average, "pct")} (range ${formatUnit(point.lowest, "pct")} to ${formatUnit(point.highest, "pct")}).`).join(" ")}
+      csv={{ header: ["year", `OBR ${label} %`, "independent average %", "independent median %", "lowest %", "highest %"], rows: points.map((point) => [point.period, point.dot, point.average, point.median, point.lowest, point.highest]) }}
+      source={{ publisher: "OBR and HM Treasury", title: `${efoSourceTitle(efo)}; independent forecasts compiled by HM Treasury, ${independent.title}`, url: independent.url, releaseDate: independent.releaseDate, licenceUrl: OBR_SOURCE.licenceUrl }}
+    >
+      <RangeCompare points={points} unit="pct" dotName={`OBR ${label}`} />
+      <p className="mt-1 text-xs text-neutral-700 dark:text-neutral-300">All of these are forecasts, not outturns. The independent range covers forecasts received in the three months before HM Treasury&apos;s publication, so some predate the OBR forecast.</p>
     </StoryFigure>
   );
 }

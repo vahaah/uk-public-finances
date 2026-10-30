@@ -9,7 +9,7 @@
   "publisher": "HM Treasury",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "584111896c988ed7312ae05bc026d0af72451184702f73a950f3738e47d14373",
+  "contentHash": "eecafc8e24b33d2afe459fc7bf8f88fa9a23b5fc0099a3fdd19c37a8dea7e7d7",
   "data": {
     "contentUrl": "https://www.gov.uk/government/statistics/public-expenditure-statistical-analyses-2026",
     "functions": {
@@ -2486,6 +2486,29 @@
           "year": "2031-32",
           "index": 113.2226,
           "forecast": true
+        }
+      ]
+    },
+    "independent": {
+      "title": "Forecasts for the UK economy: October 2026",
+      "url": "https://www.gov.uk/government/statistics/forecasts-for-the-uk-economy-october-2026",
+      "releaseDate": "2026-10-21T09:00:03Z",
+      "years": [
+        {
+          "year": "2026",
+          "average": 1.31,
+          "median": 1.37,
+          "highest": 1.58,
+          "lowest": 0.9,
+          "count": 25
+        },
+        {
+          "year": "2027",
+          "average": 1.19,
+          "median": 1.18,
+          "highest": 1.53,
+          "lowest": 1,
+          "count": 25
         }
       ]
     },

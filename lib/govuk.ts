@@ -10,6 +10,8 @@ export const GOVUK_PATHS = {
   incomeTaxCollection: "/government/collections/income-tax-statistics-and-distributions",
   incomeTaxPrefix: "/government/statistics/income-tax-liabilities-statistics-",
   deflatorsCollection: "/government/collections/gdp-deflators-at-market-prices-and-money-gdp",
+  independentCollection: "/government/collections/data-forecasts",
+  independentPrefix: "/government/statistics/forecasts-for-the-uk-economy-",
   deflatorsPrefix: "/government/statistics/gdp-deflators-at-market-prices-and-money-gdp-",
 } as const;
 

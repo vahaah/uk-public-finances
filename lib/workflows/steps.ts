@@ -33,11 +33,11 @@ import {
 } from "@/lib/budgets/forecasts";
 import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
-import { eesAllFilesUrl, parseDfePerPupil, parseHmtDeflators } from "@/lib/parsers/extras";
+import { eesAllFilesUrl, parseDfePerPupil, parseHmtDeflators, parseIndependentForecasts } from "@/lib/parsers/extras";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
-import { snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
+import { pesaDataSchema, priceSeriesSchema, snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
 import { buildEnvelope, decidePublish, shouldWriteSnapshot } from "@/lib/snapshot";
-import { readSnapshot } from "@/lib/store";
+import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { REVALIDATE_PATHS, USER_AGENT } from "@/lib/site";
 
 const ONS_BASE =
@@ -119,13 +119,25 @@ const PRICE_URLS = {
 export async function runPrices(force: boolean): Promise<Record<string, unknown>> {
   "use step";
   const records: Record<string, unknown> = {};
+  const last = takeSnapshot("ons-prices", (await readSnapshot("ons-prices")).snapshot)?.data;
+  const optionalErrors: string[] = [];
   for (const [code, url] of Object.entries(PRICE_URLS)) {
     // CRXX and UKPOP only feed story charts; a failed fetch must not block the deflators.
-    if (code === "crxx" || code === "ukpop") records[code] = await getJson(url).catch(() => undefined);
+    if (code === "crxx" || code === "ukpop") records[code] = await getJson(url).catch((error: unknown) => (optionalErrors.push(`${code.toUpperCase()}: ${error instanceof Error ? error.message : "fetch failed"}`), undefined));
     else records[code] = await getJson(url);
   }
-  return finish("ons-prices", () => {
-    const data = parsePriceRecords(records as never);
+  const pricesResult = await finish("ons-prices", () => {
+    const parsedPrices = parsePriceRecords(records as never);
+    // CRXX and UKPOP are optional: an invalid or missing refresh keeps the last published series.
+    const optional = (key: "crxx" | "ukpop") => {
+      const fresh = priceSeriesSchema.safeParse(parsedPrices[key]);
+      if (fresh.success) return fresh.data;
+      if (records[key] !== undefined) optionalErrors.push(`${key.toUpperCase()}: ${parsedPrices[key] ? fresh.error.message : "could not be parsed"}`);
+      return last?.[key];
+    };
+    const crxx = optional("crxx");
+    const ukpop = optional("ukpop");
+    const data = { ...parsedPrices, ...(crxx ? { crxx } : {}), ...(ukpop ? { ukpop } : {}) };
     const releases = [data.mnf2, data.l8gg, data.bktl, data.d7bt, data.l522, data.chaw].map((series) => series.releaseDate);
     const oldest = releases.slice().sort()[0] ?? null;
     return buildEnvelope({
@@ -137,6 +149,7 @@ export async function runPrices(force: boolean): Promise<Record<string, unknown>
       data,
     });
   });
+  return withPartialErrors(pricesResult, optionalErrors);
 }
 
 export async function runHmrc(force: boolean): Promise<Record<string, unknown>> {
@@ -175,10 +188,15 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
   const releaseDate = content.public_updated_at ?? null;
   const chapter4 = await getBytes(chapters.chapter4.url ?? "");
   const chapter6 = await getBytes(chapters.chapter6.url ?? "");
-  // Extras for real-terms and per-pupil charts. Either can fail without blocking PESA.
-  const deflators = await fetchHmtDeflators().catch(() => undefined);
-  const perPupil = await fetchDfePerPupil().catch(() => undefined);
-  return finish("pesa", () =>
+  // Extras for the real-terms, per-pupil and independent-forecast charts. Each is validated on its
+  // own; a failed fetch or an invalid extract keeps the last published value and never blocks PESA.
+  const previous = takeSnapshot("pesa", (await readSnapshot("pesa")).snapshot)?.data;
+  const shape = pesaDataSchema.shape;
+  const extraErrors: string[] = [];
+  const deflators = await keepLastGood("HMT GDP deflators", fetchHmtDeflators, shape.deflators, previous?.deflators, extraErrors);
+  const perPupil = await keepLastGood("DfE per-pupil funding", fetchDfePerPupil, shape.perPupil, previous?.perPupil, extraErrors);
+  const independent = await keepLastGood("HMT independent forecasts", fetchIndependentForecasts, shape.independent, previous?.independent, extraErrors);
+  const published = await finish("pesa", () =>
     Promise.resolve(chapter4).then(async () =>
       buildEnvelope({
         sourceId: "pesa",
@@ -186,10 +204,38 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
         releaseDate,
         nextRelease: null,
         sourceUrl: `https://www.gov.uk${hit.link}`,
-        data: { ...(await parsePesa(chapter4, chapter6, `https://www.gov.uk${hit.link}`)), ...(deflators ? { deflators } : {}), ...(perPupil ? { perPupil } : {}) },
+        data: { ...(await parsePesa(chapter4, chapter6, `https://www.gov.uk${hit.link}`)), ...(deflators ? { deflators } : {}), ...(perPupil ? { perPupil } : {}), ...(independent ? { independent } : {}) },
       }),
     ),
   );
+  return withPartialErrors(published, extraErrors);
+}
+
+/** Fetch and validate an optional extra; on any failure fall back to the last published value. */
+async function keepLastGood<T>(
+  name: string,
+  fetcher: () => Promise<unknown>,
+  schema: { safeParse: (value: unknown) => { success: boolean; data?: T; error?: { message: string } } },
+  last: T | undefined,
+  errors: string[],
+): Promise<T | undefined> {
+  try {
+    const parsed = schema.safeParse(await fetcher());
+    if (parsed.success && parsed.data !== undefined) return parsed.data;
+    errors.push(`${name}: ${parsed.error?.message ?? "invalid extract"}`);
+  } catch (error) {
+    errors.push(`${name}: ${error instanceof Error ? error.message : "fetch failed"}`);
+  }
+  return last;
+}
+
+/**
+ * The core snapshot published, but an optional extra failed and its last good value was kept.
+ * The error goes to source health (settle records it) so the stale extra is visible.
+ */
+function withPartialErrors(result: Record<string, unknown>, errors: string[]): Record<string, unknown> {
+  if (errors.length === 0 || result.status === "validation_failed") return result;
+  return { ...result, partialError: `Kept last good value for ${errors.join("; ")}` };
 }
 
 /** Latest "GDP deflators at market prices, and money GDP" from the HMT collection on GOV.UK. */
@@ -204,6 +250,20 @@ async function fetchHmtDeflators() {
   if (!workbook?.url) throw new Error("GDP deflator publication has no spreadsheet");
   const parsed = await parseHmtDeflators(await getBytes(workbook.url));
   return { ...parsed, url: `https://www.gov.uk${latest.base_path}`, releaseDate: content.public_updated_at ?? null };
+}
+
+/** Latest monthly "Forecasts for the UK economy" (HMT comparison of independent forecasts). */
+async function fetchIndependentForecasts() {
+  const collection = (await getJson(`https://www.gov.uk/api/content${GOVUK_PATHS.independentCollection}`)) as GovukContent & GovukCollection;
+  const latest = (collection.links?.documents ?? [])
+    .filter((doc) => !doc.withdrawn && /-(january|february|march|april|may|june|july|august|september|october|november|december)-\d{4}$/.test(doc.base_path ?? "") && (doc.base_path ?? "").startsWith(GOVUK_PATHS.independentPrefix))
+    .sort((a, b) => (b.public_updated_at ?? "").localeCompare(a.public_updated_at ?? ""))[0];
+  if (!latest?.base_path) throw new Error("No monthly comparison of independent forecasts in the collection");
+  const content = await getJson(`https://www.gov.uk/api/content${latest.base_path}`);
+  const workbook = spreadsheetAttachments(content as GovukContent)[0];
+  if (!workbook?.url) throw new Error("Independent forecasts publication has no spreadsheet");
+  const years = await parseIndependentForecasts(await getBytes(workbook.url));
+  return { title: content.title ?? latest.title ?? "Forecasts for the UK economy", url: `https://www.gov.uk${latest.base_path}`, releaseDate: content.public_updated_at ?? null, years };
 }
 
 const DFE_SCHOOL_FUNDING = "https://explore-education-statistics.service.gov.uk/find-statistics/school-funding-statistics";

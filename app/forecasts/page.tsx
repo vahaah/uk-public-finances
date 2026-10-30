@@ -173,7 +173,7 @@ export default async function ForecastsPage() {
           Earlier Budgets and how their forecasts turned out
         </Link>
       </p>
-      <TopicStory path="/forecasts" figures={["gdp", "cpi", "rhdiRolling"]} title="The economy in the latest forecast" />
+      <TopicStory path="/forecasts" figures={["gdp", "independent", "cpi", "rhdiRolling"]} title="The economy in the latest forecast" />
     </>
   );
 }

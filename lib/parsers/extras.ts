@@ -43,7 +43,15 @@ export async function parseHmtDeflators(buffer: Buffer): Promise<{ base: string 
  * cash and real terms. The real-terms column carries its price year in its name
  * (per_pupil_funding_202526terms_gbp), so a new release with a new base still parses.
  */
-export type PerPupilRow = { year: string; cashGbp: number; realGbp: number; pupils: number | null };
+export type PerPupilRow = { year: string; cashGbp: number | null; realGbp: number; pupils: number | null };
+
+/** EES CSV cell to a number. Blank and suppression markers (z, x, c, u, low) are null, not zero. */
+function eesNumber(cell: string | undefined): number | null {
+  const raw = (cell ?? "").trim();
+  if (!raw || !/^-?\d+(\.\d+)?$/.test(raw)) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
 
 export function parseDfePerPupil(zip: Uint8Array): { priceYear: string; rows: PerPupilRow[] } {
   const files = unzipSync(zip, { filter: (file) => /\.csv$/i.test(file.name) && !/school_level/i.test(file.name) });
@@ -62,11 +70,11 @@ export function parseDfePerPupil(zip: Uint8Array): { priceYear: string; rows: Pe
       const cells = line.split(",");
       if (levelIndex >= 0 && cells[levelIndex] !== "National") continue;
       const period = /^(\d{4})(\d{2})$/.exec(cells[periodIndex] ?? "");
-      const real = Number(cells[realIndex]);
-      const cash = Number(cells[cashIndex]);
-      if (!period || !Number.isFinite(real) || !Number.isFinite(cash) || real <= 0) continue;
-      const pupils = Number(cells[pupilsIndex]);
-      rows.push({ year: `${period[1]}-${period[2]}`, cashGbp: cash, realGbp: real, pupils: Number.isFinite(pupils) && pupils > 0 ? pupils : null });
+      const real = eesNumber(cells[realIndex]);
+      const cash = eesNumber(cells[cashIndex]);
+      if (!period || real == null || real <= 0) continue;
+      const pupils = pupilsIndex < 0 ? null : eesNumber(cells[pupilsIndex]);
+      rows.push({ year: `${period[1]}-${period[2]}`, cashGbp: cash != null && cash > 0 ? cash : null, realGbp: real, pupils: pupils != null && pupils > 0 ? pupils : null });
     }
     if (rows.length >= 5) return { priceYear: `${priceCode[1]}-${priceCode[2]}`, rows: rows.sort((a, b) => a.year.localeCompare(b.year)) };
   }
@@ -77,4 +85,53 @@ export function parseDfePerPupil(zip: Uint8Array): { priceYear: string; rows: Pe
 export function eesAllFilesUrl(html: string): string | null {
   const match = /https:\/\/content\.explore-education-statistics\.service\.gov\.uk\/api\/releases\/[0-9a-f-]{36}\/files/.exec(html);
   return match ? match[0] : null;
+}
+
+/**
+ * HM Treasury "Forecasts for the UK economy: a comparison of independent forecasts". For each
+ * calendar year with a "Growth in GDP" table: each independent forecaster's GDP growth forecast,
+ * and HMT's own average (of forecasts received in the last three months), median, highest and
+ * lowest. HMT excludes the OBR, IMF and OECD from those; they are left out of the list here too.
+ */
+export type IndependentYear = {
+  year: string;
+  average: number | null;
+  median: number | null;
+  highest: number | null;
+  lowest: number | null;
+  /** Number of independent forecasts listed in the table (HMT's averages use those from the last three months). */
+  count: number;
+};
+
+const EXCLUDED = /^(OBR|IMF|OECD)$/;
+
+export async function parseIndependentForecasts(buffer: Buffer): Promise<IndependentYear[]> {
+  const book = await readXlsx(buffer, 16);
+  const out: IndependentYear[] = [];
+  for (const grid of Object.values(book)) {
+    const title = grid.slice(0, 3).flat().map((cell) => String(cell ?? "")).find((cell) => /^Table \d+ - (\d{4}): Growth in GDP/.test(cell));
+    if (!title) continue;
+    const year = /(\d{4})/.exec(title.replace(/^Table \d+/, ""))![1]!;
+    const headerRow = grid.find((row) => row.some((cell) => String(cell ?? "").trim() === "GDP"));
+    const column = headerRow ? headerRow.findIndex((cell) => String(cell ?? "").trim() === "GDP") : -1;
+    if (column < 0) continue;
+    const value = (row: Cell[]) => (isNum(row[column] ?? null) ? Number((row[column] as number).toFixed(2)) : null);
+    const find = (label: RegExp) => grid.find((row) => label.test(String(row[1] ?? "").trim()));
+    const forecasters: { name: string; value: number }[] = [];
+    let inSummary = false;
+    for (const row of grid) {
+      const name = String(row[1] ?? "").trim();
+      if (/^Average of forecasts/i.test(name)) inSummary = true;
+      if (inSummary || !name || EXCLUDED.test(name)) continue;
+      const forecast = value(row);
+      if (forecast != null && typeof row[2] === "string") forecasters.push({ name, value: forecast });
+    }
+    const pick = (label: RegExp) => {
+      const row = find(label);
+      return row ? value(row) : null;
+    };
+    out.push({ year, average: pick(/^Independent$/), median: pick(/^Median$/), highest: pick(/^Highest$/), lowest: pick(/^Lowest$/), count: forecasters.length });
+  }
+  if (out.length === 0) throw new Error("HMT comparison of independent forecasts has no GDP tables");
+  return out.sort((a, b) => a.year.localeCompare(b.year));
 }
