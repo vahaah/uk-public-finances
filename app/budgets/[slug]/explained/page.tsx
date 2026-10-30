@@ -14,6 +14,7 @@ import {
   PolicyFigure,
   PsnbFigure,
   PsnflFigure,
+  RhdiDecadesFigure,
   RhdiGrowthFigure,
   RhdiRollingFigure,
   TaxBurdenFigure,
@@ -21,7 +22,9 @@ import {
 import { eventLabel } from "@/lib/budgets/events";
 import { formatDateLong } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { rhdiByDecade } from "@/lib/rhdi-decades";
 import { latestStory, measuresPerEvent, storyEvents } from "@/lib/story";
+import { readSnapshot, takeSnapshot } from "@/lib/store";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -54,7 +57,11 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
   const { event, efo, obr } = story;
   const label = eventLabel(event);
   const path = `/budgets/${slug}/explained`;
-  const measures = measuresPerEvent(obr.measures.rows, await storyEvents());
+  const [events, pricesLoaded] = await Promise.all([storyEvents(), readSnapshot("ons-prices")]);
+  const measures = measuresPerEvent(obr.measures.rows, events);
+  const crxx = takeSnapshot("ons-prices", pricesLoaded.snapshot)?.data.crxx;
+  const decades = crxx ? rhdiByDecade(crxx.years) : [];
+  const priceYear = crxx ? (/reference year = (\d{4})/.exec(crxx.title)?.[1] ?? null) : null;
   const props = { efo, path };
   return (
     <>
@@ -80,6 +87,7 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
       <Chapter id="squeeze" title="1. Growth and incomes" lede="How the forecast for the economy, prices and household incomes has changed.">
         <GdpFigure {...props} />
         <CpiFigure {...props} />
+        <RhdiDecadesFigure decades={decades} path={path} releaseDate={crxx?.releaseDate.slice(0, 10) ?? null} priceYear={priceYear} />
         <RhdiGrowthFigure {...props} />
         <RhdiRollingFigure {...props} />
       </Chapter>

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import { parsePublishedNumber } from "@/lib/numbers";
 import { periodFromOns, periodFromQuarter, periodFromYear } from "@/lib/parsers/ons";
@@ -26,6 +26,7 @@ export function parsePriceRecords(records: Record<string, RawSeries>): PriceData
     d7bt: parseOne(records.d7bt, "D7BT"),
     l522: parseOne(records.l522, "L522"),
     chaw: parseOne(records.chaw, "CHAW"),
+    ...(records.crxx ? { crxx: parseOne(records.crxx, "CRXX") } : {}),
   };
 }
 
@@ -34,6 +35,7 @@ export function parsePriceDirectory(dir: string): PriceData {
   for (const code of PRICE_FILES) {
     records[code] = JSON.parse(readFileSync(`${dir}/${code}.json`, "utf8")) as RawSeries;
   }
+  if (existsSync(`${dir}/crxx.json`)) records.crxx = JSON.parse(readFileSync(`${dir}/crxx.json`, "utf8")) as RawSeries;
   return parsePriceRecords(records);
 }
 
