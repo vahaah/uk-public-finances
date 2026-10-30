@@ -110,6 +110,13 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
         <PolicyFigure {...props} />
         <TaxBurdenFigure {...props} />
         <PsnflFigure {...props} />
+        <p className="text-sm text-neutral-800 dark:text-neutral-200 lg:col-span-2">
+          Where the money goes, per person and in real terms, including departmental plans:{" "}
+          <Link className="underline underline-offset-4" href="/spending#per-person-real">
+            spending per person and departmental budgets
+          </Link>
+          .
+        </p>
         <DebtVsOutturnFigure {...props} />
       </Chapter>
 

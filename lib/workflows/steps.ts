@@ -10,6 +10,7 @@ import {
   pickIncomeTaxWorkbook,
   pickPesaChapters,
   pickSearchHit,
+  spreadsheetAttachments,
   type GovukCollection,
   type GovukContent,
   type GovukSearchHit,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/budgets/forecasts";
 import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
+import { eesAllFilesUrl, parseDfePerPupil, parseHmtDeflators } from "@/lib/parsers/extras";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
 import { snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
 import { buildEnvelope, decidePublish, shouldWriteSnapshot } from "@/lib/snapshot";
@@ -110,14 +112,16 @@ const PRICE_URLS = {
   chaw: "https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/chaw/mm23/data",
   /** Real household disposable income per head, chained volume £, from the UK Economic Accounts. */
   crxx: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/crxx/ukea/data",
+  /** UK mid-year population estimate. */
+  ukpop: "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/timeseries/ukpop/pop/data",
 } as const;
 
 export async function runPrices(force: boolean): Promise<Record<string, unknown>> {
   "use step";
   const records: Record<string, unknown> = {};
   for (const [code, url] of Object.entries(PRICE_URLS)) {
-    // CRXX only feeds one story chart; a failed fetch must not block the deflators.
-    if (code === "crxx") records[code] = await getJson(url).catch(() => undefined);
+    // CRXX and UKPOP only feed story charts; a failed fetch must not block the deflators.
+    if (code === "crxx" || code === "ukpop") records[code] = await getJson(url).catch(() => undefined);
     else records[code] = await getJson(url);
   }
   return finish("ons-prices", () => {
@@ -171,6 +175,9 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
   const releaseDate = content.public_updated_at ?? null;
   const chapter4 = await getBytes(chapters.chapter4.url ?? "");
   const chapter6 = await getBytes(chapters.chapter6.url ?? "");
+  // Extras for real-terms and per-pupil charts. Either can fail without blocking PESA.
+  const deflators = await fetchHmtDeflators().catch(() => undefined);
+  const perPupil = await fetchDfePerPupil().catch(() => undefined);
   return finish("pesa", () =>
     Promise.resolve(chapter4).then(async () =>
       buildEnvelope({
@@ -179,10 +186,37 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
         releaseDate,
         nextRelease: null,
         sourceUrl: `https://www.gov.uk${hit.link}`,
-        data: await parsePesa(chapter4, chapter6, `https://www.gov.uk${hit.link}`),
+        data: { ...(await parsePesa(chapter4, chapter6, `https://www.gov.uk${hit.link}`)), ...(deflators ? { deflators } : {}), ...(perPupil ? { perPupil } : {}) },
       }),
     ),
   );
+}
+
+/** Latest "GDP deflators at market prices, and money GDP" from the HMT collection on GOV.UK. */
+async function fetchHmtDeflators() {
+  const collection = (await getJson(`https://www.gov.uk/api/content${GOVUK_PATHS.deflatorsCollection}`)) as GovukContent & GovukCollection;
+  const latest = (collection.links?.documents ?? [])
+    .filter((doc) => !doc.withdrawn && (doc.base_path ?? "").startsWith(GOVUK_PATHS.deflatorsPrefix))
+    .sort((a, b) => (b.public_updated_at ?? "").localeCompare(a.public_updated_at ?? ""))[0];
+  if (!latest?.base_path) throw new Error("No GDP deflator publication in the collection");
+  const content = await getJson(`https://www.gov.uk/api/content${latest.base_path}`);
+  const workbook = spreadsheetAttachments(content as GovukContent)[0];
+  if (!workbook?.url) throw new Error("GDP deflator publication has no spreadsheet");
+  const parsed = await parseHmtDeflators(await getBytes(workbook.url));
+  return { ...parsed, url: `https://www.gov.uk${latest.base_path}`, releaseDate: content.public_updated_at ?? null };
+}
+
+const DFE_SCHOOL_FUNDING = "https://explore-education-statistics.service.gov.uk/find-statistics/school-funding-statistics";
+
+/** DfE school funding statistics: the latest release's "download all files" zip, national per-pupil table. */
+async function fetchDfePerPupil() {
+  const zipUrl = eesAllFilesUrl(await getText(DFE_SCHOOL_FUNDING));
+  if (!zipUrl) throw new Error("DfE school funding page has no download link");
+  const response = await fetch(zipUrl, { headers: { "user-agent": USER_AGENT }, redirect: "follow" });
+  if (!response.ok) throw new Error(`${zipUrl} returned ${response.status}`);
+  const lastModified = response.headers.get("last-modified");
+  const parsed = parseDfePerPupil(new Uint8Array(await response.arrayBuffer()));
+  return { ...parsed, url: DFE_SCHOOL_FUNDING, releaseDate: lastModified ? new Date(lastModified).toISOString().slice(0, 10) : null };
 }
 
 export async function runIncomeTax(force: boolean): Promise<Record<string, unknown>> {

@@ -184,6 +184,24 @@ export const pesaDataSchema = z.object({
       }),
     )
     .min(1),
+  /** HM Treasury GDP deflators (outturn plus OBR forecast years), for real-terms plans. Optional: older snapshots have none. */
+  deflators: z
+    .object({
+      base: z.string().nullable(),
+      url: z.string(),
+      releaseDate: z.string().nullable(),
+      years: z.array(z.object({ year: fiscalYear, index: finite.positive(), forecast: z.boolean() })).min(10),
+    })
+    .optional(),
+  /** DfE school funding statistics: national revenue funding per pupil aged 5-16, England. Optional. */
+  perPupil: z
+    .object({
+      priceYear: fiscalYear,
+      url: z.string(),
+      releaseDate: z.string().nullable(),
+      rows: z.array(z.object({ year: fiscalYear, cashGbp: finite.positive(), realGbp: finite.positive(), pupils: finite.positive().nullable() })).min(5),
+    })
+    .optional(),
 });
 
 export const boePoint = z.object({
@@ -271,6 +289,8 @@ export const priceDataSchema = z
     chaw: priceSeriesSchema,
     /** RHDI per head, CVM £. Optional so snapshots from before it was added still validate. */
     crxx: priceSeriesSchema.optional(),
+    /** UK mid-year population estimate (ONS UKPOP), for per-person figures. Optional like CRXX. */
+    ukpop: priceSeriesSchema.optional(),
   })
   .superRefine((data, context) => {
     if (data.mnf2.cdid !== "MNF2" || data.mnf2.years.length < 1) {

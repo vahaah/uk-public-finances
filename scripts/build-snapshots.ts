@@ -7,6 +7,7 @@ import { parseHmrcReceipts } from "@/lib/parsers/hmrc";
 import { parseOnsDirectory } from "@/lib/parsers/ons";
 import { parsePriceDirectory } from "@/lib/parsers/prices";
 import { parsePesa } from "@/lib/parsers/pesa";
+import { parseDfePerPupil, parseHmtDeflators } from "@/lib/parsers/extras";
 import { loadSeedEvents } from "@/lib/budgets/seed";
 import { parseIncomeTax } from "@/lib/parsers/taxpayers";
 import { snapshotSchemas, type SourceId } from "@/lib/schema";
@@ -72,11 +73,23 @@ async function main(): Promise<void> {
     releaseDate: pesaContent.public_updated_at ?? null,
     nextRelease: null,
     sourceUrl: `https://www.gov.uk${pesaContent.base_path}`,
-    data: await parsePesa(
+    data: {
+      ...(await parsePesa(
       readFileSync(path.join(root, "fixtures/raw/pesa/chapter-4.xlsx")),
       readFileSync(path.join(root, "fixtures/raw/pesa/chapter-6.xlsx")),
       `https://www.gov.uk${pesaContent.base_path}`,
-    ),
+    )),
+      deflators: {
+        ...(await parseHmtDeflators(readFileSync(path.join(root, "fixtures/raw/hmt/gdp-deflators.xlsx")))),
+        url: "https://www.gov.uk/government/statistics/gdp-deflators-at-market-prices-and-money-gdp-october-2026-budget",
+        releaseDate: "2026-10-29T12:28:09Z",
+      },
+      perPupil: {
+        ...parseDfePerPupil(new Uint8Array(readFileSync(path.join(root, "fixtures/raw/dfe/school-funding-tab1.zip")))),
+        url: "https://explore-education-statistics.service.gov.uk/find-statistics/school-funding-statistics",
+        releaseDate: "2026-10-26",
+      },
+    },
   }));
 
   const boe = parseBoeCsv(readFileSync(path.join(root, "fixtures/raw/boe/iadb.csv"), "utf8"));
