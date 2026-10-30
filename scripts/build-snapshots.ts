@@ -7,6 +7,7 @@ import { parseHmrcReceipts } from "@/lib/parsers/hmrc";
 import { parseOnsDirectory } from "@/lib/parsers/ons";
 import { parsePriceDirectory } from "@/lib/parsers/prices";
 import { parsePesa } from "@/lib/parsers/pesa";
+import { parseAnnex9 } from "@/lib/parsers/ofgem";
 import { parseDfePerPupil, parseHmtDeflators, parseIndependentForecasts } from "@/lib/parsers/extras";
 import { loadSeedEvents } from "@/lib/budgets/seed";
 import { parseIncomeTax } from "@/lib/parsers/taxpayers";
@@ -158,6 +159,17 @@ async function main(): Promise<void> {
       evaluation: { loaded: false, asOf: null, rows: [] },
       headroom: { loaded: false, asOf: null, rows: [] },
     },
+  }));
+
+  const ofgemPage = "https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels";
+  const ofgem = await parseAnnex9(readFileSync(path.join(root, "fixtures/raw/ofgem/annex-9.xlsx")));
+  write("ofgem-cap", buildEnvelope({
+    sourceId: "ofgem-cap",
+    retrievedAt: FIXTURE_RETRIEVED_AT,
+    releaseDate: ofgem.periods.at(-1)?.start ?? null,
+    nextRelease: null,
+    sourceUrl: ofgemPage,
+    data: { pageUrl: ofgemPage, workbookUrl: "https://www.ofgem.gov.uk/sites/default/files/2026-08/Annex-9-Levelisation-allowance-methodology-and-levelised-cap-levels-v1.11.xlsx", ...ofgem },
   }));
 
   write("dmo-gilts", buildEnvelope({

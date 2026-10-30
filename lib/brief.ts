@@ -127,7 +127,7 @@ export async function renderLlms(full: boolean): Promise<string> {
     ...pages,
     "",
     "## Data (JSON)",
-    ...["ons-psf", "hmrc-receipts", "pesa", "hmrc-income-tax", "dmo-gilts", "boe-yields", "budgets-obr"].map(
+    ...["ons-psf", "hmrc-receipts", "pesa", "hmrc-income-tax", "dmo-gilts", "boe-yields", "budgets-obr", "ofgem-cap"].map(
       (id) => `- ${SITE_URL}/api/snapshots/${id}`,
     ),
     "",
