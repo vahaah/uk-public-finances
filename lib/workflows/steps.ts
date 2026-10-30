@@ -120,17 +120,20 @@ export async function runPrices(force: boolean): Promise<Record<string, unknown>
   "use step";
   const records: Record<string, unknown> = {};
   const last = takeSnapshot("ons-prices", (await readSnapshot("ons-prices")).snapshot)?.data;
+  const optionalErrors: string[] = [];
   for (const [code, url] of Object.entries(PRICE_URLS)) {
     // CRXX and UKPOP only feed story charts; a failed fetch must not block the deflators.
-    if (code === "crxx" || code === "ukpop") records[code] = await getJson(url).catch(() => undefined);
+    if (code === "crxx" || code === "ukpop") records[code] = await getJson(url).catch((error: unknown) => (optionalErrors.push(`${code.toUpperCase()}: ${error instanceof Error ? error.message : "fetch failed"}`), undefined));
     else records[code] = await getJson(url);
   }
-  return finish("ons-prices", () => {
+  const pricesResult = await finish("ons-prices", () => {
     const parsedPrices = parsePriceRecords(records as never);
     // CRXX and UKPOP are optional: an invalid or missing refresh keeps the last published series.
     const optional = (key: "crxx" | "ukpop") => {
       const fresh = priceSeriesSchema.safeParse(parsedPrices[key]);
-      return fresh.success ? fresh.data : last?.[key];
+      if (fresh.success) return fresh.data;
+      if (records[key] !== undefined) optionalErrors.push(`${key.toUpperCase()}: ${parsedPrices[key] ? fresh.error.message : "could not be parsed"}`);
+      return last?.[key];
     };
     const crxx = optional("crxx");
     const ukpop = optional("ukpop");
@@ -146,6 +149,7 @@ export async function runPrices(force: boolean): Promise<Record<string, unknown>
       data,
     });
   });
+  return withPartialErrors(pricesResult, optionalErrors);
 }
 
 export async function runHmrc(force: boolean): Promise<Record<string, unknown>> {
@@ -188,10 +192,11 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
   // own; a failed fetch or an invalid extract keeps the last published value and never blocks PESA.
   const previous = takeSnapshot("pesa", (await readSnapshot("pesa")).snapshot)?.data;
   const shape = pesaDataSchema.shape;
-  const deflators = await keepLastGood(fetchHmtDeflators, shape.deflators, previous?.deflators);
-  const perPupil = await keepLastGood(fetchDfePerPupil, shape.perPupil, previous?.perPupil);
-  const independent = await keepLastGood(fetchIndependentForecasts, shape.independent, previous?.independent);
-  return finish("pesa", () =>
+  const extraErrors: string[] = [];
+  const deflators = await keepLastGood("HMT GDP deflators", fetchHmtDeflators, shape.deflators, previous?.deflators, extraErrors);
+  const perPupil = await keepLastGood("DfE per-pupil funding", fetchDfePerPupil, shape.perPupil, previous?.perPupil, extraErrors);
+  const independent = await keepLastGood("HMT independent forecasts", fetchIndependentForecasts, shape.independent, previous?.independent, extraErrors);
+  const published = await finish("pesa", () =>
     Promise.resolve(chapter4).then(async () =>
       buildEnvelope({
         sourceId: "pesa",
@@ -203,17 +208,34 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
       }),
     ),
   );
+  return withPartialErrors(published, extraErrors);
 }
 
 /** Fetch and validate an optional extra; on any failure fall back to the last published value. */
-async function keepLastGood<T>(fetcher: () => Promise<unknown>, schema: { safeParse: (value: unknown) => { success: boolean; data?: T } }, last: T | undefined): Promise<T | undefined> {
+async function keepLastGood<T>(
+  name: string,
+  fetcher: () => Promise<unknown>,
+  schema: { safeParse: (value: unknown) => { success: boolean; data?: T; error?: { message: string } } },
+  last: T | undefined,
+  errors: string[],
+): Promise<T | undefined> {
   try {
     const parsed = schema.safeParse(await fetcher());
     if (parsed.success && parsed.data !== undefined) return parsed.data;
-  } catch {
-    // fall through to the last good value
+    errors.push(`${name}: ${parsed.error?.message ?? "invalid extract"}`);
+  } catch (error) {
+    errors.push(`${name}: ${error instanceof Error ? error.message : "fetch failed"}`);
   }
   return last;
+}
+
+/**
+ * The core snapshot published, but an optional extra failed and its last good value was kept.
+ * The error goes to source health (settle records it) so the stale extra is visible.
+ */
+function withPartialErrors(result: Record<string, unknown>, errors: string[]): Record<string, unknown> {
+  if (errors.length === 0 || result.status === "validation_failed") return result;
+  return { ...result, partialError: `Kept last good value for ${errors.join("; ")}` };
 }
 
 /** Latest "GDP deflators at market prices, and money GDP" from the HMT collection on GOV.UK. */
