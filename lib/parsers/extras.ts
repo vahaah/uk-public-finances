@@ -43,7 +43,15 @@ export async function parseHmtDeflators(buffer: Buffer): Promise<{ base: string 
  * cash and real terms. The real-terms column carries its price year in its name
  * (per_pupil_funding_202526terms_gbp), so a new release with a new base still parses.
  */
-export type PerPupilRow = { year: string; cashGbp: number; realGbp: number; pupils: number | null };
+export type PerPupilRow = { year: string; cashGbp: number | null; realGbp: number; pupils: number | null };
+
+/** EES CSV cell to a number. Blank and suppression markers (z, x, c, u, low) are null, not zero. */
+function eesNumber(cell: string | undefined): number | null {
+  const raw = (cell ?? "").trim();
+  if (!raw || !/^-?\d+(\.\d+)?$/.test(raw)) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
 
 export function parseDfePerPupil(zip: Uint8Array): { priceYear: string; rows: PerPupilRow[] } {
   const files = unzipSync(zip, { filter: (file) => /\.csv$/i.test(file.name) && !/school_level/i.test(file.name) });
@@ -62,11 +70,11 @@ export function parseDfePerPupil(zip: Uint8Array): { priceYear: string; rows: Pe
       const cells = line.split(",");
       if (levelIndex >= 0 && cells[levelIndex] !== "National") continue;
       const period = /^(\d{4})(\d{2})$/.exec(cells[periodIndex] ?? "");
-      const real = Number(cells[realIndex]);
-      const cash = Number(cells[cashIndex]);
-      if (!period || !Number.isFinite(real) || !Number.isFinite(cash) || real <= 0) continue;
-      const pupils = Number(cells[pupilsIndex]);
-      rows.push({ year: `${period[1]}-${period[2]}`, cashGbp: cash, realGbp: real, pupils: Number.isFinite(pupils) && pupils > 0 ? pupils : null });
+      const real = eesNumber(cells[realIndex]);
+      const cash = eesNumber(cells[cashIndex]);
+      if (!period || real == null || real <= 0) continue;
+      const pupils = pupilsIndex < 0 ? null : eesNumber(cells[pupilsIndex]);
+      rows.push({ year: `${period[1]}-${period[2]}`, cashGbp: cash != null && cash > 0 ? cash : null, realGbp: real, pupils: pupils != null && pupils > 0 ? pupils : null });
     }
     if (rows.length >= 5) return { priceYear: `${priceCode[1]}-${priceCode[2]}`, rows: rows.sort((a, b) => a.year.localeCompare(b.year)) };
   }

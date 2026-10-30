@@ -35,9 +35,9 @@ import { parseObrWorkbook } from "@/lib/parsers/obr";
 import { parsePesa } from "@/lib/parsers/pesa";
 import { eesAllFilesUrl, parseDfePerPupil, parseHmtDeflators, parseIndependentForecasts } from "@/lib/parsers/extras";
 import { droppedTooFar, snapshotRows } from "@/lib/quality";
-import { snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
+import { pesaDataSchema, priceSeriesSchema, snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
 import { buildEnvelope, decidePublish, shouldWriteSnapshot } from "@/lib/snapshot";
-import { readSnapshot } from "@/lib/store";
+import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { REVALIDATE_PATHS, USER_AGENT } from "@/lib/site";
 
 const ONS_BASE =
@@ -119,13 +119,22 @@ const PRICE_URLS = {
 export async function runPrices(force: boolean): Promise<Record<string, unknown>> {
   "use step";
   const records: Record<string, unknown> = {};
+  const last = takeSnapshot("ons-prices", (await readSnapshot("ons-prices")).snapshot)?.data;
   for (const [code, url] of Object.entries(PRICE_URLS)) {
     // CRXX and UKPOP only feed story charts; a failed fetch must not block the deflators.
     if (code === "crxx" || code === "ukpop") records[code] = await getJson(url).catch(() => undefined);
     else records[code] = await getJson(url);
   }
   return finish("ons-prices", () => {
-    const data = parsePriceRecords(records as never);
+    const parsedPrices = parsePriceRecords(records as never);
+    // CRXX and UKPOP are optional: an invalid or missing refresh keeps the last published series.
+    const optional = (key: "crxx" | "ukpop") => {
+      const fresh = priceSeriesSchema.safeParse(parsedPrices[key]);
+      return fresh.success ? fresh.data : last?.[key];
+    };
+    const crxx = optional("crxx");
+    const ukpop = optional("ukpop");
+    const data = { ...parsedPrices, ...(crxx ? { crxx } : {}), ...(ukpop ? { ukpop } : {}) };
     const releases = [data.mnf2, data.l8gg, data.bktl, data.d7bt, data.l522, data.chaw].map((series) => series.releaseDate);
     const oldest = releases.slice().sort()[0] ?? null;
     return buildEnvelope({
@@ -175,10 +184,13 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
   const releaseDate = content.public_updated_at ?? null;
   const chapter4 = await getBytes(chapters.chapter4.url ?? "");
   const chapter6 = await getBytes(chapters.chapter6.url ?? "");
-  // Extras for real-terms and per-pupil charts. Either can fail without blocking PESA.
-  const deflators = await fetchHmtDeflators().catch(() => undefined);
-  const perPupil = await fetchDfePerPupil().catch(() => undefined);
-  const independent = await fetchIndependentForecasts().catch(() => undefined);
+  // Extras for the real-terms, per-pupil and independent-forecast charts. Each is validated on its
+  // own; a failed fetch or an invalid extract keeps the last published value and never blocks PESA.
+  const previous = takeSnapshot("pesa", (await readSnapshot("pesa")).snapshot)?.data;
+  const shape = pesaDataSchema.shape;
+  const deflators = await keepLastGood(fetchHmtDeflators, shape.deflators, previous?.deflators);
+  const perPupil = await keepLastGood(fetchDfePerPupil, shape.perPupil, previous?.perPupil);
+  const independent = await keepLastGood(fetchIndependentForecasts, shape.independent, previous?.independent);
   return finish("pesa", () =>
     Promise.resolve(chapter4).then(async () =>
       buildEnvelope({
@@ -191,6 +203,17 @@ export async function runPesa(force: boolean): Promise<Record<string, unknown>> 
       }),
     ),
   );
+}
+
+/** Fetch and validate an optional extra; on any failure fall back to the last published value. */
+async function keepLastGood<T>(fetcher: () => Promise<unknown>, schema: { safeParse: (value: unknown) => { success: boolean; data?: T } }, last: T | undefined): Promise<T | undefined> {
+  try {
+    const parsed = schema.safeParse(await fetcher());
+    if (parsed.success && parsed.data !== undefined) return parsed.data;
+  } catch {
+    // fall through to the last good value
+  }
+  return last;
 }
 
 /** Latest "GDP deflators at market prices, and money GDP" from the HMT collection on GOV.UK. */

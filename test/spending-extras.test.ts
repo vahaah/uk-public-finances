@@ -55,3 +55,13 @@ describe("HMT comparison of independent forecasts", () => {
     expect(years[1]).toMatchObject({ average: 1.19, highest: 1.53, lowest: 1 });
   });
 });
+
+describe("DfE per-pupil missing values", () => {
+  it("keeps a blank cash cell as null instead of zero", async () => {
+    const { zipSync, strToU8 } = await import("fflate");
+    const csv = "time_period,geographic_level,per_pupil_funding_cashterms_gbp,per_pupil_funding_202526terms_gbp,pupil_number_fte\n201011,National,,7760,z\n201112,National,5300,7760,1\n201213,National,5390,7760,1\n201314,National,5490,7740,1\n201415,National,5560,7720,1\n";
+    const zip = zipSync({ "data/tab1.csv": strToU8(csv) });
+    const parsed = parseDfePerPupil(zip);
+    expect(parsed.rows[0]).toEqual({ year: "2010-11", cashGbp: null, realGbp: 7760, pupils: null });
+  });
+});

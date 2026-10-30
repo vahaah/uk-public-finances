@@ -26,8 +26,8 @@ export function parsePriceRecords(records: Record<string, RawSeries>): PriceData
     d7bt: parseOne(records.d7bt, "D7BT"),
     l522: parseOne(records.l522, "L522"),
     chaw: parseOne(records.chaw, "CHAW"),
-    ...(records.crxx ? { crxx: parseOne(records.crxx, "CRXX") } : {}),
-    ...(records.ukpop ? { ukpop: parseOne(records.ukpop, "UKPOP") } : {}),
+    ...optionalSeries("crxx", records.crxx, "CRXX"),
+    ...optionalSeries("ukpop", records.ukpop, "UKPOP"),
   };
 }
 
@@ -39,6 +39,16 @@ export function parsePriceDirectory(dir: string): PriceData {
   if (existsSync(`${dir}/ukpop.json`)) records.ukpop = JSON.parse(readFileSync(`${dir}/ukpop.json`, "utf8")) as RawSeries;
   if (existsSync(`${dir}/crxx.json`)) records.crxx = JSON.parse(readFileSync(`${dir}/crxx.json`, "utf8")) as RawSeries;
   return parsePriceRecords(records);
+}
+
+/** Optional series: a missing or malformed download is left out rather than failing the deflators. */
+function optionalSeries(key: "crxx" | "ukpop", raw: RawSeries | undefined, expected: string): Partial<Record<"crxx" | "ukpop", PriceSeries>> {
+  if (!raw) return {};
+  try {
+    return { [key]: parseOne(raw, expected) };
+  } catch {
+    return {};
+  }
 }
 
 function parseOne(raw: RawSeries | undefined, expected: string): PriceSeries {

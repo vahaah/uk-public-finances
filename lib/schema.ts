@@ -208,7 +208,7 @@ export const pesaDataSchema = z.object({
       priceYear: fiscalYear,
       url: z.string(),
       releaseDate: z.string().nullable(),
-      rows: z.array(z.object({ year: fiscalYear, cashGbp: finite.positive(), realGbp: finite.positive(), pupils: finite.positive().nullable() })).min(5),
+      rows: z.array(z.object({ year: fiscalYear, cashGbp: finite.positive().nullable(), realGbp: finite.positive(), pupils: finite.positive().nullable() })).min(5),
     })
     .optional(),
 });
