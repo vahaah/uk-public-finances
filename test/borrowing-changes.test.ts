@@ -28,6 +28,10 @@ describe("parseBorrowingChanges", () => {
     expect(rows.map((row) => row.period)).toEqual(["2026-27", "2027-28"]);
     expect(rows[0]).toEqual({ period: "2026-27", total: 17.73, debtInterest: 15.43, welfare: -0.18, otherSpending: 10.39, receipts: -14.2, policy: 6.29 });
   });
+  it("drops a year with a blank total or a blank component", () => {
+    const gappy = grid.map((row) => (row[1] === "Indirect effects of policy decisions " ? [null, row[1], null, null, 3.48] : row[1] === "Difference" && row[2] === 1.55 ? [null, "Difference", 1.55, 17.73, null] : row));
+    expect(parseBorrowingChanges(gappy)).toEqual([]);
+  });
   it("adds up to the total", () => {
     for (const row of parseBorrowingChanges(grid)) {
       const sum = (row.debtInterest ?? 0) + (row.welfare ?? 0) + (row.otherSpending ?? 0) + (row.receipts ?? 0) + (row.policy ?? 0);

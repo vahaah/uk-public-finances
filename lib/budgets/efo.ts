@@ -73,9 +73,11 @@ export function parseBorrowingChanges(grid: Grid | null): BorrowingChange[] {
   const direct = first(/^Direct effects of policy/i);
   const indirect = first(/^Indirect effects of policy/i);
   if (!total || !debtInterest || !receipts || !direct) return [];
-  const sum = (...cells: (Cell | undefined)[]) => {
-    const values = cells.map(num);
-    return values.every((value) => value == null) ? null : round(values.reduce<number>((acc, value) => acc + (value ?? 0), 0));
+  // A component row that exists but is blank for a year makes that year's sum unknown, not zero.
+  const sum = (...parts: { row: Cell[] | undefined; index: number }[]) => {
+    const present = parts.filter((part) => part.row);
+    const values = present.map((part) => num(part.row![part.index]));
+    return values.length === 0 || values.some((value) => value == null) ? null : round(values.reduce<number>((acc, value) => acc + (value ?? 0), 0));
   };
   return years
     .map(({ index, period }) => ({
@@ -83,11 +85,11 @@ export function parseBorrowingChanges(grid: Grid | null): BorrowingChange[] {
       total: round(num(total[index])),
       debtInterest: round(num(debtInterest[index])),
       welfare: round(num(welfare?.[index])),
-      otherSpending: sum(capital?.[index], other?.[index]),
+      otherSpending: sum({ row: capital, index }, { row: other, index }),
       receipts: round(num(receipts[index])),
-      policy: sum(direct[index], indirect?.[index]),
+      policy: sum({ row: direct, index }, { row: indirect, index }),
     }))
-    .filter((point) => point.debtInterest != null && point.receipts != null && point.policy != null);
+    .filter((point) => point.total != null && point.debtInterest != null && point.receipts != null && point.policy != null);
 }
 
 const text = (cell: Cell | undefined) => (cell == null ? "" : String(cell).trim());
