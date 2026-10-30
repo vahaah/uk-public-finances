@@ -24,6 +24,16 @@ import { pageMeta } from "@/lib/meta";
 import { latestStory, measuresPerEvent, storyEvents } from "@/lib/story";
 
 export const revalidate = 3600;
+export const dynamicParams = true;
+
+/**
+ * Without generateStaticParams this nested dynamic route rendered on every
+ * request (cache-control: no-store, ~2.5s TTFB). An empty list opts it into
+ * ISR: the first request renders, later ones are served from the cache.
+ */
+export function generateStaticParams(): { slug: string }[] {
+  return [];
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
