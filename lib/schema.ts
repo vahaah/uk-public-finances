@@ -395,6 +395,8 @@ export const ofgemCapDataSchema = z.object({
   periods: z.array(z.object({ period: z.string().min(1), start: dayPeriod, gbp: finite.positive() })).min(8),
 });
 
+export const DISTRIBUTIONAL_GROUPS = ["Bottom decile", "2", "3", "4", "5", "6", "7", "8", "9", "Top decile", "All households"] as const;
+
 /** HM Treasury distributional analysis, read from the published charts (manual/hmt/distributional/). */
 export const hmtDistributionalSchema = z.object({
   version: z.literal(1),
@@ -418,7 +420,8 @@ export const hmtDistributionalSchema = z.object({
         rounding: z.string(),
         rows: z
           .array(z.object({ group: z.string().min(1), tax: finite, welfare: finite, publicServices: finite, overall: finite, overallFrom: z.string().optional(), check: finite.optional() }))
-          .length(11),
+          .length(11)
+          .refine((rows) => rows.every((row, index) => row.group === DISTRIBUTIONAL_GROUPS[index]), { message: `rows must be ${DISTRIBUTIONAL_GROUPS.join(", ")} in that order` }),
       }),
     )
     .min(1),

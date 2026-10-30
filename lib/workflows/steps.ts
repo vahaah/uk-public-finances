@@ -547,8 +547,8 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
   const headroom = await readOptionalBlob(OBR_BLOB.headroom);
   const efoFiles = await readEfoBlobs();
   const distributionalFiles = await readJsonBlobs(HMT_DISTRIBUTIONAL_PREFIX);
-  return finish("budgets-obr", async () => {
-    const picked = pickDistributional(distributionalFiles);
+  const picked = pickDistributional(distributionalFiles);
+  const result = await finish("budgets-obr", async () => {
     if (picked.errors.length > 0 && !picked.data) throw new Error(`HM Treasury distributional file invalid: ${picked.errors.join("; ")}`);
     const distributional = picked.data ? { file: picked.file, data: picked.data } : (previous?.distributional ?? { file: null, data: null });
     const historicalData = historical
@@ -581,6 +581,7 @@ export async function runBudgetsObr(_force: boolean): Promise<Record<string, unk
       data: { efo: { loaded: Boolean(efoData), files: efoFiles.map((file) => file.pathname), data: efoData }, distributional, historical: historicalData, measures: measuresData, evaluation: evaluationData, headroom: headroomData },
     });
   });
+  return withPartialErrors(result, picked.errors.map((error) => `HM Treasury distributional file (${error})`));
 }
 
 async function searchFiscalEvents(): Promise<GovukHit[]> {

@@ -25,6 +25,11 @@ describe("HM Treasury distributional analysis", () => {
     expect(a.rows[0]!.overall).toBeCloseTo(0.57, 2);
     expect(a.rows[9]!.overall).toBeCloseTo(-0.08, 2);
   });
+  it("rejects files whose decile labels differ", () => {
+    const data = hmtDistributionalSchema.parse(body);
+    const relabelled = { ...data, figures: data.figures.map((figure) => ({ ...figure, rows: figure.rows.map((row, index) => (index === 0 ? { ...row, group: "1" } : row)) })) };
+    expect(hmtDistributionalSchema.safeParse(relabelled).success).toBe(false);
+  });
   it("picks the newest valid file and reports invalid ones", () => {
     const older = { ...(body as Record<string, unknown>), published: "2025-11-26", eventSlug: "2025-11-budget" };
     const picked = pickDistributional([
