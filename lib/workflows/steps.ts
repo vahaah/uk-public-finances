@@ -289,7 +289,7 @@ export async function runOfgem(force: boolean): Promise<Record<string, unknown>>
   const bytes = await getBytes(workbookUrl);
   return finish("ofgem-cap", async () => {
     const parsed = await parseAnnex9(bytes);
-    const latest = parsed.periods.at(-1)?.start ?? null;
+    const latest = parsed.published ?? parsed.periods.at(-1)?.start ?? null;
     return buildEnvelope({
       sourceId: "ofgem-cap",
       retrievedAt: new Date().toISOString(),

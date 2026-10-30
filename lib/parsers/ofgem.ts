@@ -48,11 +48,29 @@ export function parseCapLevels(grid: Grid): { consumptionNote: string | null; pe
   return { consumptionNote: consumption ? "Restated at Ofgem's latest typical domestic consumption values" : null, periods };
 }
 
-export async function parseAnnex9(buffer: Buffer): Promise<{ consumptionNote: string | null; periods: CapPeriod[] }> {
+/** The newest "Date Published" in the workbook's version control table, as YYYY-MM-DD. */
+export function parsePublished(grid: Grid | undefined): string | null {
+  if (!grid) return null;
+  const headerRow = grid.findIndex((row) => row.some((cell) => /^Date Published$/i.test(text(cell))));
+  if (headerRow < 0) return null;
+  const column = grid[headerRow]!.findIndex((cell) => /^Date Published$/i.test(text(cell)));
+  let latest: string | null = null;
+  for (const row of grid.slice(headerRow + 1)) {
+    const cell = row[column];
+    const raw = text(cell);
+    const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
+    const uk = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(raw);
+    const day = iso ? `${iso[1]}-${iso[2]}-${iso[3]}` : uk ? `${uk[3]}-${uk[2]!.padStart(2, "0")}-${uk[1]!.padStart(2, "0")}` : null;
+    if (day && (!latest || day > latest)) latest = day;
+  }
+  return latest;
+}
+
+export async function parseAnnex9(buffer: Buffer): Promise<{ consumptionNote: string | null; published: string | null; periods: CapPeriod[] }> {
   const book = await readXlsx(buffer, 140);
   const grid = book["1c Consumption adjusted levels"];
   if (!grid) throw new Error("Annex 9: sheet '1c Consumption adjusted levels' is missing");
-  return parseCapLevels(grid);
+  return { ...parseCapLevels(grid), published: parsePublished(book["Front sheet"]) };
 }
 
 /** The newest Annex 9 workbook linked from Ofgem's price cap levels page. */

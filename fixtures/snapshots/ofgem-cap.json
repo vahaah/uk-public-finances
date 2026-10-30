@@ -2,18 +2,19 @@
   "sourceId": "ofgem-cap",
   "schemaVersion": 1,
   "retrievedAt": "2026-10-28T06:45:00.000Z",
-  "releaseDate": "2026-10-01",
+  "releaseDate": "2026-08-26",
   "nextRelease": null,
   "sourceUrl": "https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels",
   "sourceTitle": "Energy price cap levels (Annex 9, levelised cap levels)",
   "publisher": "Ofgem",
   "licence": "Open Government Licence v3.0",
   "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-  "contentHash": "95b9acd92ed32912c19768440f3403de0adeab2c33ff04bbc4f8b7669c3707ef",
+  "contentHash": "e80eaa157b5674c61947cd3969871de03cc9542a226662c68470c93ac458a818",
   "data": {
     "pageUrl": "https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels",
     "workbookUrl": "https://www.ofgem.gov.uk/sites/default/files/2026-08/Annex-9-Levelisation-allowance-methodology-and-levelised-cap-levels-v1.11.xlsx",
     "consumptionNote": "Restated at Ofgem's latest typical domestic consumption values",
+    "published": "2026-08-26",
     "periods": [
       {
         "period": "Apr 2017 to Sep 2017",

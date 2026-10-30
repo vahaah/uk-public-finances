@@ -389,6 +389,8 @@ export const ofgemCapDataSchema = z.object({
   pageUrl: z.string(),
   workbookUrl: z.string(),
   consumptionNote: z.string().nullable(),
+  /** Workbook publication date from its version control table; older snapshots have none. */
+  published: dayPeriod.nullable().optional(),
   /** Typical dual fuel Direct Debit cap level, £ a year inc VAT, at the latest typical consumption values. */
   periods: z.array(z.object({ period: z.string().min(1), start: dayPeriod, gbp: finite.positive() })).min(8),
 });

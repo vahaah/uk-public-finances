@@ -418,7 +418,7 @@ export function IndependentForecastsFigure({ efo, independent, path }: Props & {
 }
 
 /** Ofgem price cap for a typical dual fuel household, cash and real terms (CPI). Cap levels before any government support. */
-export function EnergyCapFigure({ cap, cpi, path }: { cap: { pageUrl: string; consumptionNote: string | null; periods: { period: string; start: string; gbp: number }[] } | undefined; cpi: { period: string; value: number }[] | undefined; path: string }) {
+export function EnergyCapFigure({ cap, cpi, path }: { cap: { pageUrl: string; consumptionNote: string | null; published?: string | null; periods: { period: string; start: string; gbp: number }[] } | undefined; cpi: { period: string; value: number }[] | undefined; path: string }) {
   if (!cap || cap.periods.length < 8) return null;
   const latestCpi = cpi?.at(-1);
   const cpiAt = (month: string) => cpi?.find((point) => point.period === month)?.value ?? null;
@@ -440,7 +440,7 @@ export function EnergyCapFigure({ cap, cpi, path }: { cap: { pageUrl: string; co
       subtitle={`Ofgem price cap for a typical dual fuel household paying by Direct Debit, £ a year including VAT, GB average. ${cap.consumptionNote ?? ""}. Cap levels before any government support.`}
       takeaway={`The cap for ${latest.label} is ${formatUnit(latest.cash, "gbp")} a year for a typical household. Its highest level was ${formatUnit(peak.cash, "gbp")}, for ${peak.label}, on the same consumption basis.`}
       csv={{ header: ["cap period", "start", "£ a year cash", hasReal ? `£ a year, ${latestCpi!.period} prices (CPI)` : "real"], rows: points.map((point) => [point.label, point.period, point.cash, point.real]) }}
-      source={{ publisher: "Ofgem; ONS for CPI", title: "Energy price cap, Annex 9 levelised cap levels, sheet 1c (consumption adjusted levels); CPI index D7BT", url: cap.pageUrl, releaseDate: cap.periods.at(-1)!.start, licenceUrl: OBR_SOURCE.licenceUrl }}
+      source={{ publisher: "Ofgem; ONS for CPI", title: "Energy price cap, Annex 9 levelised cap levels, sheet 1c (consumption adjusted levels); CPI index D7BT", url: cap.pageUrl, releaseDate: cap.published ?? cap.periods.at(-1)!.start, licenceUrl: OBR_SOURCE.licenceUrl }}
     >
       <MultiLine points={points} series={series} unit="gbp" />
       <p className="mt-1 text-xs text-neutral-700 dark:text-neutral-300">

@@ -166,7 +166,7 @@ async function main(): Promise<void> {
   write("ofgem-cap", buildEnvelope({
     sourceId: "ofgem-cap",
     retrievedAt: FIXTURE_RETRIEVED_AT,
-    releaseDate: ofgem.periods.at(-1)?.start ?? null,
+    releaseDate: ofgem.published ?? ofgem.periods.at(-1)?.start ?? null,
     nextRelease: null,
     sourceUrl: ofgemPage,
     data: { pageUrl: ofgemPage, workbookUrl: "https://www.ofgem.gov.uk/sites/default/files/2026-08/Annex-9-Levelisation-allowance-methodology-and-levelised-cap-levels-v1.11.xlsx", ...ofgem },

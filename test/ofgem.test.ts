@@ -5,7 +5,8 @@ import { parseAnnex9, periodStart, pickAnnex9 } from "@/lib/parsers/ofgem";
 
 describe("Ofgem Annex 9", () => {
   it("reads the dual fuel Direct Debit typical-consumption cap for every period", async () => {
-    const { periods } = await parseAnnex9(readFileSync("fixtures/raw/ofgem/annex-9.xlsx"));
+    const { periods, published } = await parseAnnex9(readFileSync("fixtures/raw/ofgem/annex-9.xlsx"));
+    expect(published).toBe("2026-08-26");
     expect(periods[0]).toMatchObject({ start: "2017-04-01" });
     expect(periods.find((p) => p.start === "2026-10-01")?.gbp).toBe(1723);
     expect(periods.find((p) => p.start === "2023-01-01")?.gbp).toBe(3582);
