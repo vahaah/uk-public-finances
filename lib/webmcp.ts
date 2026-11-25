@@ -34,12 +34,12 @@ export const webmcpTools = [
   {
     name: "get_chart_data",
     description:
-      "One chart on this site: its id, the page path, the official series behind it, and the publisher. Some ids are used on more than one page. Pass path, or an id like /receipts#by-month, so the series matches that page.",
+      "One chart on this site: its id, the page path, the official series behind it, and the publisher. Monthly charts are receipts-by-month (HMRC) and borrowing-by-month (ONS J5II). by-month alone is not a chart id.",
     inputSchema: {
       type: "object",
       properties: {
-        id: { type: "string", description: "The chart id, or a page hash such as /receipts#by-month." },
-        path: { type: "string", description: "The page path when the id is shared, such as /receipts or /borrowing." },
+        id: { type: "string", description: "A chart id such as receipts-by-month or borrowing-by-month, or a page hash such as /receipts#by-month." },
+        path: { type: "string", description: "Optional page path. It does not make the shared anchor by-month mean borrowing." },
       },
       required: ["id"],
       additionalProperties: false,
@@ -111,11 +111,10 @@ export function budgetEvent(input: { label: string; slug: string; date: string; 
 
 export type ChartRef = { id: string; path: string };
 
-/** Page anchors. The same id can name a different series on another page. */
+/** Tool ids. `by-month` is not one: that anchor is on both the receipts and borrowing pages. */
 export const CHARTS: ChartRef[] = [
-  { id: "borrowing-by-month", path: "/" },
-  { id: "by-month", path: "/borrowing" },
-  { id: "by-month", path: "/receipts" },
+  { id: "borrowing-by-month", path: "/borrowing" },
+  { id: "receipts-by-month", path: "/receipts" },
   { id: "so-far", path: "/borrowing" },
   { id: "ratio", path: "/debt" },
   { id: "by-tax", path: "/receipts" },
@@ -124,10 +123,24 @@ export const CHARTS: ChartRef[] = [
   { id: "yields", path: "/debt" },
 ];
 
-/** An id, an optional page path, or a hash such as `/receipts#by-month`. */
+const MONTHLY: Record<string, string> = {
+  "/receipts": "receipts-by-month",
+  "/borrowing": "borrowing-by-month",
+};
+
+/** An unambiguous id, or a page hash such as `/receipts#by-month`. Bare `by-month` is refused. */
 export function resolveChart(input: { id: string; path?: string | null }): ChartRef | { error: string; matches: ChartRef[] } {
   const requested = parseChartInput(input.id, input.path);
-  const matches = CHARTS.filter((chart) => chart.id === requested.id && (requested.path == null || chart.path === requested.path));
+  if (requested.id === "by-month") {
+    return {
+      error: "by-month is used on more than one page. Use receipts-by-month or borrowing-by-month.",
+      matches: [
+        { id: "receipts-by-month", path: "/receipts" },
+        { id: "borrowing-by-month", path: "/borrowing" },
+      ],
+    };
+  }
+  const matches = CHARTS.filter((chart) => chart.id === requested.id && (requested.path == null || chart.path === requested.path || (requested.id === "borrowing-by-month" && requested.path === "/")));
   if (matches.length === 1) return matches[0]!;
   if (matches.length === 0) return { error: "Unknown chart.", matches: CHARTS };
   return { error: "This chart id is used on more than one page. Pass path.", matches };
@@ -136,9 +149,16 @@ export function resolveChart(input: { id: string; path?: string | null }): Chart
 function parseChartInput(id: string, path?: string | null): { id: string; path: string | null } {
   const trimmed = id.trim();
   const hash = /^(?:https?:\/\/[^/#]+)?(\/[^#]*)#([A-Za-z0-9-]+)$/.exec(trimmed);
-  const explicit = path?.trim();
-  if (hash) return { id: hash[2] ?? trimmed, path: explicit || hash[1] || null };
-  return { id: trimmed, path: explicit || null };
+  const explicit = path?.trim() || null;
+  if (hash) {
+    const page = explicit || hash[1] || null;
+    const anchor = hash[2] ?? trimmed;
+    if (anchor === "by-month" && page && MONTHLY[page]) return { id: MONTHLY[page], path: page };
+    if (anchor === "borrowing-by-month") return { id: "borrowing-by-month", path: page };
+    return { id: anchor, path: page };
+  }
+  if (trimmed === "by-month") return { id: "by-month", path: explicit };
+  return { id: trimmed, path: explicit };
 }
 
 export type ChartPoint = { period: string; value: number };

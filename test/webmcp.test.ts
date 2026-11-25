@@ -89,20 +89,24 @@ describe("WebMCP tools", () => {
   });
 
   it("does not treat a shared chart id as borrowing", async () => {
-    expect(resolveChart({ id: "by-month" })).toEqual({
-      error: "This chart id is used on more than one page. Pass path.",
-      matches: [
-        { id: "by-month", path: "/borrowing" },
-        { id: "by-month", path: "/receipts" },
-      ],
-    });
-    const receipts = await loadChart("/receipts#by-month");
+    for (const request of [{ id: "by-month" }, { id: "by-month", path: "/borrowing" }, { id: "by-month", path: "/receipts" }]) {
+      const resolved = resolveChart(request);
+      expect("error" in resolved).toBe(true);
+      if (!("error" in resolved)) return;
+      expect(resolved.matches.map((chart) => chart.id)).toEqual(["receipts-by-month", "borrowing-by-month"]);
+      expect(resolved.matches.some((chart) => chart.id === "by-month")).toBe(false);
+    }
+    const refused = await loadChart("by-month", "/borrowing");
+    expect("series" in refused).toBe(false);
+    const receipts = await loadChart("receipts-by-month");
     expect("series" in receipts).toBe(true);
     if (!("series" in receipts)) return;
+    expect(receipts.id).toBe("receipts-by-month");
     expect(receipts.source.publisher).toBe("HM Revenue & Customs");
     expect(receipts.source.series).toBe("HMRC monthly receipts");
-    const borrowing = await loadChart("by-month", "/borrowing");
-    expect("series" in borrowing && borrowing.source.series).toBe("J5II");
+    const fromPage = await loadChart("/receipts#by-month");
+    expect("series" in fromPage && fromPage.id).toBe("receipts-by-month");
+    expect("series" in fromPage && fromPage.source.series).toBe("HMRC monthly receipts");
   });
 
   it("does nothing when the browser has no model context", () => {

@@ -47,7 +47,7 @@ export async function loadChart(id: string, path?: string | null): Promise<Chart
 
 async function chartById(ref: ChartRef): Promise<ChartPayload | null> {
   const { id, path } = ref;
-  if ((id === "borrowing-by-month" && path === "/") || (id === "by-month" && path === "/borrowing")) {
+  if (id === "borrowing-by-month") {
     const ons = takeSnapshot("ons-psf", (await readSnapshot("ons-psf")).snapshot);
     const points = tail(ons?.data.series.j5ii?.months ?? []).map((point) => ({ period: point.period, value: billions(point.value, true) }));
     return seriesChart(id, "Public sector net borrowing by month", "£ billion. Positive is borrowing.", "Office for National Statistics", "J5II", [{ name: "Borrowing", points }]);
@@ -65,7 +65,7 @@ async function chartById(ref: ChartRef): Promise<ChartPayload | null> {
     const points = tail(ons?.data.series.hf6x?.months ?? []).map((point) => ({ period: point.period, value: Number(point.value.toFixed(1)) }));
     return seriesChart(id, "Public sector net debt as a share of GDP", "Percent of GDP", "Office for National Statistics", "HF6X", [{ name: "Net debt", points }]);
   }
-  if (id === "by-month" && path === "/receipts") {
+  if (id === "receipts-by-month") {
     const hmrc = takeSnapshot("hmrc-receipts", (await readSnapshot("hmrc-receipts")).snapshot);
     const points = tail(hmrc?.data.monthly ?? []).map((row) => ({ period: row.period, value: billions(row.total) }));
     return seriesChart(id, "Total HMRC receipts by month", "£ billion", "HM Revenue & Customs", "HMRC monthly receipts", [{ name: "HMRC receipts", points }]);
