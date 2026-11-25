@@ -17,12 +17,7 @@ const PERSONAL = new Set([
   "Who gains and loses from the Budget?",
 ]);
 
-export function faqAnchor(question: string): string {
-  return question
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
+export { faqAnchor } from "@/lib/faq-anchor";
 
 /**
  * FAQ answers that lead with the latest figure, so search engines and AI tools can quote them.

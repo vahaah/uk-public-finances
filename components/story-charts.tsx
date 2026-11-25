@@ -1,6 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { Toggle, ToggleGroup } from "@ui-sdk/react/toggle";
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, LabelList, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from "recharts";
 
 import { useChartTheme } from "@/components/charts";
@@ -350,17 +351,36 @@ export function MultiLine({
     }
     return row;
   });
-  const y = yAxisFor(points.flatMap((point) => series.map((item) => (typeof point[item.key] === "number" ? (point[item.key] as number) : null))), true);
+  const [shown, setShown] = useState<string[]>(series.map((item) => item.key));
+  const visible = series.filter((item) => shown.includes(item.key));
+  const y = yAxisFor(points.flatMap((point) => visible.map((item) => (typeof point[item.key] === "number" ? (point[item.key] as number) : null))), true);
   const every = Math.max(1, Math.ceil(periods.length / (isSm ? 8 : 4)));
   return (
     <div>
-      <Swatches items={series.map((item, index) => ({ label: item.name, className: "", color: palette[index % palette.length] }))} />
+      <ToggleGroup
+        multiple
+        aria-label="Chart series"
+        value={shown}
+        onValueChange={setShown}
+        className="mb-2 flex flex-wrap gap-x-4 gap-y-1"
+      >
+        {series.map((item, index) => (
+          <Toggle
+            key={item.key}
+            value={item.key}
+            className={(state) => `inline-flex h-11 items-center text-xs text-neutral-950 sm:h-8 dark:text-neutral-50 ${state.pressed ? "" : "opacity-40"}`}
+          >
+            <span className="mr-1 inline-block size-2.5" style={{ backgroundColor: palette[index % palette.length] }} aria-hidden="true" />
+            {item.name}
+          </Toggle>
+        ))}
+      </ToggleGroup>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 256 }}>
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
-            <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} interval={every - 1} tickFormatter={isSm ? undefined : shortPeriod} />
-            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={44} ticks={y.ticks} domain={y.domain} tickFormatter={y.tickFormatter} />
+            <XAxis dataKey="period" tick={{ fontSize: 13, fill: theme.tick }} interval={every - 1} tickFormatter={isSm ? undefined : shortPeriod} />
+            <YAxis tick={{ fontSize: 13, fill: theme.tick }} width={48} ticks={y.ticks} domain={y.domain} tickFormatter={y.tickFormatter} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
               content={({ active, payload, label }) => {
@@ -374,12 +394,12 @@ export function MultiLine({
               }}
             />
             {forecastFrom ? <ReferenceLine x={forecastFrom} stroke={theme.grid} label={{ value: forecastLabel, position: "insideTopRight", fontSize: 11, fill: theme.tick }} /> : null}
-            {series.map((item, index) => (
-              <Line key={item.key} dataKey={item.key} name={item.name} stroke={palette[index % palette.length]} dot={false} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
+            {visible.map((item) => (
+              <Line key={item.key} dataKey={item.key} name={item.name} stroke={palette[series.indexOf(item) % palette.length]} dot={false} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
             ))}
             {forecastFrom
-              ? series.map((item, index) => (
-                  <Line key={`${item.key}__f`} dataKey={`${item.key}__f`} name={`${item.name} (${forecastLabel.toLowerCase()})`} stroke={palette[index % palette.length]} strokeDasharray="5 4" dot={false} strokeWidth={2} isAnimationActive={false} legendType="none" />
+              ? visible.map((item) => (
+                  <Line key={`${item.key}__f`} dataKey={`${item.key}__f`} name={`${item.name} (${forecastLabel.toLowerCase()})`} stroke={palette[series.indexOf(item) % palette.length]} strokeDasharray="5 4" dot={false} strokeWidth={2} isAnimationActive={false} legendType="none" />
                 ))
               : null}
           </LineChart>

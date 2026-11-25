@@ -102,32 +102,33 @@ export default async function TaxpayersPage() {
         title={`Income taxpayers by highest rate paid, tax year ${year}`}
         source={<SourceNote publisher={meta.publisher} title="Income Tax liabilities statistics" url={snapshot.data.attachmentUrl} releaseDate={snapshot.releaseDate} licenceUrl={meta.licenceUrl} sourceId="hmrc-income-tax" />}
       >
-        <div className="flex h-10 items-stretch overflow-hidden rounded-sm">
+        <div
+          className="flex h-8 items-stretch overflow-hidden rounded-sm"
+          role="img"
+          aria-label={payers.bands.map((band) => `${bandLabel(band.name)} ${formatPercent(payers.total ? (band.value / payers.total) * 100 : 0)}`).join(", ")}
+        >
           {payers.bands.map((band, index) => {
             const share = payers.total ? (band.value / payers.total) * 100 : 0;
-            const outside = share < 4;
             return (
               <div
                 key={band.name}
-                className="relative bg-blue-700 dark:bg-blue-300"
+                className="bg-blue-700 dark:bg-blue-300"
                 style={{ width: `${share}%`, opacity: [0.9, 0.75, 0.6, 0.45][index] ?? 0.45 }}
-                title={`${bandLabel(band.name)} ${formatPercent(share)}`}
-              >
-                {outside ? null : (
-                  <span className="absolute inset-0 flex items-center justify-center px-1 text-[11px] text-white dark:text-neutral-950">
-                    {bandLabel(band.name)} {formatPercent(share)}
-                  </span>
-                )}
-              </div>
+              />
             );
           })}
         </div>
-        <p className="mt-2 text-xs text-neutral-800 dark:text-neutral-200">
-          {payers.bands
-            .filter((band) => (payers.total ? (band.value / payers.total) * 100 : 0) < 4)
-            .map((band) => `${bandLabel(band.name)} ${formatPercent(payers.total ? (band.value / payers.total) * 100 : 0)}`)
-            .join(" · ")}
-        </p>
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-800 dark:text-neutral-200">
+          {payers.bands.map((band, index) => {
+            const share = payers.total ? (band.value / payers.total) * 100 : 0;
+            return (
+              <li key={band.name} className="inline-flex items-center gap-1">
+                <span className="inline-block size-2.5 bg-blue-700 dark:bg-blue-300" style={{ opacity: [0.9, 0.75, 0.6, 0.45][index] ?? 0.45 }} aria-hidden="true" />
+                {bandLabel(band.name)} {formatPercent(share)}
+              </li>
+            );
+          })}
+        </ul>
         <DataTable
           columns={["Highest rate paid", "Taxpayers (thousands)", "Share"]}
           rows={payers.bands.map((band) => [

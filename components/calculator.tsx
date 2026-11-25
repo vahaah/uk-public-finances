@@ -3,6 +3,8 @@
 import { parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense, useMemo } from "react";
 
+import { ChoiceSelect } from "@/components/ui/choice-select";
+import { Segmented } from "@/components/ui/segmented";
 import { formatRelease } from "@/lib/format";
 import { coverage, equivalentValue, financialYearMean, type Observation } from "@/lib/prices";
 
@@ -63,32 +65,25 @@ function CalculatorInner({
     : { ok: false as const, reason: "Enter an amount.", first: span?.first ?? null, last: span?.last ?? null };
   return (
     <div className="max-w-3xl">
-      <div className="inline-flex flex-wrap rounded-md border border-neutral-300 p-0.5 dark:border-neutral-700" role="group">
-        {INDEXES.map((id) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={id === index}
-            className={`h-7 px-2.5 text-xs ${id === index ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200"}`}
-            onClick={() => setIndex(id)}
-          >
-            {COPY[id].label}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        label="Price index"
+        value={index}
+        options={INDEXES.map((id) => ({ value: id, label: COPY[id].label }))}
+        onChange={setIndex}
+      />
       <p className="mt-4 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{COPY[index].fit}</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <label className="text-sm">
           Amount, £
           <input
-            className="mt-1 h-9 w-full rounded-md border border-neutral-300 bg-white px-2 tabular-nums dark:border-neutral-700 dark:bg-neutral-950"
+            className="mt-1 h-11 w-full rounded-md border border-neutral-300 bg-white px-2 tabular-nums sm:h-9 dark:border-neutral-700 dark:bg-neutral-950"
             inputMode="decimal"
             value={amountText ?? ""}
             onChange={(event) => setAmount(event.target.value)}
           />
         </label>
-        <YearSelect label="Year A" value={from ?? ""} years={points.map((point) => point.period)} onChange={setFrom} />
-        <YearSelect label="Year B" value={to ?? ""} years={points.map((point) => point.period)} onChange={setTo} />
+        <ChoiceSelect stacked label="Year A" value={from} options={points.map((point) => ({ value: point.period, label: point.period }))} onChange={setFrom} />
+        <ChoiceSelect stacked label="Year B" value={to} options={points.map((point) => ({ value: point.period, label: point.period }))} onChange={setTo} />
       </div>
       <div className="mt-6 border border-neutral-200 p-6 dark:border-neutral-800">
         {result.ok ? (
@@ -108,36 +103,6 @@ function CalculatorInner({
         {span ? ` Annual observations run from ${span.first} to ${span.last}.` : ""} A year that is not in that list is not estimated.
       </p>
     </div>
-  );
-}
-
-function YearSelect({
-  label,
-  value,
-  years,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  years: string[];
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="text-sm">
-      {label}
-      <select
-        className="mt-1 h-9 w-full rounded-md border border-neutral-300 bg-white px-2 dark:border-neutral-700 dark:bg-neutral-950"
-        value={years.includes(value) ? value : ""}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        <option value="">Choose a year</option>
-        {years.map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }
 

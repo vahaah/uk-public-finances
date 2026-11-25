@@ -1,10 +1,17 @@
 "use client";
 
+import { announce } from "@ui-sdk/core";
 import { useEffect, useState } from "react";
+
+import { textButton } from "@/components/ui/popup-classes";
 
 /** Copy a chart anchor, and save an SVG chart as a PNG. HTML-only figures keep the link and skip the PNG. */
 export function ChartTools({ chartId, url }: { chartId: string; url: string }) {
   const [status, setStatus] = useState<string | null>(null);
+  const note = (message: string) => {
+    setStatus(message);
+    announce(message);
+  };
   const [png, setPng] = useState(false);
   useEffect(() => {
     const root = document.getElementById(chartId);
@@ -19,10 +26,10 @@ export function ChartTools({ chartId, url }: { chartId: string; url: string }) {
     <>
       <button
         type="button"
-        className="inline-flex h-8 items-center rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700"
+        className={textButton}
         aria-label="Copy link to this chart"
         onClick={() => {
-          void navigator.clipboard.writeText(url).then(() => setStatus("Link copied"));
+          void navigator.clipboard.writeText(url).then(() => note("Link copied"));
         }}
       >
         Copy link
@@ -30,23 +37,25 @@ export function ChartTools({ chartId, url }: { chartId: string; url: string }) {
       {png ? (
         <button
           type="button"
-          className="inline-flex h-8 items-center rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700"
+          className={textButton}
           aria-label="Download this chart as a PNG"
           onClick={() => {
             const svg = largestSvg(document.getElementById(chartId));
             if (!svg) {
-              setStatus("Chart not ready");
+              note("Chart not ready");
               return;
             }
             void saveSvgPng(svg, chartId)
-              .then(() => setStatus("PNG saved"))
-              .catch(() => setStatus("Could not save the PNG"));
+              .then(() => note("PNG saved"))
+              .catch(() => note("Could not save the PNG"));
           }}
         >
           Download PNG
         </button>
       ) : null}
-      {status ? <span className="text-xs">{status}</span> : null}
+      <span className="text-xs" aria-live="polite">
+        {status}
+      </span>
     </>
   );
 }

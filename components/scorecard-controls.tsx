@@ -1,5 +1,6 @@
 "use client";
 
+import { Toggle, ToggleGroup } from "@ui-sdk/react/toggle";
 import { useEffect, useState } from "react";
 
 /** Reorders the server-rendered scorecard. The row figures stay in the HTML and are not sent again as props. */
@@ -17,10 +18,19 @@ export function ScorecardControls() {
   }, [sort]);
   return (
     <>
-      <div className="mb-3 flex gap-2" role="group" aria-label="Sort the scorecard">
-        <SortButton on={sort === "newest"} onClick={() => setSort("newest")} label="Newest" />
-        <SortButton on={sort === "error"} onClick={() => setSort("error")} label="Largest difference" />
-      </div>
+      <ToggleGroup
+        aria-label="Sort the scorecard"
+        deselectable={false}
+        value={[sort]}
+        onValueChange={(next) => {
+          const picked = next.find((item) => item !== sort) ?? next[0];
+          if (picked === "newest" || picked === "error") setSort(picked);
+        }}
+        className="mb-3 flex gap-2"
+      >
+        <SortToggle value="newest" label="Newest" />
+        <SortToggle value="error" label="Largest difference" />
+      </ToggleGroup>
       <p className="sr-only" aria-live="polite">
         Sorted by {sort === "newest" ? "newest" : "largest difference"}.
       </p>
@@ -28,10 +38,15 @@ export function ScorecardControls() {
   );
 }
 
-function SortButton({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
+function SortToggle({ value, label }: { value: "newest" | "error"; label: string }) {
   return (
-    <button type="button" aria-pressed={on} className={`h-9 rounded-full border px-3 text-xs ${on ? "border-neutral-950 font-medium dark:border-white" : "border-neutral-300 dark:border-neutral-700"}`} onClick={onClick}>
+    <Toggle
+      value={value}
+      className={(state) =>
+        `inline-flex h-11 items-center rounded-full border px-3 text-xs sm:h-9 ${state.pressed ? "border-neutral-950 font-medium dark:border-white" : "border-neutral-300 dark:border-neutral-700"}`
+      }
+    >
       {label}
-    </button>
+    </Toggle>
   );
 }

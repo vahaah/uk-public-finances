@@ -17,6 +17,8 @@
     "indexnow": "tsx scripts/indexnow.ts"
   },
   "dependencies": {
+    "@ui-sdk/core": "0.1.0-beta.1",
+    "@ui-sdk/react": "0.1.0-beta.1",
     "@vercel/blob": "^2.0.0",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.2.5",

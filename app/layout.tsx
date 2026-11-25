@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import Script from "next/script";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { AgentBridge } from "@/components/agent-bridge";
 import { ThemeScript } from "@/components/chrome";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -42,15 +43,22 @@ export const revalidate = 3600;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const plausible = isPlausibleEnabled();
+  const originTrial = process.env.WEBMCP_ORIGIN_TRIAL_TOKEN;
 
   return (
     <html lang="en-GB" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      {originTrial ? (
+        <head>
+          <meta httpEquiv="origin-trial" content={originTrial} />
+        </head>
+      ) : null}
       <body className="min-h-screen font-sans">
         <ThemeScript />
         <NuqsAdapter>
           <SiteHeader />
           <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
           <SiteFooter />
+          <AgentBridge />
         </NuqsAdapter>
         {plausible ? (
           <>
