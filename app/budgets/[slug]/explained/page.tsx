@@ -24,7 +24,7 @@ import {
 } from "@/components/story-sections";
 import { eventLabel, financialYearOf } from "@/lib/budgets/events";
 import { formatDateLong } from "@/lib/format";
-import { formatUnit } from "@/lib/story-format";
+import { cardVersion, explainedSentence } from "@/lib/headlines";
 import { pageMeta } from "@/lib/meta";
 import { laterStamp } from "@/lib/sitemap-entries";
 import { rhdiByDecade } from "@/lib/rhdi-decades";
@@ -47,11 +47,28 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const story = await latestStory();
   const label = story && story.event.slug === slug ? eventLabel(story.event) : "Budget";
+  const sentence =
+    story && story.event.slug === slug
+      ? explainedSentence({
+          currentLabel: story.efo.currentLabel,
+          previousLabel: story.efo.previousLabel,
+          fy: financialYearOf(story.event.date),
+          current: story.efo.psnb?.points.find((point) => point.period === financialYearOf(story.event.date))?.current ?? null,
+          previous: story.efo.psnb?.points.find((point) => point.period === financialYearOf(story.event.date))?.previous ?? null,
+          date: story.event.date,
+        })
+      : null;
   return pageMeta({
     title: `UK ${label} explained`,
-    description: `What ${label} means: the OBR forecast for growth, prices, incomes, borrowing, tax and debt, against the previous forecast.`,
+    description: sentence ?? `What ${label} means: the OBR forecast for growth, prices, incomes, borrowing, tax and debt, against the previous forecast.`,
     path: `/budgets/${slug}/explained`,
-    og: { kicker: "Budgets", title: `UK ${label} explained`, detail: "The story in charts, from OBR data" },
+    og: {
+      kicker: "Budgets",
+      title: sentence ?? `UK ${label} explained`,
+      alt: sentence ?? `UK ${label} explained`,
+      detail: "The story in charts, from OBR data",
+      version: cardVersion(story?.releaseDate, story?.event.date),
+    },
   });
 }
 
@@ -66,10 +83,14 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
   const fy = financialYearOf(event.date);
   const psnb = efo.psnb?.points.find((point) => point.period === fy);
   const headline = `UK ${label} explained`;
-  const answer =
-    psnb?.current != null
-      ? `The OBR's ${efo.currentLabel} forecast puts UK public sector net borrowing at ${formatUnit(psnb.current, "bn")} in ${fy}${psnb.previous != null ? `, compared with ${formatUnit(psnb.previous, "bn")} in its ${efo.previousLabel} forecast` : ""}.`
-      : `${formatDateLong(event.date)}. What the OBR's ${efo.currentLabel} forecast says about the economy and the public finances, compared with its ${efo.previousLabel} forecast.`;
+  const answer = explainedSentence({
+    currentLabel: efo.currentLabel,
+    previousLabel: efo.previousLabel,
+    fy,
+    current: psnb?.current ?? null,
+    previous: psnb?.previous ?? null,
+    date: event.date,
+  });
   const [events, pricesLoaded, pesaLoaded, ofgemLoaded] = await Promise.all([storyEvents(), readSnapshot("ons-prices"), readSnapshot("pesa"), readSnapshot("ofgem-cap")]);
   const cap = takeSnapshot("ofgem-cap", ofgemLoaded.snapshot)?.data;
   const independent = takeSnapshot("pesa", pesaLoaded.snapshot)?.data.independent;

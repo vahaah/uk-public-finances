@@ -117,6 +117,45 @@ export const FAQ: FaqItem[] = [
       "ONS public sector finances are estimates and are revised in later releases. This site shows the latest published figures, so a month's value can change.",
   },
   {
+    question: "Where do my taxes go?",
+    answer:
+      "Budget does not work out where the tax you pay is spent. UK taxes are not earmarked for a service. The spending page shows HM Treasury's shares of public spending on services. For the income tax and National Insurance HMRC has recorded for you, use your Annual Tax Summary.",
+    links: [
+      { href: "/spending", label: "Spending" },
+      { href: "https://www.gov.uk/guidance/annual-tax-summary", label: "HMRC Annual Tax Summary" },
+    ],
+  },
+  {
+    question: "How much tax do I pay?",
+    answer:
+      "Budget does not calculate the tax you pay. It shows how much HMRC collects, how many people pay income tax, and the share paid by the top 1% and top 10%. The GOV.UK calculator estimates income tax and National Insurance from a salary. HMRC's Annual Tax Summary shows what it has recorded for you.",
+    links: [
+      { href: "/taxpayers", label: "Income taxpayers" },
+      { href: "https://www.gov.uk/estimate-income-tax", label: "GOV.UK income tax calculator" },
+      { href: "https://www.gov.uk/guidance/annual-tax-summary", label: "HMRC Annual Tax Summary" },
+    ],
+  },
+  {
+    question: "What did the latest Budget change?",
+    answer:
+      "The latest Budget page shows the OBR's borrowing forecast for the year ahead, the measures the OBR scored, and HM Treasury's distributional charts. Chapter 4 of the explained page sets the measures out. Budget does not calculate a personal gain or loss.",
+    links: [
+      { href: "/budgets", label: "Budgets" },
+      { href: "/spending", label: "Spending" },
+      { href: "/taxpayers", label: "Income taxpayers" },
+    ],
+  },
+  {
+    question: "Who gains and loses from the Budget?",
+    answer:
+      "Budget does not say who gains or loses. HM Treasury's distributional analysis, published with the Budget, estimates the effect on households by income decile. Those charts are on the Budget page. Income taxpayers and spending by function are on their own pages.",
+    links: [
+      { href: "/budgets", label: "Budgets" },
+      { href: "/spending", label: "Spending" },
+      { href: "/taxpayers", label: "Income taxpayers" },
+    ],
+  },
+  {
     question: "What is the difference between the deficit and the debt?",
     answer:
       "The deficit is how much the public sector borrows in a period. The debt is the total owed, minus cash and other liquid assets. Borrowing over time adds to the debt.",

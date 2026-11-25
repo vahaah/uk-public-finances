@@ -14,17 +14,23 @@ import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatBillions, formatGbpFromMillions, formatPercent } from "@/lib/format";
 import { functionMix, realFunctionGrowth } from "@/lib/mix";
 import { SITE_URL } from "@/lib/site";
+import { PersonalTaxNote } from "@/components/personal-tax-note";
 import { pageMeta } from "@/lib/meta";
 import { PAGE_COPY } from "@/lib/page-copy";
+import { shareCard } from "@/lib/share-card";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
-export const metadata = pageMeta({
-  title: PAGE_COPY.spending.title,
-  description: PAGE_COPY.spending.description,
-  path: "/spending",
-});
+export async function generateMetadata() {
+  const card = await shareCard("/spending");
+  return pageMeta({
+    title: PAGE_COPY.spending.title,
+    description: card?.description ?? PAGE_COPY.spending.description,
+    path: "/spending",
+    og: card ? { kicker: card.kicker, title: card.sentence, alt: card.sentence, version: card.version } : undefined,
+  });
+}
 
 export default async function SpendingPage() {
   const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("pesa"), readSnapshot("ons-prices"), fiscalMarkers()]);
@@ -58,6 +64,7 @@ export default async function SpendingPage() {
           { href: "#growth", label: "Real growth" },
           { href: "#departments", label: "Departments" },
           { href: "#per-person-real", label: "Per person" },
+          { href: "#where-it-goes", label: "Your own tax" },
         ]}
       />
       <PageIntro
@@ -84,8 +91,11 @@ export default async function SpendingPage() {
         citation={`${spendingCite(functions, growth)} Source: ${meta.publisher}, PESA, published ${snapshot.releaseDate ?? ""}. Via budget.vahaah.com/spending.`}
         url={`${SITE_URL}/spending`}
       />
-      <div id="mix" className="mt-6 scroll-mt-28">
+      <PersonalTaxNote spend={{ year: functions.year, total: functions.totalServices, items: functions.items }} />
+      <div className="mt-6">
         <ChartFrame
+          id="mix"
+          path="/spending"
           title="Spending on services over time"
           subtitle="Shares of spending on services by function. Switch to 100% to compare the mix. Real terms removes the effect of rising prices, so years can be compared fairly."
           source={
@@ -131,6 +141,8 @@ export default async function SpendingPage() {
       </div>
       <div id="functions" className="mt-3 scroll-mt-28">
       <ChartFrame
+        id="by-function"
+        path="/spending"
         title={`Spending on services by function, ${functions.year}`}
         subtitle="£bn."
         source={
@@ -149,6 +161,8 @@ export default async function SpendingPage() {
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame
+          id="tme"
+          path="/spending"
           title="Total managed expenditure over time"
           subtitle="£bn, by financial year. From PESA table 4.2."
           source={
@@ -177,8 +191,10 @@ export default async function SpendingPage() {
         </ChartFrame>
       </div>
       </div>
-      <div id="departments" className="mt-3 scroll-mt-28">
+      <div className="mt-3">
         <ChartFrame
+          id="departments"
+          path="/spending"
           title="Departmental budgets (DEL) by department"
           subtitle="£bn. Central government spending within departmental expenditure limits."
           source={

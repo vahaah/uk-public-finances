@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { ChartTools } from "@/components/chart-tools";
 import { formatRelease } from "@/lib/format";
 import type { SourceId } from "@/lib/schema";
+import { SITE_URL } from "@/lib/site";
 
 export { articleJsonLd, AUTHOR_JSON_LD, breadcrumbJsonLd, datasetJsonLd, websiteJsonLd, type DatasetSource } from "@/lib/jsonld";
 
@@ -131,12 +133,16 @@ export function SourceNote({
 }
 
 export function ChartFrame({
+  id,
+  path,
   title,
   subtitle,
   children,
   source,
   stale,
 }: {
+  id?: string;
+  path?: string;
   title: string;
   subtitle?: string;
   children: ReactNode;
@@ -144,13 +150,18 @@ export function ChartFrame({
   stale?: string | null;
 }) {
   return (
-    <section className={`border border-neutral-200 p-6 dark:border-neutral-800 ${stale ? "border-l-2 border-l-amber-700" : ""}`}>
+    <section id={id} className={`scroll-mt-28 border border-neutral-200 p-6 dark:border-neutral-800 ${stale ? "border-l-2 border-l-amber-700" : ""}`}>
       <h2 className="text-sm font-medium">{title}</h2>
       {subtitle ? <p className="mt-1 text-sm text-neutral-800 dark:text-neutral-200">{subtitle}</p> : null}
       {stale ? <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">Not updated · as of {stale}</p> : null}
       <div className="mt-3" data-ready="true">
         {children}
       </div>
+      {id && path ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <ChartTools chartId={id} url={`${SITE_URL}${path}#${id}`} />
+        </div>
+      ) : null}
       {source}
     </section>
   );

@@ -1,11 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { LogoMark } from "@/components/logo";
-import { NAV, SITE_NAME } from "@/lib/site";
+import { SITE_NAME } from "@/lib/site";
+
+const CommandPalette = dynamic(() => import("@/components/command-palette").then((mod) => mod.CommandPalette), { ssr: false });
 
 export function ThemeScript() {
   return (
@@ -18,12 +21,24 @@ export function ThemeScript() {
   );
 }
 
-export function Header() {
+export function Header({ links }: { links: { href: string; label: string }[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [palette, setPalette] = useState(false);
   useEffect(() => {
     setOpen(false);
+    setPalette(false);
   }, [pathname]);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPalette((value) => !value);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   return (
     <header className="sticky top-0 z-20 border-b border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-black/90">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
@@ -33,10 +48,22 @@ export function Header() {
         </Link>
         <nav className="relative hidden min-w-0 flex-1 items-center md:flex">
           <div className="flex gap-3 overflow-x-auto text-sm text-neutral-600 [scrollbar-width:none] dark:text-neutral-400">
-            <NavLinks pathname={pathname} />
+            <NavLinks pathname={pathname} links={links} />
           </div>
         </nav>
         <div className="ml-auto flex items-center gap-2 md:ml-0">
+          <button
+            type="button"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-neutral-300 px-2.5 text-sm dark:border-neutral-700"
+            aria-label="Search"
+            aria-keyshortcuts="Control+K Meta+K"
+            onClick={() => setPalette(true)}
+            onMouseEnter={() => void import("@/components/command-palette")}
+            onFocus={() => void import("@/components/command-palette")}
+          >
+            <SearchIcon />
+            <span className="max-[420px]:sr-only">Search</span>
+          </button>
           <button
             type="button"
             className="inline-flex size-9 items-center justify-center rounded-md border border-neutral-300 text-sm md:hidden dark:border-neutral-700"
@@ -52,25 +79,27 @@ export function Header() {
       <div className="relative border-t border-neutral-200 md:hidden dark:border-neutral-800">
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-white to-transparent dark:from-black" />
         <nav className="flex snap-x gap-3 overflow-x-auto px-4 py-2 text-sm [scrollbar-width:none]">
-          <NavLinks pathname={pathname} />
+          <NavLinks pathname={pathname} links={links} />
         </nav>
       </div>
       {open ? (
         <nav id="site-menu" className="border-t border-neutral-200 bg-white px-4 py-3 md:hidden dark:border-neutral-800 dark:bg-black">
           <div className="flex flex-col gap-3 text-sm">
-            <NavLinks pathname={pathname} />
+            <NavLinks pathname={pathname} links={links} />
           </div>
         </nav>
       ) : null}
+      {palette ? <CommandPalette onClose={() => setPalette(false)} /> : null}
     </header>
   );
 }
 
-function NavLinks({ pathname }: { pathname: string }) {
+function NavLinks({ pathname, links }: { pathname: string; links: { href: string; label: string }[] }) {
+  const current = currentHref(pathname, links);
   return (
     <>
-      {NAV.map((item) => {
-        const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+      {links.map((item) => {
+        const active = item.href === current;
         return (
           <Link
             key={item.href}
@@ -83,6 +112,24 @@ function NavLinks({ pathname }: { pathname: string }) {
         );
       })}
     </>
+  );
+}
+
+function currentHref(pathname: string, links: { href: string }[]): string | undefined {
+  let best: string | undefined;
+  for (const link of links) {
+    const matches = link.href === "/" ? pathname === "/" : pathname === link.href || pathname.startsWith(`${link.href}/`);
+    if (matches && (!best || link.href.length > best.length)) best = link.href;
+  }
+  return best;
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
+      <circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10.2 10.2 14 14" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
   );
 }
 

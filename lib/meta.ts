@@ -8,15 +8,16 @@ export function pageMeta(input: {
   description: string;
   path: string;
   noindex?: boolean;
-  /** Social card text. Defaults to the section name and the page title. */
-  og?: { kicker?: string; title?: string; detail?: string };
+  /** Social card text. `alt` is the live sentence. `version` is the snapshot stamp, so the image URL changes when the data does. */
+  og?: { kicker?: string; title?: string; detail?: string; alt?: string; version?: string };
   keywords?: string[];
 }): Metadata {
   const title = clampTitle(input.title);
   const description = clampDescription(input.description);
   const url = input.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${input.path}`;
-  const image = ogImageUrl(input.path, input.og?.title ?? title, input.og?.kicker, input.og?.detail);
-  const images = [{ url: image, width: 1200, height: 630, alt: input.og?.title ?? title }];
+  const alt = input.og?.alt ?? input.og?.title ?? title;
+  const image = ogImageUrl(input.path, input.og?.title ?? title, input.og?.kicker, input.og?.detail, input.og?.version);
+  const images = [{ url: image, width: 1200, height: 630, alt }];
   return {
     title: input.path === "/" ? { absolute: `${title} | ${SITE_NAME}` } : title,
     description,
@@ -38,7 +39,7 @@ export function pageMeta(input: {
       title,
       description,
       creator: "@vahaah",
-      images: [image],
+      images: [{ url: image, alt }],
     },
   };
 }
@@ -61,9 +62,10 @@ const SECTIONS: Record<string, string> = {
   api: "API",
 };
 
-export function ogImageUrl(path: string, title: string, kicker?: string, detail?: string): string {
+export function ogImageUrl(path: string, title: string, kicker?: string, detail?: string, version?: string): string {
   const section = path.split("/")[1] ?? "";
-  const params = new URLSearchParams({ k: kicker ?? SECTIONS[section] ?? "UK public finances", t: title });
+  const params = new URLSearchParams({ k: kicker ?? SECTIONS[section] ?? "UK public finances", t: title, p: path });
   if (detail) params.set("d", detail);
+  if (version) params.set("v", version);
   return `${SITE_URL}/og?${params.toString()}`;
 }

@@ -7,6 +7,7 @@ import { RelatedPages } from "@/components/related-pages";
 import { WhenVisible } from "@/components/when-visible";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { CiteShare } from "@/components/cite-share";
+import { JumpTo } from "@/components/jump-to";
 import { fiscalMarkers } from "@/lib/budgets/markers";
 import { lastObservationByMonth } from "@/lib/chart-time";
 import { laterStamp } from "@/lib/sitemap-entries";
@@ -15,14 +16,19 @@ import { reconcileSignedDisplay } from "@/lib/display-rounding";
 import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
 import { PAGE_COPY } from "@/lib/page-copy";
+import { shareCard } from "@/lib/share-card";
 import { loadHealth, readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
-export const metadata = pageMeta({
-  title: PAGE_COPY.debt.title,
-  description: PAGE_COPY.debt.description,
-  path: "/debt",
-});
+export async function generateMetadata() {
+  const card = await shareCard("/debt");
+  return pageMeta({
+    title: card?.title ?? PAGE_COPY.debt.title,
+    description: card?.description ?? PAGE_COPY.debt.description,
+    path: "/debt",
+    og: card ? { kicker: card.kicker, title: card.sentence, alt: card.sentence, version: card.version } : undefined,
+  });
+}
 
 export default async function DebtPage() {
   const [onsLoaded, boeLoaded, dmoLoaded, health, markers] = await Promise.all([
@@ -74,12 +80,21 @@ export default async function DebtPage() {
         })}
       />
       <Breadcrumb current="Debt and gilts" />
+      <JumpTo
+        links={[
+          { href: "#answer", label: "The debt" },
+          ...(interestShare ? [{ href: "#interest", label: "Debt interest" }] : []),
+          { href: "#ratio", label: "Share of GDP" },
+          { href: "#yields", label: "Bank Rate and yields" },
+          { href: "#gilts", label: "Gilts in issue" },
+        ]}
+      />
       <PageIntro
         kicker="Public sector finances"
         title="How big is the UK national debt?"
         lede={
           <>
-            <p>{debtCite}</p>
+            <p id="answer">{debtCite}</p>
             <p className="mt-2">
               Public sector net debt and central government net interest come from the ONS. Bank Rate and gilt yields come from the Bank of England. Gilts in issue come from the UK Debt Management Office. Borrowing, which adds to the debt, is on{" "}
               <Link className="underline decoration-neutral-500 underline-offset-4" href="/borrowing">
@@ -107,7 +122,7 @@ export default async function DebtPage() {
         </section>
       ) : null}
       {interestShare ? (
-        <section className="mt-4 border border-neutral-200 p-6 dark:border-neutral-800">
+        <section id="interest" className="mt-4 scroll-mt-28 border border-neutral-200 p-6 dark:border-neutral-800">
           <h2 className="text-sm font-medium">Debt interest as a share of receipts</h2>
           <p className="mt-2 text-sm text-neutral-800 dark:text-neutral-200">
             Index-linked gilts rise in value with inflation. The increase is counted as debt interest each year, so interest costs climb when inflation is high. In calendar year {interestShare.year}, interest excluding uplift was {formatGbpFromMillions(interestShare.interest)} and the uplift was {formatGbpFromMillions(interestShare.uplift)}.
@@ -146,6 +161,8 @@ export default async function DebtPage() {
       {ons ? (
         <div className="mt-3">
           <ChartFrame
+            id="ratio"
+            path="/debt"
             title="Public sector net debt as a share of GDP"
             subtitle="% of GDP. Excludes public sector banks. Axis does not start at zero."
             source={
@@ -168,6 +185,8 @@ export default async function DebtPage() {
       {boe ? (
         <div className="mt-3">
           <ChartFrame
+            id="yields"
+            path="/debt"
             title="Bank Rate and the 10-year gilt yield"
             subtitle="%."
             stale={stale}
@@ -189,13 +208,15 @@ export default async function DebtPage() {
           </ChartFrame>
         </div>
       ) : (
-        <div className="mt-3">
+        <div id="yields" className="mt-3 scroll-mt-28">
           <EmptySource name="Bank of England interest rates" />
         </div>
       )}
       <div className="mt-3">
         {portfolio ? (
           <ChartFrame
+            id="gilts"
+            path="/debt"
             title="Gilts in issue by type"
             source={
               <SourceNote
@@ -231,7 +252,9 @@ export default async function DebtPage() {
             </div>
           </ChartFrame>
         ) : (
-          <EmptySource name="DMO gilts" />
+          <div id="gilts" className="scroll-mt-28">
+            <EmptySource name="DMO gilts" />
+          </div>
         )}
       </div>
       <RelatedPages

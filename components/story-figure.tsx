@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { ChartFrame, SourceNote } from "@/components/blocks";
+import { ChartTools } from "@/components/chart-tools";
 import { CiteShare } from "@/components/cite-share";
 import { WhenVisible } from "@/components/when-visible";
 import { formatDateLong } from "@/lib/format";
@@ -43,6 +44,7 @@ export function StoryFigure({
             Download CSV
           </a>
           <CiteShare sentence={takeaway} citation={citation} url={url} />
+          <ChartTools chartId={id} url={url} />
         </div>
       </ChartFrame>
     </figure>

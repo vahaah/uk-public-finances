@@ -94,6 +94,8 @@ export default async function ForecastsPage() {
       <StoryStepper current="/forecasts" />
       {fyData && fy ? (
         <ChartFrame
+          id="borrowing-against-forecast"
+          path="/forecasts"
           title={`Borrowing so far in ${fy}, against the OBR forecast for the year`}
           subtitle="£bn, running total since April."
           source={
@@ -146,6 +148,8 @@ export default async function ForecastsPage() {
       {obr && series.length > 0 ? (
         <div className="mt-3">
           <ChartFrame
+            id="outturn-and-forecast"
+            path="/forecasts"
             title={`Outturn and forecast, from the ${vintage ?? "OBR public finances databank"}`}
             subtitle="£bn, by financial year. The last 10 years of outturn, then 5 years of forecast (dashed)."
             source={<SourceNote publisher={meta.publisher} title="Public finances databank" url={obr.sourceUrl} releaseDate={obr.releaseDate} licenceUrl={meta.licenceUrl} sourceId="obr-databank" />}

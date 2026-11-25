@@ -1,7 +1,28 @@
+import { eventLabel } from "@/lib/budgets/events";
+import { loadYearAhead } from "@/lib/budgets/year-ahead";
 import { FAQ, type FaqItem } from "@/lib/content";
 import { forecastFor, vintageLabel } from "@/lib/forecasts-view";
 import { formatBillions, formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent } from "@/lib/format";
+import { latestBudgetEvent } from "@/lib/nav-event";
+import { storyEvents } from "@/lib/story";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
+
+export const HMRC_TAX_SUMMARY = "https://www.gov.uk/guidance/annual-tax-summary";
+export const GOVUK_TAX_CALCULATOR = "https://www.gov.uk/estimate-income-tax";
+
+const PERSONAL = new Set([
+  "Where do my taxes go?",
+  "How much tax do I pay?",
+  "What did the latest Budget change?",
+  "Who gains and loses from the Budget?",
+]);
+
+export function faqAnchor(question: string): string {
+  return question
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 /**
  * FAQ answers that lead with the latest figure, so search engines and AI tools can quote them.
@@ -45,13 +66,57 @@ export async function liveFaq(): Promise<FaqItem[]> {
   if (vintage && fyNow && forecast != null) {
     answers["What does the OBR forecast for borrowing?"] = `The OBR's ${vintage} forecast UK public sector net borrowing of ${formatBillions(forecast)} in ${fyNow}. The forecasts page tracks borrowing so far this year against it.`;
   }
+  const budget = await budgetFaq();
+  const personal = FAQ.filter((item) => PERSONAL.has(item.question)).map((item) => budget[item.question] ?? item);
+  const rest = FAQ.slice(2)
+    .filter((item) => !PERSONAL.has(item.question))
+    .map((item) => (item.question === "Why are there no OBR forecasts?" ? { ...item, question: "What does the OBR forecast for borrowing?" } : item));
   const items: FaqItem[] = [
     ...FAQ.slice(0, 2),
     { question: "How much does the UK spend on debt interest?", answer: "", links: [{ href: "/debt", label: "Debt and gilts" }] },
     { question: "How much tax does the UK collect?", answer: "", links: [{ href: "/receipts", label: "Tax and receipts" }] },
-    ...FAQ.slice(2).map((item) => (item.question === "Why are there no OBR forecasts?" ? { ...item, question: "What does the OBR forecast for borrowing?" } : item)),
+    ...personal,
+    ...rest,
   ];
   return items
     .map((item) => ({ ...item, answer: answers[item.question] ?? item.answer }))
     .filter((item) => item.answer.length > 0);
+}
+
+/** Latest Budget questions, with links that follow the event in the registry. */
+async function budgetFaq(): Promise<Record<string, FaqItem>> {
+  const [events, obrLoaded] = await Promise.all([storyEvents(), readSnapshot("budgets-obr")]);
+  const event = latestBudgetEvent(events);
+  if (!event) return {};
+  const label = eventLabel(event);
+  const obr = takeSnapshot("budgets-obr", obrLoaded.snapshot);
+  const { borrowing } = await loadYearAhead(event);
+  const efo = obr?.data.efo?.data;
+  const explained = efo?.eventDate === event.date;
+  const charts = obr?.data.distributional?.data?.eventSlug === event.slug;
+  const forecast =
+    borrowing?.forecast != null ? ` The OBR forecast borrowing of ${formatBillions(borrowing.forecast)} in ${borrowing.fy}, the year ahead.` : "";
+  const links = [
+    { href: `/budgets/${event.slug}`, label },
+    ...(explained ? [{ href: `/budgets/${event.slug}/explained#reality`, label: "Explained, chapter 4" }] : []),
+    ...(charts ? [{ href: `/budgets/${event.slug}#households-by-income`, label: "HM Treasury distributional charts" }] : []),
+    { href: "/spending", label: "Spending" },
+    { href: "/taxpayers", label: "Income taxpayers" },
+  ];
+  const chartsSentence = charts
+    ? ` HM Treasury's distributional charts on the ${label} page estimate the effect on households by income.`
+    : "";
+  const chapterSentence = explained ? " Chapter 4 of the explained page sets the measures out." : "";
+  return {
+    "What did the latest Budget change?": {
+      question: `What did ${label} change?`,
+      answer: `${label} is the latest Budget on this site.${forecast} The event page lists the measures the OBR scored.${chapterSentence}${chartsSentence} Budget does not calculate what changed for one person.`,
+      links,
+    },
+    "Who gains and loses from the Budget?": {
+      question: "Who gains and loses from the Budget?",
+      answer: `Budget does not say who gains or loses from ${label}.${charts ? ` HM Treasury's distributional analysis estimates the effect on households by income decile, and those charts are on the ${label} page.` : " HM Treasury publishes a distributional analysis with the Budget."} Spending by function and the number of income taxpayers are on their own pages.`,
+      links,
+    },
+  };
 }

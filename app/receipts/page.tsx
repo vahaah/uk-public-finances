@@ -14,15 +14,20 @@ import { receiptMix } from "@/lib/mix";
 import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
 import { PAGE_COPY } from "@/lib/page-copy";
+import { shareCard } from "@/lib/share-card";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
-export const metadata = pageMeta({
-  title: PAGE_COPY.receipts.title,
-  description: PAGE_COPY.receipts.description,
-  path: "/receipts",
-});
+export async function generateMetadata() {
+  const card = await shareCard("/receipts");
+  return pageMeta({
+    title: PAGE_COPY.receipts.title,
+    description: card?.description ?? PAGE_COPY.receipts.description,
+    path: "/receipts",
+    og: card ? { kicker: card.kicker, title: card.sentence, alt: card.sentence, version: card.version } : undefined,
+  });
+}
 
 export default async function ReceiptsPage() {
   const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("hmrc-receipts"), readSnapshot("ons-prices"), fiscalMarkers()]);
@@ -85,8 +90,10 @@ export default async function ReceiptsPage() {
         citation={`${receiptCite(annual, rows)} Source: ${meta.publisher}, HMRC tax receipts, published ${snapshot.releaseDate ?? ""}. Via budget.vahaah.com/receipts.`}
         url={`${SITE_URL}/receipts`}
       />
-      <div id="mix" className="mt-6 scroll-mt-28">
+      <div className="mt-6">
         <ChartFrame
+          id="mix"
+          path="/receipts"
           title="How the mix of receipts has changed"
           subtitle="How HMRC receipts split between the main taxes each year since 2006-07. Switch to 100% to see shares instead of £bn."
           source={
@@ -106,8 +113,10 @@ export default async function ReceiptsPage() {
           </WhenVisible>
         </ChartFrame>
       </div>
-      <div id="by-tax" className="mt-3 scroll-mt-28">
+      <div className="mt-3">
       <ChartFrame
+        id="by-tax"
+        path="/receipts"
         title={`Receipts by tax, ${annual.year}`}
         subtitle="£bn. The ten largest taxes, with the rest grouped as Other."
         source={
@@ -137,8 +146,10 @@ export default async function ReceiptsPage() {
         </details>
       </ChartFrame>
       </div>
-      <div id="by-year" className="mt-3 scroll-mt-28">
+      <div className="mt-3">
         <ChartFrame
+          id="by-year"
+          path="/receipts"
           title="HMRC receipts by financial year"
           subtitle="£bn. Cash received by HMRC in each financial year. As a share of GDP, each financial year uses GDP for the same April to March year."
           source={
@@ -164,8 +175,10 @@ export default async function ReceiptsPage() {
           </WhenVisible>
         </ChartFrame>
       </div>
-      <div id="by-month" className="mt-3 scroll-mt-28">
+      <div className="mt-3">
         <ChartFrame
+          id="by-month"
+          path="/receipts"
           title="Total HMRC receipts by month"
           subtitle="The chart shows £bn and the table shows £m. Not adjusted for inflation. Receipts are not spread evenly across the year. Self assessment income tax is mostly paid in January and July, so those months are higher every year."
           source={

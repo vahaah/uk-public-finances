@@ -5,20 +5,19 @@ import Link from "next/link";
 import { BudgetCaveats } from "@/components/budget-caveats";
 import { BudgetScorecard } from "@/components/budget-scorecard";
 import { BudgetTimeline } from "@/components/budget-timeline";
+import { BudgetsChart } from "@/components/budgets-chart";
+import { CiteShare } from "@/components/cite-share";
 import { Breadcrumb, EmptySource, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
-import { PorcupineChart } from "@/components/lazy-charts";
-import type { PorcupineLine } from "@/components/porcupine-chart";
-import { PageIndex } from "@/components/page-index";
-import { WhenVisible } from "@/components/when-visible";
-import { differenceWords, roundDifference, withoutPartYear } from "@/lib/budgets/compare";
+import { differenceWords, roundDifference } from "@/lib/budgets/compare";
 import { eventLabel } from "@/lib/budgets/events";
-import { loadSeedEvents, withSeedEvents } from "@/lib/budgets/seed";
+import { porcupineLines } from "@/lib/budgets/porcupine";
+import { withSeedEvents } from "@/lib/budgets/seed";
 import { outcomeLabel } from "@/lib/budgets/rules";
-import { outturnByFy, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
-import { formatDateLong, formatMonthYear } from "@/lib/format";
+import { yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
+import { formatMonthYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
-import { PAGE_COPY } from "@/lib/page-copy";
 import { SITE_URL } from "@/lib/site";
+import { PAGE_COPY } from "@/lib/page-copy";
 import type { budgetsObrDataSchema } from "@/lib/schema";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import type { z } from "zod";
@@ -47,12 +46,8 @@ export default async function BudgetsPage() {
   const firstLabel = firstVerified
     ? `the ${eventLabel(firstVerified)}`
     : "the first OBR forecast";
-  const lines = porcupineLines(events, vintages);
-  const outturn = outturnByFy(
-    ons?.data.series.j5ii?.months ?? [],
-    "psnb",
-    [...new Set(lines.flatMap((line) => line.points.map((point) => point.fy)))],
-  ).flatMap((row) => (row.value == null ? [] : [{ fy: row.fy, value: row.value }]));
+  const hasChart = porcupineLines(events, vintages).length > 0;
+  const cite = indexCite(rows, firstLabel, asOf);
   return (
     <>
       <JsonLd data={breadcrumbJsonLd("Budgets", "/budgets")} />
@@ -71,7 +66,8 @@ export default async function BudgetsPage() {
         }}
       />
       <Breadcrumb current="Budgets" />
-      <PageIntro kicker="Budgets" title="How did each Budget's plans turn out?" lede={indexCite(rows, firstLabel, asOf)} />
+      <PageIntro kicker="Budgets" title="How did each Budget's plans turn out?" lede={cite} />
+      <CiteShare sentence={cite} citation={`${cite} Via budget.vahaah.com/budgets.`} url={`${SITE_URL}/budgets`} />
       <StoryStepper current="/budgets" />
       <p className="mb-6 text-sm text-neutral-800 dark:text-neutral-200">{asOf}</p>
       <section className="mb-8">
@@ -86,11 +82,9 @@ export default async function BudgetsPage() {
       </section>
       <section id="borrowing-forecasts" className="mb-8 scroll-mt-28">
         <h2 className="mb-3 text-sm font-medium">OBR borrowing forecasts against what happened</h2>
-        {obr?.data.historical.loaded && lines.length > 0 ? (
+        {obr?.data.historical.loaded && hasChart ? (
           <>
-            <WhenVisible>
-              <PorcupineChart outturn={outturn} vintages={lines} />
-            </WhenVisible>
+            <BudgetsChart />
             <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
               £bn, borrowing. Each thin line is one OBR forecast. The thick line is borrowing as recorded by the ONS (J5II, financial years, bulletin sign). The blue line is the latest loaded vintage{latestVintageDate(obr?.data) ? `, ${formatMonthYear(latestVintageDate(obr?.data)!)}` : ""}. Debt comparisons on an event page use HF6X. {asOf}
             </p>
@@ -104,9 +98,6 @@ export default async function BudgetsPage() {
         <BudgetScorecard rows={rows} ruleLabel={outcomeLabel("unreviewed")} />
       </section>
       <BudgetCaveats />
-      <section className="mt-10">
-        <PageIndex heading="All Budget and section pages" />
-      </section>
       <TopicStory path="/budgets" figures={["packages", "measures"]} title="Fiscal events compared" />
     </>
   );
@@ -144,19 +135,4 @@ function latestVintageDate(data: z.infer<typeof budgetsObrDataSchema> | undefine
   return dates.at(-1) ?? null;
 }
 
-function porcupineLines(
-  events: { date: string; slug: string; name: string; shortName: string | null; obrForecast: string }[],
-  vintages: { date: string; precision: "day" | "month"; series: string; points: { fy: string; value: number }[] }[],
-): PorcupineLine[] {
-  const psnb = vintages.filter((vintage) => vintage.series === "psnb");
-  const matched = events.flatMap((event) => {
-    if (event.obrForecast === "no") return [];
-    const vintage = psnb.find((item) => (item.precision === "month" ? event.date.slice(0, 7) === item.date.slice(0, 7) : Math.abs(Date.parse(event.date) - Date.parse(item.date)) <= 7 * 86400000));
-    if (!vintage) return [];
-    return [{ id: event.slug, name: eventLabel(event), highlight: false, points: withoutPartYear(event.date, vintage.points) }];
-  });
-  const last = matched.at(-1);
-  if (last) last.highlight = true;
-  return matched;
-}
 
