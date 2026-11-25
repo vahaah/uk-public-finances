@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-/** Copy a chart anchor, and save the chart SVG as a PNG. No extra image library. */
+/** Copy a chart anchor, and save an SVG chart as a PNG. HTML-only figures keep the link and skip the PNG. */
 export function ChartTools({ chartId, url }: { chartId: string; url: string }) {
   const [status, setStatus] = useState<string | null>(null);
+  const [png, setPng] = useState(false);
+  useEffect(() => {
+    const root = document.getElementById(chartId);
+    if (!root) return;
+    const update = () => setPng(hasChartSvg(root));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [chartId]);
   return (
     <>
       <button
@@ -17,27 +27,32 @@ export function ChartTools({ chartId, url }: { chartId: string; url: string }) {
       >
         Copy link
       </button>
-      <button
-        type="button"
-        className="inline-flex h-8 items-center rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700"
-        aria-label="Download this chart as a PNG"
-        onClick={() => {
-          const root = document.getElementById(chartId);
-          const svg = largestSvg(root);
-          if (!svg) {
-            setStatus("Chart not ready");
-            return;
-          }
-          void saveSvgPng(svg, chartId)
-            .then(() => setStatus("PNG saved"))
-            .catch(() => setStatus("Could not save the PNG"));
-        }}
-      >
-        Download PNG
-      </button>
+      {png ? (
+        <button
+          type="button"
+          className="inline-flex h-8 items-center rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700"
+          aria-label="Download this chart as a PNG"
+          onClick={() => {
+            const svg = largestSvg(document.getElementById(chartId));
+            if (!svg) {
+              setStatus("Chart not ready");
+              return;
+            }
+            void saveSvgPng(svg, chartId)
+              .then(() => setStatus("PNG saved"))
+              .catch(() => setStatus("Could not save the PNG"));
+          }}
+        >
+          Download PNG
+        </button>
+      ) : null}
       {status ? <span className="text-xs">{status}</span> : null}
     </>
   );
+}
+
+function hasChartSvg(root: HTMLElement): boolean {
+  return [...root.querySelectorAll("svg")].some((svg) => svg.childElementCount > 0);
 }
 
 function largestSvg(root: HTMLElement | null): SVGSVGElement | null {

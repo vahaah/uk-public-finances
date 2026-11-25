@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { matchCommand, type CommandItem } from "@/lib/command-match";
 
@@ -22,8 +23,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   useEffect(() => {
-    inputRef.current?.focus();
     const previous = document.activeElement;
+    inputRef.current?.focus();
     void fetch("/api/command")
       .then((response) => {
         if (!response.ok) throw new Error(String(response.status));
@@ -44,7 +45,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     onClose();
     router.push(item.href);
   };
-  return (
+  if (typeof document === "undefined") return null;
+  return createPortal(
     <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/40 px-4 pt-[12vh]" onMouseDown={onClose}>
       <div
         role="dialog"
@@ -79,7 +81,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           } else if (event.key === "ArrowUp") {
             event.preventDefault();
             setActive((index) => Math.max(0, index - 1));
-          } else if (event.key === "Enter") {
+          } else if (event.key === "Enter" && event.target === inputRef.current) {
             event.preventDefault();
             go(matches[active]);
           }
@@ -118,6 +120,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
                     aria-selected={index === active}
                     className={`flex w-full items-baseline justify-between gap-3 px-4 py-2 text-left text-sm ${index === active ? "bg-neutral-100 dark:bg-neutral-900" : ""}`}
                     onMouseEnter={() => setActive(index)}
+                    onFocus={() => setActive(index)}
                     onClick={() => go(item)}
                   >
                     <span className="min-w-0">{item.label}</span>
@@ -129,7 +132,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           })}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
