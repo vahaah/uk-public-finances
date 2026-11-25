@@ -2,18 +2,21 @@ import { TopicStory } from "@/components/topic-story";
 import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
-import { ForecastTrackChart, SmallSeriesChart } from "@/components/forecast-track";
+import { ForecastTrackChart, SmallSeriesChart } from "@/components/lazy-charts";
+import { RelatedPages } from "@/components/related-pages";
+import { WhenVisible } from "@/components/when-visible";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatBillions, formatMonth, formatMonthYear, formatPercent, roundBn } from "@/lib/format";
 import { cumulativeYear, forecastFor, outturnFor, recentWindow, shareOf, vintageLabel } from "@/lib/forecasts-view";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
+import { laterStamp } from "@/lib/sitemap-entries";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "OBR forecasts against outturn",
-  description:
-    "UK borrowing so far this financial year from the ONS, against the Office for Budget Responsibility forecast for the full year.",
+  title: PAGE_COPY.forecasts.title,
+  description: PAGE_COPY.forecasts.description,
   path: "/forecasts",
 });
 
@@ -56,7 +59,7 @@ export default async function ForecastsPage() {
           keywords: ["OBR forecast", "UK deficit", "public sector net borrowing"],
           temporalCoverage: fyData ? `${fyData.year.slice(0, 4)}-04/${fyData.through}` : "2026-04/2026-09",
           variableMeasured: ["Public sector net borrowing outturn", "OBR borrowing forecast"],
-          dateModified: obr?.releaseDate ?? ons?.releaseDate ?? null,
+          dateModified: laterStamp(obr?.releaseDate, ons?.releaseDate),
           sources: [
             { id: "ons-psf", name: onsMeta.title, url: ons?.sourceUrl ?? onsMeta.page, publisher: onsMeta.publisher, licenceUrl: onsMeta.licenceUrl, releaseDate: ons?.releaseDate ?? null },
             { id: "obr-databank", name: meta.title, url: obr?.sourceUrl ?? meta.page, publisher: meta.publisher, licenceUrl: meta.licenceUrl, releaseDate: obr?.releaseDate ?? null },
@@ -66,18 +69,25 @@ export default async function ForecastsPage() {
       <Breadcrumb current="Forecasts" />
       <PageIntro
         kicker="Office for Budget Responsibility"
-        title="Is borrowing on track with the OBR's forecast?"
+        title="What does the OBR forecast for UK borrowing?"
         lede={
           <>
-            The ONS records how much the government has borrowed so far this financial year. The Office for Budget Responsibility (OBR) forecasts borrowing for the whole year. Borrowing is not spread evenly across the months, so the fairest comparison is with the same point last year. For{" "}
-            <a className="underline decoration-neutral-500 underline-offset-4" href="/budgets">
-              how past forecasts turned out
-            </a>
-            , see each Budget. Monthly figures are on{" "}
-            <a className="underline decoration-neutral-500 underline-offset-4" href="/borrowing">
-              borrowing
-            </a>
-            .
+            <p>
+              {fy && ytd != null
+                ? `UK government borrowing in ${fy} so far is ${formatBillions(ytd)}${forecast != null ? `, against an OBR forecast of ${formatBillions(forecast)} for the full year` : ""}.`
+                : "The ONS records how much the UK government has borrowed so far this financial year. The OBR forecasts borrowing for the whole year."}
+            </p>
+            <p className="mt-2">
+              Borrowing is not spread evenly across the months, so the fairest comparison is with the same point last year. For{" "}
+              <a className="underline decoration-neutral-500 underline-offset-4" href="/budgets">
+                how past forecasts turned out
+              </a>
+              , see each Budget. Monthly figures are on{" "}
+              <a className="underline decoration-neutral-500 underline-offset-4" href="/borrowing">
+                UK government borrowing
+              </a>
+              .
+            </p>
           </>
         }
       />
@@ -116,7 +126,9 @@ export default async function ForecastsPage() {
               <dd className="text-lg font-medium tabular-nums">{lastShare != null ? formatPercent(lastShare, 0) : "—"}</dd>
             </div>
           </dl>
-          <ForecastTrackChart thisYear={thisYear} lastYear={lastYear} forecast={forecast} thisLabel={fy} lastLabel={lastFy ?? "Last year"} />
+          <WhenVisible>
+            <ForecastTrackChart thisYear={thisYear} lastYear={lastYear} forecast={forecast} thisLabel={fy} lastLabel={lastFy ?? "Last year"} />
+          </WhenVisible>
           <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
             The solid line is {fy} so far and the dashed line is {lastFy}. The dotted line is the OBR forecast for the whole of {fy}. The OBR does not publish a month-by-month forecast. Not adjusted for inflation.
           </p>
@@ -140,7 +152,9 @@ export default async function ForecastsPage() {
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {series.slice(0, 4).map((item) => (
-                <SmallSeriesChart key={item.name} name={item.name} points={recentWindow(item.points)} />
+                <WhenVisible key={item.name}>
+                  <SmallSeriesChart name={item.name} points={recentWindow(item.points)} />
+                </WhenVisible>
               ))}
             </div>
             {series.slice(0, 4).map((item) => (
@@ -173,6 +187,13 @@ export default async function ForecastsPage() {
           Earlier Budgets and how their forecasts turned out
         </Link>
       </p>
+      <RelatedPages
+        links={[
+          { href: "/borrowing", label: "UK government borrowing" },
+          { href: "/budgets", label: "How each UK Budget turned out" },
+          { href: "/forecasts/history", label: "OBR databank since 1946" },
+        ]}
+      />
       <TopicStory path="/forecasts" figures={["gdp", "independent", "cpi", "rhdiRolling"]} title="The economy in the latest forecast" />
     </>
   );

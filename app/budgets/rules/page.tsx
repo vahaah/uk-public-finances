@@ -6,13 +6,14 @@ import { outcomeLabel, reviewedHeadroom } from "@/lib/budgets/rules";
 import { loadRuleRegimes } from "@/lib/budgets/seed";
 import { formatBillions, formatDateLong } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 
 export const revalidate = 3600;
 
 export const metadata = pageMeta({
-  title: "UK fiscal rules and headroom",
-  description: "Every set of UK fiscal rules since 2010, how long each lasted, and how much headroom the OBR's forecast left against them at each event.",
+  title: PAGE_COPY.rules.title,
+  description: PAGE_COPY.rules.description,
   path: "/budgets/rules",
 });
 
@@ -28,12 +29,12 @@ export default async function RulesPage() {
       : reviewedHeadroom(regimes);
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd("Fiscal rules", "/budgets/rules")} />
+      <JsonLd data={breadcrumbJsonLd("Fiscal rules", "/budgets/rules", [{ href: "/budgets", label: "Budgets" }])} />
       <Breadcrumb current="Fiscal rules" parents={[{ href: "/budgets", label: "Budgets" }]} />
       <PageIntro
         kicker="Budgets"
-        title="What fiscal rules has the government set itself?"
-        lede={`There have been ${regimes.length} sets of fiscal rules since the Emergency Budget. An outcome is shown only when the reviewed file marks it.`}
+        title="What are the UK's fiscal rules, and how much headroom is there?"
+        lede={rulesLede(regimes.length, regimes.at(-1)?.name ?? null, headroomRows)}
       />
       <h2 className="mb-3 text-sm font-medium">Fiscal rules over time</h2>
       <ol className="mb-8 space-y-4 border-l border-neutral-300 pl-4 dark:border-neutral-700">
@@ -95,4 +96,11 @@ export default async function RulesPage() {
       </section>
     </>
   );
+}
+
+function rulesLede(count: number, current: string | null, rows: { eventDate: string | null; rule: string; headroomBn: number | null }[]): string {
+  const latest = [...rows].reverse().find((row) => row.headroomBn != null && row.eventDate);
+  const sets = `There have been ${count} sets of UK fiscal rules since June 2010${current ? `. The current set is the ${current}` : ""}.`;
+  if (!latest || latest.headroomBn == null || !latest.eventDate) return `${sets} Headroom against each rule is shown when the OBR's fiscal targets table is loaded.`;
+  return `At ${latest.eventDate}, the OBR put headroom against the ${latest.rule} rule at ${formatBillions(latest.headroomBn)}. ${sets}`;
 }

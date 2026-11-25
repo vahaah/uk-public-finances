@@ -5,7 +5,8 @@ import { GeistSans } from "geist/font/sans";
 import Script from "next/script";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
-import { Footer, Header, ThemeScript } from "@/components/chrome";
+import { Header, ThemeScript } from "@/components/chrome";
+import { SiteFooter } from "@/components/site-footer";
 import {
   PLAUSIBLE_DOMAIN,
   PLAUSIBLE_EVENT_PATH,
@@ -48,7 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <NuqsAdapter>
           <Header />
           <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-          <Footer />
+          <SiteFooter />
         </NuqsAdapter>
         {plausible ? (
           <>

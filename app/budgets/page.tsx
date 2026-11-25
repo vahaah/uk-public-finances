@@ -6,7 +6,10 @@ import { BudgetCaveats } from "@/components/budget-caveats";
 import { BudgetScorecard } from "@/components/budget-scorecard";
 import { BudgetTimeline } from "@/components/budget-timeline";
 import { Breadcrumb, EmptySource, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
-import { PorcupineChart, type PorcupineLine } from "@/components/porcupine-chart";
+import { PorcupineChart } from "@/components/lazy-charts";
+import type { PorcupineLine } from "@/components/porcupine-chart";
+import { PageIndex } from "@/components/page-index";
+import { WhenVisible } from "@/components/when-visible";
 import { differenceWords, roundDifference, withoutPartYear } from "@/lib/budgets/compare";
 import { eventLabel } from "@/lib/budgets/events";
 import { loadSeedEvents, withSeedEvents } from "@/lib/budgets/seed";
@@ -14,6 +17,7 @@ import { outcomeLabel } from "@/lib/budgets/rules";
 import { outturnByFy, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
 import { formatDateLong, formatMonthYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { SITE_URL } from "@/lib/site";
 import type { budgetsObrDataSchema } from "@/lib/schema";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -22,8 +26,8 @@ import type { z } from "zod";
 export const revalidate = 3600;
 
 export const metadata = pageMeta({
-  title: "How did each UK Budget turn out?",
-  description: "OBR borrowing forecasts at every UK Budget and Statement since 2010, compared with what happened, plus fiscal rules and headroom at each.",
+  title: PAGE_COPY.budgets.title,
+  description: PAGE_COPY.budgets.description,
   path: "/budgets",
 });
 
@@ -84,7 +88,9 @@ export default async function BudgetsPage() {
         <h2 className="mb-3 text-sm font-medium">OBR borrowing forecasts against what happened</h2>
         {obr?.data.historical.loaded && lines.length > 0 ? (
           <>
-            <PorcupineChart outturn={outturn} vintages={lines} />
+            <WhenVisible>
+              <PorcupineChart outturn={outturn} vintages={lines} />
+            </WhenVisible>
             <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
               £bn, borrowing. Each thin line is one OBR forecast. The thick line is borrowing as recorded by the ONS (J5II, financial years, bulletin sign). The blue line is the latest loaded vintage{latestVintageDate(obr?.data) ? `, ${formatMonthYear(latestVintageDate(obr?.data)!)}` : ""}. Debt comparisons on an event page use HF6X. {asOf}
             </p>
@@ -98,6 +104,9 @@ export default async function BudgetsPage() {
         <BudgetScorecard rows={rows} ruleLabel={outcomeLabel("unreviewed")} />
       </section>
       <BudgetCaveats />
+      <section className="mt-10">
+        <PageIndex heading="All Budget and section pages" />
+      </section>
       <TopicStory path="/budgets" figures={["packages", "measures"]} title="Fiscal events compared" />
     </>
   );

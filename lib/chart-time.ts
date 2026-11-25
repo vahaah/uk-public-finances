@@ -18,3 +18,14 @@ export function yearTickValues(periods: string[]): string[] {
 export function yearLabel(period: string): string {
   return period.slice(0, 4);
 }
+
+/** Last observation in each calendar month. Yield charts only label months, and daily points dominate the page HTML. */
+export function lastObservationByMonth<T extends { date: string }>(points: T[]): T[] {
+  const byMonth = new Map<string, T>();
+  for (const point of points) {
+    const month = point.date.slice(0, 7);
+    const current = byMonth.get(month);
+    if (!current || point.date >= current.date) byMonth.set(month, point);
+  }
+  return [...byMonth.values()].sort((left, right) => (left.date < right.date ? -1 : 1));
+}

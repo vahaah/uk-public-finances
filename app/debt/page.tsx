@@ -2,21 +2,25 @@ import { TopicStory } from "@/components/topic-story";
 import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
-import { DebtRatioChart, YieldChart } from "@/components/charts";
+import { DebtRatioChart, YieldChart } from "@/components/lazy-charts";
+import { RelatedPages } from "@/components/related-pages";
+import { WhenVisible } from "@/components/when-visible";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { CiteShare } from "@/components/cite-share";
 import { fiscalMarkers } from "@/lib/budgets/markers";
+import { lastObservationByMonth } from "@/lib/chart-time";
+import { laterStamp } from "@/lib/sitemap-entries";
 import { formatBillions, formatDateLong, formatGbpFromMillions, formatMonthLong, formatPercent, formatRelease } from "@/lib/format";
 import { reconcileSignedDisplay } from "@/lib/display-rounding";
 import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { loadHealth, readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "UK national debt, debt interest and gilts",
-  description:
-    "UK national debt in pounds and as a share of GDP, debt interest, Bank Rate, gilt yields and gilts in issue. From the ONS, Bank of England and DMO.",
+  title: PAGE_COPY.debt.title,
+  description: PAGE_COPY.debt.description,
   path: "/debt",
 });
 
@@ -61,7 +65,7 @@ export default async function DebtPage() {
           keywords: ["UK national debt", "debt to GDP", "gilt yield", "Bank Rate"],
           temporalCoverage: month ? `1993-01/${month}` : "1993-01/2026-09",
           variableMeasured: ["PSND ex (KSE6, HF6X)", "PSND ex banks ex BoE (CPOA)", "Central government net interest (NMFX)", "Bank Rate", "10-year gilt yield"],
-          dateModified: ons?.releaseDate ?? null,
+          dateModified: laterStamp(ons?.releaseDate, boe?.releaseDate, dmo?.releaseDate),
           sources: [
             { id: "ons-psf", name: SOURCES["ons-psf"].title, url: ons?.sourceUrl ?? SOURCES["ons-psf"].page, publisher: SOURCES["ons-psf"].publisher, licenceUrl: SOURCES["ons-psf"].licenceUrl, releaseDate: ons?.releaseDate ?? null },
             { id: "boe-yields", name: SOURCES["boe-yields"].title, url: boe?.sourceUrl ?? SOURCES["boe-yields"].page, publisher: SOURCES["boe-yields"].publisher, licenceUrl: SOURCES["boe-yields"].licenceUrl, releaseDate: boe?.releaseDate ?? null },
@@ -72,14 +76,17 @@ export default async function DebtPage() {
       <Breadcrumb current="Debt and gilts" />
       <PageIntro
         kicker="Public sector finances"
-        title="How big is the national debt, and what does it cost?"
+        title="How big is the UK national debt?"
         lede={
           <>
-            Public sector net debt and central government net interest come from the ONS. Bank Rate and gilt yields come from the Bank of England. Gilts in issue come from the UK Debt Management Office. Borrowing, which adds to the debt, is on{" "}
-            <Link className="underline decoration-neutral-500 underline-offset-4" href="/borrowing">
-              borrowing
-            </Link>
-            .
+            <p>{debtCite}</p>
+            <p className="mt-2">
+              Public sector net debt and central government net interest come from the ONS. Bank Rate and gilt yields come from the Bank of England. Gilts in issue come from the UK Debt Management Office. Borrowing, which adds to the debt, is on{" "}
+              <Link className="underline decoration-neutral-500 underline-offset-4" href="/borrowing">
+                UK government borrowing
+              </Link>
+              .
+            </p>
           </>
         }
       />
@@ -152,7 +159,9 @@ export default async function DebtPage() {
               />
             }
           >
-            <DebtRatioChart points={ons.data.series.hf6x?.months ?? []} markers={markers} />
+            <WhenVisible>
+              <DebtRatioChart points={ons.data.series.hf6x?.months ?? []} markers={markers} />
+            </WhenVisible>
           </ChartFrame>
         </div>
       ) : null}
@@ -174,7 +183,9 @@ export default async function DebtPage() {
               />
             }
           >
-            <YieldChart bank={boe.data.series.IUDBEDR.points} gilt={boe.data.series.IUDMNPY.points} />
+            <WhenVisible>
+              <YieldChart bank={lastObservationByMonth(boe.data.series.IUDBEDR.points)} gilt={lastObservationByMonth(boe.data.series.IUDMNPY.points)} />
+            </WhenVisible>
           </ChartFrame>
         </div>
       ) : (
@@ -223,6 +234,12 @@ export default async function DebtPage() {
           <EmptySource name="DMO gilts" />
         )}
       </div>
+      <RelatedPages
+        links={[
+          { href: "/borrowing", label: "UK government borrowing" },
+          { href: "/spending", label: "What the UK government spends on" },
+        ]}
+      />
       <TopicStory path="/debt" figures={["debtInterest", "psnfl", "debtVsOutturn"]} title="Debt and interest over the long run" />
     </>
   );

@@ -3,11 +3,12 @@ import Link from "next/link";
 import { Breadcrumb, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
 import { liveFaq } from "@/lib/faq";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "UK public finances FAQ: borrowing, debt and tax",
-  description: "How much the UK borrows and owes, what it spends on debt interest, how much tax it collects, and where the figures come from.",
+  title: PAGE_COPY.faq.title,
+  description: PAGE_COPY.faq.description,
   path: "/faq",
 });
 
@@ -30,8 +31,8 @@ export default async function FaqPage() {
       <Breadcrumb current="FAQ" />
       <PageIntro
         kicker="FAQ"
-        title="Frequently asked questions"
-        lede="Where the figures come from, when they update and how to reuse them."
+        title="Questions on UK borrowing, debt and tax"
+        lede="The latest borrowing, debt and tax figures, where they come from, and how to reuse them."
       />
       <div className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
         {FAQ.map((item, index) => (

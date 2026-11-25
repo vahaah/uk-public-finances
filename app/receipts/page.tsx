@@ -3,23 +3,24 @@ import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
 import { CiteShare } from "@/components/cite-share";
-import { HistoryChart, ReceiptsChart } from "@/components/charts";
+import { HistoryChart, ReceiptsChart, ReceiptMixChart } from "@/components/lazy-charts";
 import { JumpTo } from "@/components/jump-to";
-import { ReceiptMixChart } from "@/components/mix-chart";
+import { RelatedPages } from "@/components/related-pages";
+import { WhenVisible } from "@/components/when-visible";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatGbpFromMillions, formatMonth, formatPercent, formatReceiptBn, formatReceiptShare } from "@/lib/format";
 import { receiptMix } from "@/lib/mix";
 import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "UK tax receipts by tax: HMRC figures",
-  description:
-    "How much tax HMRC collects, by tax and by month: income tax, National Insurance, VAT, corporation tax and more. Cash receipts, from HMRC.",
+  title: PAGE_COPY.receipts.title,
+  description: PAGE_COPY.receipts.description,
   path: "/receipts",
 });
 
@@ -58,7 +59,7 @@ export default async function ReceiptsPage() {
       />
       <PageIntro
         kicker="HMRC tax receipts"
-        title="Where does the UK government's money come from?"
+        title="Where do UK tax receipts come from?"
         lede={
           <>
             <p>
@@ -100,7 +101,9 @@ export default async function ReceiptsPage() {
             />
           }
         >
-          <ReceiptMixChart pounds={receiptMix(snapshot.data.annualHistory, false)} shares={receiptMix(snapshot.data.annualHistory, true)} prices={bundle} />
+          <WhenVisible>
+            <ReceiptMixChart pounds={receiptMix(snapshot.data.annualHistory, false)} shares={receiptMix(snapshot.data.annualHistory, true)} prices={bundle} />
+          </WhenVisible>
         </ChartFrame>
       </div>
       <div id="by-tax" className="mt-3 scroll-mt-28">
@@ -118,7 +121,9 @@ export default async function ReceiptsPage() {
           />
         }
       >
-        <ReceiptsChart taxes={annual.taxes} year={annual.year} prices={bundle} />
+        <WhenVisible>
+          <ReceiptsChart taxes={annual.taxes} year={annual.year} prices={bundle} />
+        </WhenVisible>
         <DataTable
           columns={["Tax", "£bn", "Share of total"]}
           rows={rows.slice(0, 10).map((tax) => [tax.name, receiptCell(tax.value), formatReceiptShare(tax.value, annual.total)])}
@@ -147,14 +152,16 @@ export default async function ReceiptsPage() {
             />
           }
         >
-          <HistoryChart
-            points={snapshot.data.annualHistory.map((row) => ({ period: row.year, value: row.total }))}
-            frequency="financial"
-            unit="million"
-            prices={bundle}
-            name="Total HMRC receipts"
-            markers={markers}
-          />
+          <WhenVisible>
+            <HistoryChart
+              points={snapshot.data.annualHistory.map((row) => ({ period: row.year, value: row.total }))}
+              frequency="financial"
+              unit="million"
+              prices={bundle}
+              name="Total HMRC receipts"
+              markers={markers}
+            />
+          </WhenVisible>
         </ChartFrame>
       </div>
       <div id="by-month" className="mt-3 scroll-mt-28">
@@ -172,15 +179,17 @@ export default async function ReceiptsPage() {
             />
           }
         >
-          <HistoryChart
-            points={monthly.map((row) => ({ period: row.period, value: row.total }))}
-            frequency="month"
-            unit="million"
-            prices={bundle}
-            gdp={false}
-            name="HMRC receipts"
-            markers={markers}
-          />
+          <WhenVisible>
+            <HistoryChart
+              points={monthly.map((row) => ({ period: row.period, value: row.total }))}
+              frequency="month"
+              unit="million"
+              prices={bundle}
+              gdp={false}
+              name="HMRC receipts"
+              markers={markers}
+            />
+          </WhenVisible>
           <details className="mt-3 text-sm">
             <summary className="cursor-pointer font-medium">Show table</summary>
             <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">Last 18 months, £m. Source figures are £ million, so 75,778 is £75.8bn.</p>
@@ -191,6 +200,12 @@ export default async function ReceiptsPage() {
           </details>
         </ChartFrame>
       </div>
+      <RelatedPages
+        links={[
+          { href: "/spending", label: "What the UK government spends on" },
+          { href: "/taxpayers", label: "How many people pay income tax" },
+        ]}
+      />
       <TopicStory path="/receipts" figures={["taxBurden"]} title="The tax burden over the long run" />
     </>
   );

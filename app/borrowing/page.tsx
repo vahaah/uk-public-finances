@@ -1,18 +1,20 @@
 import { TopicStory } from "@/components/topic-story";
 import { StoryStepper } from "@/components/story-stepper";
-import { BorrowingChart, CumulativeChart } from "@/components/charts";
+import { BorrowingChart, CumulativeChart } from "@/components/lazy-charts";
+import { RelatedPages } from "@/components/related-pages";
+import { WhenVisible } from "@/components/when-visible";
 import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
 import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatGbpFromMillions, formatMonth, formatMonthLong, previousFinancialYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "UK government borrowing and the deficit",
-  description:
-    "Monthly UK government borrowing, and the financial year so far against the same months last year. From the ONS, with the next release date.",
+  title: PAGE_COPY.borrowing.title,
+  description: PAGE_COPY.borrowing.description,
   path: "/borrowing",
 });
 
@@ -54,7 +56,7 @@ export default async function BorrowingPage() {
       <Breadcrumb current="Borrowing" />
       <PageIntro
         kicker="Public sector finances"
-        title="How much is the government borrowing this year?"
+        title="How much is the UK government borrowing?"
         lede={
           <>
             <p>
@@ -82,13 +84,15 @@ export default async function BorrowingPage() {
       />
       <StoryStepper current="/borrowing" />
       <ChartFrame title="Public sector net borrowing by month" subtitle="£bn. Bars above zero are borrowing; below zero, a surplus." source={source}>
-        <BorrowingChart
-          months={snapshot.data.series.j5ii?.months ?? []}
-          quarters={snapshot.data.series.j5ii?.quarters ?? []}
-          years={snapshot.data.series.j5ii?.years ?? []}
-          prices={bundle}
-          markers={markers}
-        />
+        <WhenVisible>
+          <BorrowingChart
+            months={snapshot.data.series.j5ii?.months ?? []}
+            quarters={snapshot.data.series.j5ii?.quarters ?? []}
+            years={snapshot.data.series.j5ii?.years ?? []}
+            prices={bundle}
+            markers={markers}
+          />
+        </WhenVisible>
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame
@@ -97,7 +101,9 @@ export default async function BorrowingPage() {
           source={source}
         >
           {fy ? (
-            <CumulativeChart months={fy.months} prices={bundle} thisYear={fy.year} lastYear={previousFinancialYear(fy.year)} />
+            <WhenVisible>
+              <CumulativeChart months={fy.months} prices={bundle} thisYear={fy.year} lastYear={previousFinancialYear(fy.year)} />
+            </WhenVisible>
           ) : null}
           {fy ? (
             <DataTable
@@ -111,6 +117,13 @@ export default async function BorrowingPage() {
           ) : null}
         </ChartFrame>
       </div>
+      <RelatedPages
+        links={[
+          { href: "/debt", label: "UK national debt" },
+          { href: "/forecasts", label: "OBR forecast" },
+          { href: "/budgets", label: "Budgets" },
+        ]}
+      />
       <TopicStory path="/borrowing" figures={["psnb", "borrowingChanges", "policy"]} title="Borrowing in the latest forecast" />
     </>
   );

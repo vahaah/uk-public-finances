@@ -14,7 +14,7 @@ const pages = [
   ["/taxpayers", "taxpayers", "26.6%"],
   ["/forecasts", "forecasts", "The OBR forecast is not available yet"],
   ["/budgets", "budgets", "How did each Budget's plans turn out?"],
-  ["/budgets/rules", "rules", "What fiscal rules has the government set itself?"],
+  ["/budgets/rules", "rules", "What are the UK's fiscal rules"],
   ["/old-money", "old-money", "Best for public spending"],
   ["/methodology", "methodology", "How are the numbers calculated?"],
   ["/data-sources", "data-sources", "Office for National Statistics"],
@@ -30,8 +30,11 @@ for (const [path, name, text] of pages) {
     await expect(page.getByText(text).first()).toBeVisible();
     const ready = page.locator("[data-ready]");
     if ((await ready.count()) > 0) await expect(ready.first()).toBeVisible();
-    const chart = page.locator(".recharts-surface");
-    if ((await chart.count()) > 0) await expect(chart.first()).toBeVisible();
+    const slot = page.locator("[data-chart-slot]");
+    if ((await slot.count()) > 0) {
+      await slot.first().scrollIntoViewIfNeeded();
+      await expect(page.locator(".recharts-surface").first()).toBeVisible({ timeout: 15000 });
+    }
     const width = testInfo.project.name;
     await page.screenshot({ path: `${shots}/${name}-${width}-light.png`, fullPage: true });
     await page.getByRole("button", { name: "Switch to dark mode" }).click();
