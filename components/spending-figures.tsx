@@ -1,5 +1,5 @@
 import { StoryFigure } from "@/components/story-figure";
-import { MultiLine, SignedBars } from "@/components/story-charts";
+import { MultiLine, SignedBars } from "@/components/lazy-charts";
 import { formatUnit } from "@/lib/story-format";
 import { DEPARTMENT_SERIES, PER_PERSON_SERIES, departmentsReal, perPersonByFunction, priceBase, realChange } from "@/lib/spending-real";
 import type { SnapshotOf } from "@/lib/schema";

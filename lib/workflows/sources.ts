@@ -2,6 +2,7 @@ import {
   clearValidationFailure,
   recordPending,
   recordValidationFailure,
+  pingIndexNow,
   revalidateDashboard,
   runBoe,
   runDmo,
@@ -28,7 +29,10 @@ async function settle(sourceId: SourceId, run: Runner, force: boolean): Promise<
     else if (result.status === "validation_failed") await recordValidationFailure(sourceId, typeof result.error === "string" ? result.error : "Validation failed");
     else if (typeof result.partialError === "string") await recordValidationFailure(sourceId, result.partialError);
     else await clearValidationFailure(sourceId);
-    if (result.status === "updated") await revalidateDashboard();
+    if (result.status === "updated") {
+      await revalidateDashboard();
+      await pingIndexNow(sourceId);
+    }
     return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Source fetch failed";

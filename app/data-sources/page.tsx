@@ -1,11 +1,12 @@
 import { Breadcrumb, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { SOURCE_IDS } from "@/lib/schema";
 import { DERIVED_LICENCE, DERIVED_LICENCE_URL, SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "Data sources and licences",
-  description: "The official publishers, datasets and licences behind every figure: ONS, HMRC, HM Treasury PESA, the Debt Management Office, the Bank of England and the OBR.",
+  title: PAGE_COPY.dataSources.title,
+  description: PAGE_COPY.dataSources.description,
   path: "/data-sources",
 });
 

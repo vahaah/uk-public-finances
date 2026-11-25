@@ -3,7 +3,8 @@
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense } from "react";
 
-import { SpendingVisuals } from "@/components/charts";
+import { SpendingVisuals } from "@/components/lazy-charts";
+import { WhenVisible } from "@/components/when-visible";
 import { formatBillions, formatPercent } from "@/lib/format";
 import type { PriceBundle } from "@/lib/prices";
 
@@ -61,7 +62,9 @@ function SpendingFunctionsInner({ items, year, total, prices }: { items: Item[];
   );
   return (
     <>
-      <SpendingVisuals items={rows.filter((item) => item.value > 0)} year={year} prices={prices} keepOrder />
+      <WhenVisible>
+        <SpendingVisuals items={rows.filter((item) => item.value > 0)} year={year} prices={prices} keepOrder />
+      </WhenVisible>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-left font-sans text-sm tabular-nums">
           <thead>

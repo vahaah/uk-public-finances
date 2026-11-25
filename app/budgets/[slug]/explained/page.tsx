@@ -3,7 +3,7 @@ import { ChapterBar } from "@/components/chapter-bar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Breadcrumb, JsonLd, breadcrumbJsonLd } from "@/components/blocks";
+import { Breadcrumb, JsonLd, articleJsonLd, breadcrumbJsonLd } from "@/components/blocks";
 import { StoryNav } from "@/components/story-nav";
 import {
   BorrowingChangesFigure,
@@ -22,9 +22,11 @@ import {
   RhdiRollingFigure,
   TaxBurdenFigure,
 } from "@/components/story-sections";
-import { eventLabel } from "@/lib/budgets/events";
+import { eventLabel, financialYearOf } from "@/lib/budgets/events";
 import { formatDateLong } from "@/lib/format";
+import { formatUnit } from "@/lib/story-format";
 import { pageMeta } from "@/lib/meta";
+import { laterStamp } from "@/lib/sitemap-entries";
 import { rhdiByDecade } from "@/lib/rhdi-decades";
 import { latestStory, measuresPerEvent, storyEvents } from "@/lib/story";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -46,10 +48,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const story = await latestStory();
   const label = story && story.event.slug === slug ? eventLabel(story.event) : "Budget";
   return pageMeta({
-    title: `${label} explained: what it means for the UK`,
-    description: `${label} in charts from OBR data: growth, prices, incomes, borrowing, interest, taxes and debt, against the previous forecast.`,
+    title: `UK ${label} explained`,
+    description: `What ${label} means: the OBR forecast for growth, prices, incomes, borrowing, tax and debt, against the previous forecast.`,
     path: `/budgets/${slug}/explained`,
-    og: { kicker: "Budgets", title: `${label} explained`, detail: "The story in charts, from OBR data" },
+    og: { kicker: "Budgets", title: `UK ${label} explained`, detail: "The story in charts, from OBR data" },
   });
 }
 
@@ -60,6 +62,14 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
   const { event, efo, obr } = story;
   const label = eventLabel(event);
   const path = `/budgets/${slug}/explained`;
+  const parents = [{ href: "/budgets", label: "Budgets" }, { href: `/budgets/${slug}`, label }];
+  const fy = financialYearOf(event.date);
+  const psnb = efo.psnb?.points.find((point) => point.period === fy);
+  const headline = `UK ${label} explained`;
+  const answer =
+    psnb?.current != null
+      ? `The OBR's ${efo.currentLabel} forecast puts UK public sector net borrowing at ${formatUnit(psnb.current, "bn")} in ${fy}${psnb.previous != null ? `, compared with ${formatUnit(psnb.previous, "bn")} in its ${efo.previousLabel} forecast` : ""}.`
+      : `${formatDateLong(event.date)}. What the OBR's ${efo.currentLabel} forecast says about the economy and the public finances, compared with its ${efo.previousLabel} forecast.`;
   const [events, pricesLoaded, pesaLoaded, ofgemLoaded] = await Promise.all([storyEvents(), readSnapshot("ons-prices"), readSnapshot("pesa"), readSnapshot("ofgem-cap")]);
   const cap = takeSnapshot("ofgem-cap", ofgemLoaded.snapshot)?.data;
   const independent = takeSnapshot("pesa", pesaLoaded.snapshot)?.data.independent;
@@ -70,14 +80,22 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
   const props = { efo, path };
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd(`${label} explained`, path)} />
-      <Breadcrumb current="Explained" parents={[{ href: "/budgets", label: "Budgets" }, { href: `/budgets/${slug}`, label }]} />
+      <JsonLd data={breadcrumbJsonLd(`${label} explained`, path, parents)} />
+      <JsonLd
+        data={articleJsonLd({
+          path,
+          headline,
+          description: answer,
+          datePublished: event.date,
+          dateModified: laterStamp(event.date, story.releaseDate) ?? event.date,
+        })}
+      />
+      <Breadcrumb current="Explained" parents={parents} />
       <header className="mb-8 max-w-[68ch]">
-        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{label} explained</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{headline}</h1>
         <div className="mt-3"><StoryStepper current={path} /></div>
         <p className="mt-3 text-base text-neutral-900 dark:text-neutral-100">
-          {formatDateLong(event.date)} · {event.chancellor}. What the OBR&apos;s {efo.currentLabel} forecast says about the economy and the public finances, compared with its{" "}
-          {efo.previousLabel} forecast, in four chapters.
+          {answer} {formatDateLong(event.date)} · {event.chancellor}.
         </p>
       </header>
       <ChapterBar

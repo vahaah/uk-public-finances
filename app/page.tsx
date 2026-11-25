@@ -1,9 +1,12 @@
+import Link from "next/link";
+
 import { StoryStepper } from "@/components/story-stepper";
 import { HomeStory } from "@/components/home-story";
 import { StoryNav } from "@/components/story-nav";
 import { fiscalMarkers } from "@/lib/budgets/markers";
 import { CiteShare } from "@/components/cite-share";
-import { BorrowingChart, CumulativeChart } from "@/components/charts";
+import { BorrowingChart, CumulativeChart } from "@/components/lazy-charts";
+import { WhenVisible } from "@/components/when-visible";
 import { EquationRow } from "@/components/equation-row";
 import {
   ChartFrame,
@@ -20,14 +23,14 @@ import { formatDateLong, formatGbpFromMillions, formatMonth, formatMonthLong, fo
 import { overviewSummary } from "@/lib/overview-summary";
 import { buildRecords } from "@/lib/records";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SITE_URL, SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "UK public finances: tax, spending, borrowing, debt",
-  description:
-    "UK borrowing, tax receipts, spending, debt and gilts from the ONS, HMRC, HM Treasury, the DMO and the Bank of England. Every figure is sourced.",
+  title: PAGE_COPY.home.title,
+  description: PAGE_COPY.home.description,
   path: "/",
 });
 
@@ -150,13 +153,35 @@ export default async function HomePage() {
         })}
       />
       <header className="mb-8 max-w-[68ch]">
-        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">UK borrowing: is the government spending more than it takes in?</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">UK budget breakdown: where does the money come from and go?</h1>
         <div className="mt-3"><StoryStepper current="/" /></div>
         <p id="summary" data-cite className="mt-3 text-base text-neutral-900 dark:text-neutral-100">
           {cite}
         </p>
         <CiteShare sentence={cite} citation={citation} url={`${SITE_URL}/`} />
       </header>
+      <section className="mb-8 max-w-[68ch]" aria-labelledby="breakdown">
+        <h2 id="breakdown" className="text-xl font-semibold tracking-tight">Where the money comes from and where it goes</h2>
+        <p className="mt-2 text-sm leading-6 text-neutral-800 dark:text-neutral-200">
+          {receipts && spending ? `In ${monthLabel} the public sector received ${formatGbpFromMillions(receipts.value)} and spent ${formatGbpFromMillions(spending.value)}. ` : null}
+          <Link className="underline decoration-neutral-500 underline-offset-4" href="/receipts">
+            UK tax receipts
+          </Link>{" "}
+          show the taxes HMRC collected.{" "}
+          <Link className="underline decoration-neutral-500 underline-offset-4" href="/spending">
+            UK government spending
+          </Link>{" "}
+          shows what the money is spent on. The gap is{" "}
+          <Link className="underline decoration-neutral-500 underline-offset-4" href="/borrowing">
+            borrowing
+          </Link>
+          , which adds to the{" "}
+          <Link className="underline decoration-neutral-500 underline-offset-4" href="/debt">
+            national debt
+          </Link>
+          .
+        </p>
+      </section>
       <HomeStory />
       {equationMonth && equationYtd ? <EquationRow month={equationMonth} yearToDate={equationYtd} trends={trends} /> : null}
       {data.financialYear ? (
@@ -175,12 +200,14 @@ export default async function HomePage() {
               />
             }
           >
-            <CumulativeChart
-              months={data.financialYear.months}
-              prices={prices ? priceBundle(prices.data) : null}
-              thisYear={data.financialYear.year}
-              lastYear={previousFinancialYear(data.financialYear.year)}
-            />
+            <WhenVisible>
+              <CumulativeChart
+                months={data.financialYear.months}
+                prices={prices ? priceBundle(prices.data) : null}
+                thisYear={data.financialYear.year}
+                lastYear={previousFinancialYear(data.financialYear.year)}
+              />
+            </WhenVisible>
           </ChartFrame>
         </div>
       ) : null}
@@ -245,13 +272,15 @@ export default async function HomePage() {
             />
           }
         >
-          <BorrowingChart
-            months={data.series.j5ii?.months ?? []}
-            quarters={data.series.j5ii?.quarters ?? []}
-            years={data.series.j5ii?.years ?? []}
-            prices={prices ? priceBundle(prices.data) : null}
-            markers={markers}
-          />
+          <WhenVisible>
+            <BorrowingChart
+              months={data.series.j5ii?.months ?? []}
+              quarters={data.series.j5ii?.quarters ?? []}
+              years={data.series.j5ii?.years ?? []}
+              prices={prices ? priceBundle(prices.data) : null}
+              markers={markers}
+            />
+          </WhenVisible>
         </ChartFrame>
       </div>
       <StoryNav current="/" />

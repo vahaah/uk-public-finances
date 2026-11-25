@@ -1,22 +1,25 @@
 import Link from "next/link";
 
+import { RelatedPages } from "@/components/related-pages";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatBillions, formatPercent } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
+import { laterStamp } from "@/lib/sitemap-entries";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 import { DistributionalImpactFigure, DistributionalLevelsFigure } from "@/components/distributional-figures";
 
 export const metadata = pageMeta({
-  title: "How many people pay income tax in the UK?",
-  description:
-    "How many people in the UK pay income tax at each rate, and the share paid by the top 1% and top 10%. HMRC projections for 2026-27.",
+  title: PAGE_COPY.taxpayers.title,
+  description: PAGE_COPY.taxpayers.description,
   path: "/taxpayers",
 });
 
 export default async function TaxpayersPage() {
   const [loaded, obrLoaded] = await Promise.all([readSnapshot("hmrc-income-tax"), readSnapshot("budgets-obr")]);
-  const distributional = takeSnapshot("budgets-obr", obrLoaded.snapshot)?.data.distributional?.data ?? null;
+  const obr = takeSnapshot("budgets-obr", obrLoaded.snapshot);
+  const distributional = obr?.data.distributional?.data ?? null;
   const snapshot = takeSnapshot("hmrc-income-tax", loaded.snapshot);
   const meta = SOURCES["hmrc-income-tax"];
   if (!snapshot) return <EmptySource name="HMRC income tax liabilities" />;
@@ -35,14 +38,14 @@ export default async function TaxpayersPage() {
           keywords: ["UK income taxpayers", "higher rate taxpayers", "top 1 percent tax"],
           temporalCoverage: "2026-04/2027-04",
           variableMeasured: ["Income taxpayers by marginal rate, thousands", "Top 1% and top 10% share of income tax"],
-          dateModified: snapshot.releaseDate,
+          dateModified: laterStamp(snapshot.releaseDate, obr?.releaseDate),
           sources: [{ id: "hmrc-income-tax", name: meta.title, url: snapshot.sourceUrl, publisher: meta.publisher, licenceUrl: meta.licenceUrl, releaseDate: snapshot.releaseDate }],
         })}
       />
       <Breadcrumb current="Income taxpayers" />
       <PageIntro
         kicker="HMRC income tax"
-        title="Who pays income tax?"
+        title="How many people pay income tax in the UK?"
         lede={
           <>
             <p>
@@ -128,6 +131,7 @@ export default async function TaxpayersPage() {
           </div>
         </section>
       ) : null}
+      <RelatedPages links={[{ href: "/receipts", label: "UK tax receipts" }]} />
     </>
   );
 }

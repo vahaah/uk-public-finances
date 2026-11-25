@@ -1,5 +1,5 @@
 import { StoryFigure } from "@/components/story-figure";
-import { CompareBars, LongRunLine, MultiLine, RangeCompare, SignedBars, StackedBars, VintagesLine } from "@/components/story-charts";
+import { CompareBars, LongRunLine, MultiLine, RangeCompare, SignedBars, StackedBars, VintagesLine } from "@/components/lazy-charts";
 import { formatUnit } from "@/lib/story-format";
 import type { RhdiDecade } from "@/lib/rhdi-decades";
 import { financialYearOf } from "@/lib/budgets/events";

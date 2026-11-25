@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { LogoMark } from "@/components/logo";
-import { FOOTER, NAV, SITE_NAME } from "@/lib/site";
+import { NAV, SITE_NAME } from "@/lib/site";
 
 export function ThemeScript() {
   return (
@@ -83,36 +83,6 @@ function NavLinks({ pathname }: { pathname: string }) {
         );
       })}
     </>
-  );
-}
-
-export function Footer() {
-  return (
-    <footer className="mt-16 border-t border-neutral-200 dark:border-neutral-800">
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-2 px-4 py-6 text-[13px] text-neutral-900 md:flex-row md:flex-wrap md:gap-x-4 dark:text-neutral-100">
-        {FOOTER.map((item) => (
-          <Link key={item.href} href={item.href} className="underline decoration-neutral-400 underline-offset-4">
-            {item.label}
-          </Link>
-        ))}
-        <a href="/llms.txt" className="underline decoration-neutral-400 underline-offset-4">
-          llms.txt
-        </a>
-        <a href="/llms-full.txt" className="underline decoration-neutral-400 underline-offset-4">
-          llms-full.txt
-        </a>
-        <span className="inline-flex items-center gap-1.5">
-          <LogoMark className="size-4" />
-          UK public finances from official statistics
-        </span>
-        <span>
-          Made by{" "}
-          <a href="https://vahaah.com" rel="author" className="underline decoration-neutral-400 underline-offset-4">
-            Alex Vakhitov
-          </a>
-        </span>
-      </div>
-    </footer>
   );
 }
 

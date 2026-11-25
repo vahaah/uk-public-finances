@@ -5,23 +5,24 @@ import Link from "next/link";
 
 import { SpendingFunctions } from "@/components/spending-functions";
 import { CiteShare } from "@/components/cite-share";
-import { DepartmentChart, HistoryChart, SpendingVisuals } from "@/components/charts";
+import { DepartmentChart, HistoryChart, FunctionMixChart } from "@/components/lazy-charts";
 import { JumpTo } from "@/components/jump-to";
-import { FunctionMixChart } from "@/components/mix-chart";
+import { RelatedPages } from "@/components/related-pages";
+import { WhenVisible } from "@/components/when-visible";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { fiscalMarkers } from "@/lib/budgets/markers";
 import { formatBillions, formatGbpFromMillions, formatPercent } from "@/lib/format";
 import { functionMix, realFunctionGrowth } from "@/lib/mix";
 import { SITE_URL } from "@/lib/site";
 import { pageMeta } from "@/lib/meta";
+import { PAGE_COPY } from "@/lib/page-copy";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "UK government spending by function and department",
-  description:
-    "What the UK government spends on health, welfare, education, defence and debt interest, plus departmental budgets. From HM Treasury PESA.",
+  title: PAGE_COPY.spending.title,
+  description: PAGE_COPY.spending.description,
   path: "/spending",
 });
 
@@ -98,11 +99,13 @@ export default async function SpendingPage() {
             />
           }
         >
-          <FunctionMixChart
-            pounds={functionMix(functionHistory, false)}
-            shares={functionMix(functionHistory, true)}
-            prices={bundle}
-          />
+          <WhenVisible>
+            <FunctionMixChart
+              pounds={functionMix(functionHistory, false)}
+              shares={functionMix(functionHistory, true)}
+              prices={bundle}
+            />
+          </WhenVisible>
         </ChartFrame>
       </div>
       <div id="growth" className="mt-3 scroll-mt-28 border border-neutral-200 p-6 dark:border-neutral-800">
@@ -159,16 +162,18 @@ export default async function SpendingPage() {
             />
           }
         >
-          <HistoryChart
-            points={functionHistory.flatMap((row) =>
-              row.totalManagedExpenditure == null ? [] : [{ period: row.year, value: row.totalManagedExpenditure }],
-            )}
-            frequency="financial"
-            unit="billion"
-            prices={bundle}
-            name="Total managed expenditure"
-            markers={markers}
-          />
+          <WhenVisible>
+            <HistoryChart
+              points={functionHistory.flatMap((row) =>
+                row.totalManagedExpenditure == null ? [] : [{ period: row.year, value: row.totalManagedExpenditure }],
+              )}
+              frequency="financial"
+              unit="billion"
+              prices={bundle}
+              name="Total managed expenditure"
+              markers={markers}
+            />
+          </WhenVisible>
         </ChartFrame>
       </div>
       </div>
@@ -187,11 +192,13 @@ export default async function SpendingPage() {
             />
           }
         >
-          <DepartmentChart
-            prices={bundle}
-            outturn={{ year: departments.year, items: departments.items }}
-            plans={{ year: departmentPlans.year, items: departmentPlans.items }}
-          />
+          <WhenVisible>
+            <DepartmentChart
+              prices={bundle}
+              outturn={{ year: departments.year, items: departments.items }}
+              plans={{ year: departmentPlans.year, items: departmentPlans.items }}
+            />
+          </WhenVisible>
         </ChartFrame>
       </div>
       <section id="per-person-real" className="mt-10 scroll-mt-28" aria-labelledby="per-person-title">
@@ -203,6 +210,12 @@ export default async function SpendingPage() {
           <PerPupilFigure pesa={snapshot} path="/spending" />
         </div>
       </section>
+      <RelatedPages
+        links={[
+          { href: "/receipts", label: "UK tax receipts" },
+          { href: "/borrowing", label: "UK government borrowing" },
+        ]}
+      />
       <TopicStory path="/spending" figures={[]} title="" />
     </>
   );

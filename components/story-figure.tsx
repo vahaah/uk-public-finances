@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { ChartFrame, SourceNote } from "@/components/blocks";
 import { CiteShare } from "@/components/cite-share";
+import { WhenVisible } from "@/components/when-visible";
 import { formatDateLong } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
 
@@ -36,7 +37,7 @@ export function StoryFigure({
     <figure id={id} className="scroll-mt-40 md:scroll-mt-28">
       <ChartFrame title={title} subtitle={subtitle} source={<SourceNote {...source} />}>
         <p className="sr-only">{takeaway}</p>
-        {children}
+        <WhenVisible>{children}</WhenVisible>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <a href={href} download={`${id}.csv`} className="inline-flex h-8 items-center rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700">
             Download CSV

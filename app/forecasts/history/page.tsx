@@ -1,12 +1,11 @@
 import Link from "next/link";
 
-import { AUTHOR_JSON_LD, Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd } from "@/components/blocks";
+import { Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatBillions, roundBn } from "@/lib/format";
 import { vintageLabel } from "@/lib/forecasts-view";
 import { pageMeta } from "@/lib/meta";
-import { SITE_URL } from "@/lib/site";
-import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
+import { readSnapshot, takeSnapshot } from "@/lib/store";
 
 export const metadata = pageMeta({
   title: "OBR databank: full history",
@@ -25,24 +24,27 @@ export default async function ForecastHistoryPage() {
   const series = obr?.data.series.slice(0, 4) ?? [];
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd("OBR databank: full history", "/forecasts/history")} />
+      <JsonLd data={breadcrumbJsonLd("OBR databank: full history", "/forecasts/history", [{ href: "/forecasts", label: "Forecasts" }])} />
       <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@type": "Dataset",
-          "@id": `${SITE_URL}/forecasts/history#dataset`,
+        data={datasetJsonLd({
+          path: "/forecasts/history",
           name: "UK borrowing, debt, receipts and spending since 1946: OBR outturn and forecast",
           description: "OBR public finances databank series by financial year in £bn, outturn and the latest forecast.",
-          url: `${SITE_URL}/forecasts/history`,
-          inLanguage: "en-GB",
-          isAccessibleForFree: true,
+          keywords: ["OBR databank", "UK borrowing history", "UK national debt"],
           temporalCoverage: `1946/${series.flatMap((item) => item.points.map((point) => point.year)).sort().at(-1)?.slice(0, 4) ?? ""}`,
-          spatialCoverage: { "@type": "Country", name: "United Kingdom" },
-          creator: AUTHOR_JSON_LD,
-          license: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-          isBasedOn: { "@type": "Dataset", name: "OBR public finances databank", url: "https://obr.uk/data/" },
-          distribution: { "@type": "DataDownload", encodingFormat: "text/csv", contentUrl: `${SITE_URL}/forecasts/history/csv` },
-        }}
+          variableMeasured: series.map((item) => item.name),
+          dateModified: obr?.releaseDate ?? null,
+          sources: [
+            {
+              id: "obr-databank",
+              name: meta.title,
+              url: obr?.sourceUrl ?? meta.page,
+              publisher: meta.publisher,
+              licenceUrl: meta.licenceUrl,
+              releaseDate: obr?.releaseDate ?? null,
+            },
+          ],
+        })}
       />
       <Breadcrumb current="Full history" parents={[{ href: "/forecasts", label: "Forecasts" }]} />
       <PageIntro

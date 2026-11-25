@@ -6,12 +6,13 @@ import { notFound } from "next/navigation";
 import { BudgetCaveats } from "@/components/budget-caveats";
 import { StoryNav } from "@/components/story-nav";
 import { CompareFigure, PolicyFigure } from "@/components/story-sections";
-import { CompareBars } from "@/components/story-charts";
+import { CompareBars } from "@/components/lazy-charts";
+import { WhenVisible } from "@/components/when-visible";
 import { DistributionalCumulativeFigure, DistributionalImpactFigure, DistributionalLevelsFigure } from "@/components/distributional-figures";
 import { SourceNote } from "@/components/blocks";
 import { formatUnit } from "@/lib/story-format";
 import { eventComparisons, efoSourceTitle, OBR_SOURCE, SERIES_META, type ObrData } from "@/lib/story";
-import { AUTHOR_JSON_LD, Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
+import { Breadcrumb, DataTable, EmptySource, JsonLd, PageIntro, Stat, breadcrumbJsonLd } from "@/components/blocks";
 import { formatSignedDifference, roundDifference } from "@/lib/budgets/compare";
 import { eventLabel, financialYearOf, yearAheadFy, type FiscalEvent } from "@/lib/budgets/events";
 import { fiscalYearPlus, type ForecastSeriesId } from "@/lib/budgets/forecasts";
@@ -20,6 +21,7 @@ import { loadRuleRegimes, loadSeedEvents, withSeedEvents } from "@/lib/budgets/s
 import { seriesPoints, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
 import { formatBillions, formatDateLong, formatMillions, formatMonthYear, formatPercent } from "@/lib/format";
 import { forecastFor, vintageLabel } from "@/lib/forecasts-view";
+import { AUTHOR_JSON_LD, officialDataset, UK_PLACE } from "@/lib/jsonld";
 import { pageMeta } from "@/lib/meta";
 import { SITE_URL } from "@/lib/site";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -41,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const heading = eventHeading(event, label, borrowing);
   return pageMeta({
     title: hasOutturn(event, borrowing) ? `${label}: forecast and outturn` : heading,
-    description: eventDescription(event, label, when, borrowing),
+    description: eventDescription(event, label, borrowing),
     path: `/budgets/${slug}`,
     og: { kicker: "Budgets", title: hasOutturn(event, borrowing) ? `${label}: forecast vs outturn` : heading, detail: when ? `${when} · ${event.chancellor}` : event.chancellor },
     keywords: eventKeywords(event, label),
@@ -95,25 +97,22 @@ function eventKeywords(event: FiscalEvent, label: string): string[] {
   );
 }
 
-function eventDescription(event: FiscalEvent, label: string, when: string | null, borrowing: YearAheadComparison | null | undefined): string {
-  const named = /^(Growth Plan|Emergency Budget|OBR outlook)/.test(label) ? `the ${label}` : label;
-  const at = `At ${named}${when ? ` (${when})` : ""}`;
-  const popular = event.slug === "2022-09-growth-plan" ? " This was the September 2022 'mini-budget'." : "";
-  const chancellor = ` Chancellor: ${event.chancellor}.`;
-  if (event.obrForecast === "no") return `${at}, the OBR did not publish a forecast. HM Treasury documents and policy measures.${popular}${chancellor}`;
+function eventDescription(event: FiscalEvent, label: string, borrowing: YearAheadComparison | null | undefined): string {
+  const popular = event.slug === "2022-09-growth-plan" ? " The September 2022 mini-budget." : "";
+  if (event.obrForecast === "no") return `${label}: the OBR did not publish a forecast.${popular}`;
   if (!borrowing || borrowing.forecast == null) {
     return event.status === "pending"
-      ? `${at}. The OBR forecast for borrowing, receipts, spending and debt is still to come on this site.${chancellor}`
-      : `What the OBR forecast at ${named} for UK borrowing, and what the ONS later recorded.${popular}${chancellor}`;
+      ? `${label}: the OBR forecast for UK borrowing is still to come on this site.${popular}`
+      : `${label}: the OBR borrowing forecast and what the ONS later recorded.${popular}`;
   }
   if (borrowing.outturn == null || borrowing.difference == null) {
-    return `${at}, the OBR forecast ${borrowing.fy} borrowing of ${formatBillions(borrowing.forecast)}. That year has not ended yet.${popular}${chancellor}`;
+    return `${label}: the OBR forecast borrowing of ${formatBillions(borrowing.forecast)} in ${borrowing.fy}.${popular}`;
   }
   const result =
     borrowing.direction === "matched"
       ? "matching the forecast"
       : `${formatBillions(Math.abs(roundDifference(borrowing.difference)))} too ${borrowing.direction === "over" ? "high" : "low"}`;
-  return `${at}, the OBR forecast ${borrowing.fy} borrowing of ${formatBillions(borrowing.forecast)}; the outturn was ${formatBillions(borrowing.outturn)}, ${result}.${popular}${chancellor}`;
+  return `${label}: OBR forecast ${formatBillions(borrowing.forecast)} of borrowing in ${borrowing.fy}; outturn ${formatBillions(borrowing.outturn)}, ${result}.${popular}`;
 }
 
 export default async function BudgetEventPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -138,7 +137,7 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
     .slice(0, 10);
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd(label, `/budgets/${event.slug}`)} />
+      <JsonLd data={breadcrumbJsonLd(label, `/budgets/${event.slug}`, [{ href: "/budgets", label: "Budgets" }])} />
       <JsonLd data={eventJsonLd(event, label, borrowing)} />
       <Breadcrumb current={label} parents={[{ href: "/budgets", label: "Budgets" }]} />
       <PageIntro kicker="Budgets" title={eventHeading(event, label, borrowing)} lede={eventCite(event, label, when, borrowing, rule)} />
@@ -175,12 +174,12 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
       </p>
       <div className="mb-6 flex gap-3 text-sm">
         {previous ? (
-          <Link className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${previous.slug}`}>
+          <Link rel="prev" className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${previous.slug}`}>
             Previous: {eventLabel(previous)}
           </Link>
         ) : null}
         {next ? (
-          <Link className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${next.slug}`}>
+          <Link rel="next" className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${next.slug}`}>
             Next: {eventLabel(next)}
           </Link>
         ) : null}
@@ -421,23 +420,35 @@ function databankForecast(
 
 function eventJsonLd(event: FiscalEvent, label: string, borrowing: YearAheadComparison | null | undefined) {
   const url = `${SITE_URL}/budgets/${event.slug}`;
+  const description = eventDescription(event, label, borrowing);
   return {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "@id": `${url}#dataset`,
     name: `OBR forecast and ONS outturn: ${label}`,
-    description: eventDescription(event, label, event.dateStatus === "verified" ? formatDateLong(event.date) : null, borrowing),
+    description,
     url,
     inLanguage: "en-GB",
     isAccessibleForFree: true,
     keywords: eventKeywords(event, label),
     temporalCoverage: borrowing?.fy ?? yearAheadFy(event.date),
-    spatialCoverage: { "@type": "Country", name: "United Kingdom" },
+    spatialCoverage: UK_PLACE,
     creator: AUTHOR_JSON_LD,
+    publisher: AUTHOR_JSON_LD,
     license: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
     isBasedOn: [
-      { "@type": "Dataset", name: "OBR public finances databank and historical forecasts database", url: "https://obr.uk/data/" },
-      { "@type": "Dataset", name: "ONS public sector finances, J5II", url: "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance" },
+      officialDataset({
+        name: "OBR public finances databank and historical forecasts database",
+        url: "https://obr.uk/data/",
+        publisher: "Office for Budget Responsibility",
+        licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      }),
+      officialDataset({
+        name: "ONS public sector finances, J5II",
+        url: "https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance",
+        publisher: "Office for National Statistics",
+        licenceUrl: "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      }),
     ],
     about: {
       "@type": "Event",
@@ -445,7 +456,7 @@ function eventJsonLd(event: FiscalEvent, label: string, borrowing: YearAheadComp
       startDate: event.date,
       eventStatus: "https://schema.org/EventScheduled",
       location: { "@type": "Place", name: "House of Commons, London" },
-      organizer: { "@type": "GovernmentOrganization", name: "HM Treasury", url: "https://www.gov.uk/government/organisations/hm-treasury" },
+      organizer: { "@type": "Organization", name: "HM Treasury", url: "https://www.gov.uk/government/organisations/hm-treasury" },
       ...(event.govukPath ? { url: `https://www.gov.uk${event.govukPath}` } : {}),
     },
   };
@@ -491,7 +502,9 @@ function ForecastChanges({ event, label, obr }: { event: FiscalEvent; label: str
             {compares.map((compare) => (
               <figure key={compare.series} id={`forecast-${compare.series}`} className="min-w-0 border border-neutral-200 p-3 dark:border-neutral-800">
                 <figcaption className="mb-1 text-xs font-medium">{SERIES_META[compare.series].title}</figcaption>
-                <CompareBars points={compare.points} currentLabel={compare.currentLabel} previousLabel={compare.previousLabel} unit={SERIES_META[compare.series].unit} small />
+                <WhenVisible minHeight={160}>
+                  <CompareBars points={compare.points} currentLabel={compare.currentLabel} previousLabel={compare.previousLabel} unit={SERIES_META[compare.series].unit} small />
+                </WhenVisible>
               </figure>
             ))}
           </div>

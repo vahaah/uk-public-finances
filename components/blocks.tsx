@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 
 import { formatRelease } from "@/lib/format";
 import type { SourceId } from "@/lib/schema";
-import { AUTHOR, SITE_URL } from "@/lib/site";
+
+export { articleJsonLd, AUTHOR_JSON_LD, breadcrumbJsonLd, datasetJsonLd, websiteJsonLd, type DatasetSource } from "@/lib/jsonld";
 
 export function PageIntro({
   kicker,
@@ -266,112 +267,4 @@ export function EmptySource({ name, pending, detail, title }: { name: string; pe
 
 export function JsonLd({ data }: { data: unknown }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
-}
-
-export type DatasetSource = {
-  id: SourceId;
-  name: string;
-  url: string;
-  publisher: string;
-  licenceUrl: string;
-  releaseDate: string | null;
-};
-
-export function datasetJsonLd(input: {
-  path: string;
-  name: string;
-  description: string;
-  keywords: string[];
-  temporalCoverage: string;
-  variableMeasured: string[];
-  dateModified: string | null;
-  sources: DatasetSource[];
-}) {
-  const url = input.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${input.path}`;
-  const allOgl = input.sources.every((source) => source.licenceUrl.includes("open-government-licence"));
-  return {
-    "@context": "https://schema.org",
-    "@type": "Dataset",
-    "@id": `${url}#dataset`,
-    name: input.name,
-    description: input.description,
-    url,
-    inLanguage: "en-GB",
-    isAccessibleForFree: true,
-    keywords: input.keywords,
-    temporalCoverage: input.temporalCoverage,
-    spatialCoverage: { "@type": "Country", name: "United Kingdom" },
-    variableMeasured: input.variableMeasured,
-    dateModified: input.dateModified ?? undefined,
-    creator: AUTHOR_JSON_LD,
-    publisher: AUTHOR_JSON_LD,
-    includedInDataCatalog: { "@type": "DataCatalog", name: "Budget", url: `${SITE_URL}/` },
-    license: allOgl
-      ? "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-      : `${SITE_URL}/data-sources`,
-    isBasedOn: input.sources.map((source) => ({
-      "@type": "Dataset",
-      name: source.name,
-      url: source.url,
-      license: source.licenceUrl,
-      publisher: { "@type": "GovernmentOrganization", name: source.publisher },
-    })),
-    citation: input.sources.map(
-      (source) =>
-        `${source.publisher}, ${source.name}${source.releaseDate ? `, released ${source.releaseDate.slice(0, 10)}` : ""}. ${source.url}`,
-    ),
-    distribution: input.sources.map((source) => ({
-      "@type": "DataDownload",
-      encodingFormat: "application/json",
-      contentUrl: `${SITE_URL}/api/snapshots/${source.id}`,
-      license: source.licenceUrl,
-    })),
-    isPartOf: { "@id": `${SITE_URL}/#app` },
-  };
-}
-
-/** The site's author. Matches the "Made by" credit in the footer. */
-export const AUTHOR_JSON_LD = { "@type": "Person", "@id": "https://vahaah.com/#person", name: AUTHOR.name, url: AUTHOR.url } as const;
-
-export function breadcrumbJsonLd(current: string, path: string) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "UK public finances", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: current, item: `${SITE_URL}${path}` },
-    ],
-  };
-}
-
-export function websiteJsonLd() {
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      AUTHOR_JSON_LD,
-      {
-        "@type": "WebSite",
-        "@id": `${SITE_URL}/#website`,
-        url: `${SITE_URL}/`,
-        name: "Budget",
-        alternateName: "UK public finances",
-        inLanguage: "en-GB",
-        publisher: { "@id": "https://vahaah.com/#person" },
-      },
-      {
-        "@type": "WebApplication",
-        "@id": `${SITE_URL}/#app`,
-        name: "Budget: UK public finances",
-        url: `${SITE_URL}/`,
-        applicationCategory: "ReferenceApplication",
-        operatingSystem: "Any",
-        isAccessibleForFree: true,
-        offers: { "@type": "Offer", price: "0", priceCurrency: "GBP" },
-        inLanguage: "en-GB",
-        creator: { "@id": "https://vahaah.com/#person" },
-        description:
-          "Free view of UK public finances from the ONS, HMRC, HM Treasury, the UK Debt Management Office and the Bank of England.",
-      },
-    ],
-  };
 }

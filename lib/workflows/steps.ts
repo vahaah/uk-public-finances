@@ -40,6 +40,8 @@ import { droppedTooFar, snapshotRows } from "@/lib/quality";
 import { pesaDataSchema, priceSeriesSchema, snapshotSchemas, type AnySnapshot, type SnapshotOf, type SourceId } from "@/lib/schema";
 import { buildEnvelope, decidePublish, shouldWriteSnapshot } from "@/lib/snapshot";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
+import { indexNowUrls, postIndexNow } from "@/lib/indexnow";
+import { latestStory } from "@/lib/story";
 import { REVALIDATE_PATHS, USER_AGENT } from "@/lib/site";
 
 const ONS_BASE =
@@ -52,6 +54,21 @@ export async function revalidateDashboard(): Promise<void> {
   revalidatePath("/budgets/[slug]", "page");
   revalidatePath("/budgets/[slug]/explained", "page");
   revalidatePath("/sitemap.xml");
+}
+
+/** Ping IndexNow for URLs this source changes. A missing key or a rejected ping does not fail the publish. */
+export async function pingIndexNow(sourceId: SourceId): Promise<void> {
+  "use step";
+  if (!process.env.INDEXNOW_KEY) return;
+  try {
+    const story = await latestStory();
+    const explained = story ? `/budgets/${story.event.slug}/explained` : null;
+    const urls = indexNowUrls(sourceId, loadSeedEvents(), explained);
+    const submitted = await postIndexNow(urls);
+    if (submitted > 0) console.log(`IndexNow submitted ${submitted} urls after ${sourceId}`);
+  } catch (error) {
+    console.error(`IndexNow ping failed for ${sourceId}`, error);
+  }
 }
 
 export async function recordValidationFailure(sourceId: SourceId, error: string): Promise<void> {

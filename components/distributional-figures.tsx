@@ -1,5 +1,5 @@
 import { StoryFigure } from "@/components/story-figure";
-import { StackedBars } from "@/components/story-charts";
+import { StackedBars } from "@/components/lazy-charts";
 import { distributionalFigure, type DistributionalFigure, type HmtDistributional } from "@/lib/hmt-distributional";
 import { formatUnit } from "@/lib/story-format";
 
