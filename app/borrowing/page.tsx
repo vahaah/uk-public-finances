@@ -1,3 +1,5 @@
+import { CiteShare } from "@/components/cite-share";
+import { JumpTo } from "@/components/jump-to";
 import { TopicStory } from "@/components/topic-story";
 import { StoryStepper } from "@/components/story-stepper";
 import { BorrowingChart, CumulativeChart } from "@/components/lazy-charts";
@@ -5,18 +7,24 @@ import { RelatedPages } from "@/components/related-pages";
 import { WhenVisible } from "@/components/when-visible";
 import { Breadcrumb, ChartFrame, DataTable, breadcrumbJsonLd, datasetJsonLd, EmptySource, JsonLd, PageIntro, SourceNote } from "@/components/blocks";
 import { fiscalMarkers } from "@/lib/budgets/markers";
-import { formatGbpFromMillions, formatMonth, formatMonthLong, previousFinancialYear } from "@/lib/format";
+import { formatDateLong, formatGbpFromMillions, formatMonth, formatMonthLong, previousFinancialYear } from "@/lib/format";
 import { pageMeta } from "@/lib/meta";
 import { PAGE_COPY } from "@/lib/page-copy";
+import { shareCard } from "@/lib/share-card";
+import { SITE_URL } from "@/lib/site";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SOURCES } from "@/lib/site";
 
-export const metadata = pageMeta({
-  title: PAGE_COPY.borrowing.title,
-  description: PAGE_COPY.borrowing.description,
-  path: "/borrowing",
-});
+export async function generateMetadata() {
+  const card = await shareCard("/borrowing");
+  return pageMeta({
+    title: card?.title ?? PAGE_COPY.borrowing.title,
+    description: card?.description ?? PAGE_COPY.borrowing.description,
+    path: "/borrowing",
+    og: card ? { kicker: card.kicker, title: card.sentence, alt: card.sentence, version: card.version } : undefined,
+  });
+}
 
 export default async function BorrowingPage() {
   const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices"), fiscalMarkers()]);
@@ -27,6 +35,10 @@ export default async function BorrowingPage() {
   if (!snapshot) return <EmptySource name="ONS borrowing" />;
   const fy = snapshot.data.financialYear;
   const sign = snapshot.data.bulletinSign;
+  const answer =
+    fy && sign.financialYearBorrowing != null
+      ? `Public sector net borrowing in the financial year ${fy.year} to date (April to ${formatMonthLong(fy.through)}) was ${formatGbpFromMillions(sign.financialYearBorrowing)}. In the same months of the previous financial year it was ${sign.previousFinancialYearBorrowing == null ? "not available" : formatGbpFromMillions(sign.previousFinancialYearBorrowing)}.`
+      : "Monthly public sector net borrowing, excluding public sector banks.";
   const source = (
     <SourceNote
       publisher={meta.publisher}
@@ -54,16 +66,20 @@ export default async function BorrowingPage() {
         })}
       />
       <Breadcrumb current="Borrowing" />
+      <JumpTo
+        links={[
+          { href: "#answer", label: "So far this year" },
+          { href: "#by-month", label: "By month" },
+          { href: "#so-far", label: "Running total" },
+          { href: "#forecast", label: "Latest forecast" },
+        ]}
+      />
       <PageIntro
         kicker="Public sector finances"
         title="How much is the UK government borrowing?"
         lede={
           <>
-            <p>
-              {fy && sign.financialYearBorrowing != null
-                ? `Public sector net borrowing in the financial year ${fy.year} to date (April to ${formatMonthLong(fy.through)}) was ${formatGbpFromMillions(sign.financialYearBorrowing)}. In the same months of the previous financial year it was ${sign.previousFinancialYearBorrowing == null ? "not available" : formatGbpFromMillions(sign.previousFinancialYearBorrowing)}.`
-                : "Monthly public sector net borrowing, excluding public sector banks."}
-            </p>
+            <p id="answer">{answer}</p>
             <p className="mt-2">
               Borrowing is the gap between what the public sector spends and what it receives. Figures are revised in later releases. The running total adds to{" "}
               <a className="underline decoration-neutral-500 underline-offset-4" href="/debt">
@@ -82,8 +98,13 @@ export default async function BorrowingPage() {
           </>
         }
       />
+      <CiteShare
+        sentence={answer}
+        citation={`${answer} Source: ${meta.publisher}, J5II, published ${formatDateLong(snapshot.releaseDate)}. Via budget.vahaah.com/borrowing.`}
+        url={`${SITE_URL}/borrowing`}
+      />
       <StoryStepper current="/borrowing" />
-      <ChartFrame title="Public sector net borrowing by month" subtitle="£bn. Bars above zero are borrowing; below zero, a surplus." source={source}>
+      <ChartFrame id="by-month" path="/borrowing" title="Public sector net borrowing by month" subtitle="£bn. Bars above zero are borrowing; below zero, a surplus." source={source}>
         <WhenVisible>
           <BorrowingChart
             months={snapshot.data.series.j5ii?.months ?? []}
@@ -96,6 +117,8 @@ export default async function BorrowingPage() {
       </ChartFrame>
       <div className="mt-3">
         <ChartFrame
+          id="so-far"
+          path="/borrowing"
           title={fy ? `Borrowing so far in ${fy.year} against ${previousFinancialYear(fy.year)}` : "Borrowing so far"}
           subtitle={`£bn, running total. In real terms, only ${fy?.year ?? "this year"} is adjusted. A share of GDP is not shown for part of a year.`}
           source={source}
@@ -124,7 +147,9 @@ export default async function BorrowingPage() {
           { href: "/budgets", label: "Budgets" },
         ]}
       />
-      <TopicStory path="/borrowing" figures={["psnb", "borrowingChanges", "policy"]} title="Borrowing in the latest forecast" />
+      <div id="forecast" className="scroll-mt-28">
+        <TopicStory path="/borrowing" figures={["psnb", "borrowingChanges", "policy"]} title="Borrowing in the latest forecast" />
+      </div>
     </>
   );
 }

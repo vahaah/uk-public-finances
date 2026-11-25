@@ -5,7 +5,8 @@ import { GeistSans } from "geist/font/sans";
 import Script from "next/script";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
-import { Header, ThemeScript } from "@/components/chrome";
+import { ThemeScript } from "@/components/chrome";
+import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import {
   PLAUSIBLE_DOMAIN,
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [{ url: "/og", width: 1200, height: 630, alt: "Budget, UK public finances" }],
   },
-  twitter: { card: "summary_large_image", images: ["/og"] },
+  twitter: { card: "summary_large_image", images: [{ url: "/og", alt: "Budget, UK public finances" }] },
   authors: [{ name: "Alex Vakhitov", url: "https://vahaah.com" }],
 };
 
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen font-sans">
         <ThemeScript />
         <NuqsAdapter>
-          <Header />
+          <SiteHeader />
           <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
           <SiteFooter />
         </NuqsAdapter>

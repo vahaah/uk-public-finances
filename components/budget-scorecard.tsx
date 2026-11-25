@@ -1,28 +1,16 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 
+import { ScorecardControls } from "@/components/scorecard-controls";
 import { eventLabel } from "@/lib/budgets/events";
 import { formatSignedDifference } from "@/lib/budgets/compare";
 import type { YearAheadComparison } from "@/lib/budgets/view";
 import { formatBillions } from "@/lib/format";
 
 export function BudgetScorecard({ rows, ruleLabel }: { rows: YearAheadComparison[]; ruleLabel: string }) {
-  const [sort, setSort] = useState<"newest" | "error">("newest");
-  const ordered = [...rows].sort((left, right) => {
-    if (sort === "error") return Math.abs(right.difference ?? -1) - Math.abs(left.difference ?? -1);
-    return right.event.date.localeCompare(left.event.date);
-  });
+  const ordered = [...rows].sort((left, right) => right.event.date.localeCompare(left.event.date));
   return (
     <div>
-      <div className="mb-3 flex gap-2" role="group" aria-label="Sort the scorecard">
-        <SortButton on={sort === "newest"} onClick={() => setSort("newest")} label="Newest" />
-        <SortButton on={sort === "error"} onClick={() => setSort("error")} label="Largest difference" />
-      </div>
-      <p className="sr-only" aria-live="polite">
-        Sorted by {sort === "newest" ? "newest" : "largest difference"}.
-      </p>
+      <ScorecardControls />
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm tabular-nums">
           <caption className="sr-only">Year-ahead borrowing forecast and outturn for each fiscal event</caption>
@@ -38,9 +26,9 @@ export function BudgetScorecard({ rows, ruleLabel }: { rows: YearAheadComparison
               <th scope="col" className="py-2">Main rule</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="scorecard-body">
             {ordered.map((row) => (
-              <tr key={row.event.slug} className="border-b border-neutral-200 dark:border-neutral-800">
+              <tr key={row.event.slug} data-date={row.event.date} data-diff={String(Math.abs(row.difference ?? -1))} className="border-b border-neutral-200 dark:border-neutral-800">
                 <th scope="row" className="py-2 pr-3 text-left font-medium">
                   <Link className="underline decoration-neutral-400 underline-offset-4" href={`/budgets/${row.event.slug}`}>
                     {eventLabel(row.event)}
@@ -81,13 +69,5 @@ export function BudgetScorecard({ rows, ruleLabel }: { rows: YearAheadComparison
         Replaced rules are not counted as met or missed. Events with no OBR forecast, years that have not ended and rows marked Basis changed are left out of the median. Basis changed means the forecast was made before the September 2019 ONS changes to how borrowing is measured.
       </p>
     </div>
-  );
-}
-
-function SortButton({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
-  return (
-    <button type="button" aria-pressed={on} className={`h-9 rounded-full border px-3 text-xs ${on ? "border-neutral-950 font-medium dark:border-white" : "border-neutral-300 dark:border-neutral-700"}`} onClick={onClick}>
-      {label}
-    </button>
   );
 }

@@ -24,15 +24,20 @@ import { overviewSummary } from "@/lib/overview-summary";
 import { buildRecords } from "@/lib/records";
 import { pageMeta } from "@/lib/meta";
 import { PAGE_COPY } from "@/lib/page-copy";
+import { shareCard } from "@/lib/share-card";
 import { priceBundle } from "@/lib/prices";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
 import { SITE_URL, SOURCES } from "@/lib/site";
 
-export const metadata = pageMeta({
-  title: PAGE_COPY.home.title,
-  description: PAGE_COPY.home.description,
-  path: "/",
-});
+export async function generateMetadata() {
+  const card = await shareCard("/");
+  return pageMeta({
+    title: card?.title ?? PAGE_COPY.home.title,
+    description: card?.description ?? PAGE_COPY.home.description,
+    path: "/",
+    og: card ? { kicker: card.kicker, title: card.sentence, alt: card.sentence, version: card.version } : undefined,
+  });
+}
 
 export default async function HomePage() {
   const [loaded, priceLoaded, markers] = await Promise.all([readSnapshot("ons-psf"), readSnapshot("ons-prices"), fiscalMarkers()]);
@@ -187,6 +192,8 @@ export default async function HomePage() {
       {data.financialYear ? (
         <div className="mt-4">
           <ChartFrame
+            id="borrowing-so-far"
+            path="/"
             title={`Borrowing so far in ${data.financialYear.year}`}
             subtitle="Borrowing added up month by month since April, this financial year against last."
             source={
@@ -259,6 +266,8 @@ export default async function HomePage() {
       </div>
       <div className="mt-3">
         <ChartFrame
+          id="borrowing-by-month"
+          path="/"
           title="Public sector net borrowing by month"
           subtitle="£bn. Bars above zero are borrowing; below zero, a surplus."
           source={

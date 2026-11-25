@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BudgetCaveats } from "@/components/budget-caveats";
+import { CiteShare } from "@/components/cite-share";
 import { StoryNav } from "@/components/story-nav";
 import { CompareFigure, PolicyFigure } from "@/components/story-sections";
 import { CompareBars } from "@/components/lazy-charts";
@@ -18,10 +19,11 @@ import { eventLabel, financialYearOf, yearAheadFy, type FiscalEvent } from "@/li
 import { fiscalYearPlus, type ForecastSeriesId } from "@/lib/budgets/forecasts";
 import { outcomeLabel, regimesAt } from "@/lib/budgets/rules";
 import { loadRuleRegimes, loadSeedEvents, withSeedEvents } from "@/lib/budgets/seed";
+import { databankForecast } from "@/lib/budgets/year-ahead";
 import { seriesPoints, yearAheadComparisons, type YearAheadComparison } from "@/lib/budgets/view";
 import { formatBillions, formatDateLong, formatMillions, formatMonthYear, formatPercent } from "@/lib/format";
-import { forecastFor, vintageLabel } from "@/lib/forecasts-view";
 import { AUTHOR_JSON_LD, officialDataset, UK_PLACE } from "@/lib/jsonld";
+import { cardVersion, eventForecastSentence } from "@/lib/headlines";
 import { pageMeta } from "@/lib/meta";
 import { SITE_URL } from "@/lib/site";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -38,14 +40,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const event = await findEvent(slug);
   if (!event) return pageMeta({ title: "Budget", description: "Fiscal event", path: `/budgets/${slug}` });
   const label = eventLabel(event);
-  const { borrowing } = await loadEventView(event);
+  const { borrowing, obr } = await loadEventView(event);
   const when = event.dateStatus === "verified" ? formatDateLong(event.date) : null;
   const heading = eventHeading(event, label, borrowing);
+  const sentence = eventForecastSentence(label, borrowing?.fy ?? null, borrowing?.forecast ?? null);
+  const cardTitle = sentence ?? (hasOutturn(event, borrowing) ? `${label}: forecast vs outturn` : heading);
   return pageMeta({
     title: hasOutturn(event, borrowing) ? `${label}: forecast and outturn` : heading,
     description: eventDescription(event, label, borrowing),
     path: `/budgets/${slug}`,
-    og: { kicker: "Budgets", title: hasOutturn(event, borrowing) ? `${label}: forecast vs outturn` : heading, detail: when ? `${when} · ${event.chancellor}` : event.chancellor },
+    og: {
+      kicker: "Budgets",
+      title: cardTitle,
+      detail: when ? `${when} · ${event.chancellor}` : event.chancellor,
+      alt: sentence ?? cardTitle,
+      version: cardVersion(obr?.releaseDate, obr?.retrievedAt),
+    },
     keywords: eventKeywords(event, label),
   });
 }
@@ -128,8 +138,9 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
   const regimes = regimesAt(loadRuleRegimes(), event.date);
   const label = eventLabel(event);
   const when = event.dateStatus === "verified" ? formatDateLong(event.date) : null;
-  const asOf = loaded ? `OBR data as of ${(obr?.releaseDate ?? obr?.data.historical.asOf) ? formatMonthYear((obr?.releaseDate ?? obr?.data.historical.asOf)!) : "the loaded file"} · loaded ${formatDateLong(obr?.retrievedAt ?? null)}.` : "OBR forecasts not loaded yet.";
   const rule = regimes[0]?.rules[0];
+  const cite = eventCite(event, label, when, borrowing, rule);
+  const asOf = loaded ? `OBR data as of ${(obr?.releaseDate ?? obr?.data.historical.asOf) ? formatMonthYear((obr?.releaseDate ?? obr?.data.historical.asOf)!) : "the loaded file"} · loaded ${formatDateLong(obr?.retrievedAt ?? null)}.` : "OBR forecasts not loaded yet.";
   const measureYear = fiscalYearPlus(financialYearOf(event.date), 2) ?? "the third year";
   const measures = (obr?.data.measures.rows ?? [])
     .filter((row) => row.eventDate === event.date && row.year3 != null && row.year3 !== 0)
@@ -140,7 +151,8 @@ export default async function BudgetEventPage({ params }: { params: Promise<{ sl
       <JsonLd data={breadcrumbJsonLd(label, `/budgets/${event.slug}`, [{ href: "/budgets", label: "Budgets" }])} />
       <JsonLd data={eventJsonLd(event, label, borrowing)} />
       <Breadcrumb current={label} parents={[{ href: "/budgets", label: "Budgets" }]} />
-      <PageIntro kicker="Budgets" title={eventHeading(event, label, borrowing)} lede={eventCite(event, label, when, borrowing, rule)} />
+      <PageIntro kicker="Budgets" title={eventHeading(event, label, borrowing)} lede={cite} />
+      <CiteShare sentence={cite} citation={`${cite} Via budget.vahaah.com/budgets/${event.slug}.`} url={`${SITE_URL}/budgets/${event.slug}`} />
       <StoryStepper current={`/budgets/${event.slug}`} />
       {regimes[0] ? (
         <p className="mb-3 text-sm">
@@ -403,20 +415,6 @@ async function allEvents(): Promise<FiscalEvent[]> {
 async function findEvent(slug: string): Promise<FiscalEvent | null> {
   return (await allEvents()).find((event) => event.slug === slug) ?? null;
 }
-
-function databankForecast(
-  event: FiscalEvent,
-  data: { round: string | null; series: { name: string; points: { year: string; outturn: number | null; forecast: number | null }[] }[] } | undefined,
-): YearAheadComparison | null {
-  if (!data || event.obrForecast === "no") return null;
-  const round = (vintageLabel(data.round) ?? "").toLowerCase();
-  if (!round.startsWith(formatMonthYear(event.date).toLowerCase())) return null;
-  const fy = yearAheadFy(event.date);
-  const forecast = forecastFor(data.series.find((item) => /net borrowing/i.test(item.name)), fy);
-  if (forecast == null) return null;
-  return { event, fy, forecast, outturn: null, difference: null, words: null, direction: null, due: false, basisChanged: false };
-}
-
 
 function eventJsonLd(event: FiscalEvent, label: string, borrowing: YearAheadComparison | null | undefined) {
   const url = `${SITE_URL}/budgets/${event.slug}`;

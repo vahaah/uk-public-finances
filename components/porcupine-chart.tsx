@@ -4,13 +4,9 @@ import { LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip
 
 import { yearTickValues } from "@/lib/chart-time";
 import { formatBillions } from "@/lib/format";
+import type { PorcupineLine } from "@/lib/budgets/porcupine";
 
-export type PorcupineLine = {
-  id: string;
-  name: string;
-  highlight: boolean;
-  points: { fy: string; value: number }[];
-};
+export type { PorcupineLine };
 
 export function PorcupineChart({ outturn, vintages }: { outturn: { fy: string; value: number }[]; vintages: PorcupineLine[] }) {
   const years = [...new Set([...outturn.map((point) => point.fy), ...vintages.flatMap((line) => line.points.map((point) => point.fy))])].sort();

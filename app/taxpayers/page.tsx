@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+import { CiteShare } from "@/components/cite-share";
+import { JumpTo } from "@/components/jump-to";
+import { PersonalTaxNote } from "@/components/personal-tax-note";
 import { RelatedPages } from "@/components/related-pages";
 import { Breadcrumb, ChartFrame, DataTable, EmptySource, JsonLd, PageIntro, SourceNote, Stat, breadcrumbJsonLd, datasetJsonLd } from "@/components/blocks";
 import { formatBillions, formatPercent } from "@/lib/format";
@@ -7,7 +10,7 @@ import { pageMeta } from "@/lib/meta";
 import { PAGE_COPY } from "@/lib/page-copy";
 import { laterStamp } from "@/lib/sitemap-entries";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
-import { SOURCES } from "@/lib/site";
+import { SITE_URL, SOURCES } from "@/lib/site";
 import { DistributionalImpactFigure, DistributionalLevelsFigure } from "@/components/distributional-figures";
 
 export const metadata = pageMeta({
@@ -26,6 +29,10 @@ export default async function TaxpayersPage() {
   const { payers, shares } = snapshot.data;
   const year = payers.yearLabel.replace(" to ", "-").replace(/(\d{4})-(\d{4})/, (_, start: string, end: string) => `${start}-${end.slice(2)}`);
   const totalPeople = payers.total == null ? null : payers.total / 1000;
+  const answer =
+    totalPeople == null
+      ? `The number of income taxpayers for tax year ${year} is not available.`
+      : `HMRC projects about ${totalPeople.toLocaleString("en-GB", { maximumFractionDigits: 1 })} million income taxpayers in tax year ${year}.`;
   return (
     <>
       <JsonLd data={breadcrumbJsonLd("UK income taxpayers and tax bands", "/taxpayers")} />
@@ -43,15 +50,22 @@ export default async function TaxpayersPage() {
         })}
       />
       <Breadcrumb current="Income taxpayers" />
+      <JumpTo
+        links={[
+          { href: "#answer", label: "How many pay" },
+          { href: "#shares", label: "Who pays" },
+          { href: "#by-rate", label: "By tax rate" },
+          { href: "#where-it-goes", label: "Your own tax" },
+          ...(distributional ? [{ href: "#households-by-income", label: "Households" }] : []),
+        ]}
+      />
       <PageIntro
         kicker="HMRC income tax"
         title="How many people pay income tax in the UK?"
         lede={
           <>
-            <p>
-              {totalPeople == null
-                ? `The number of income taxpayers for tax year ${year} is not available.`
-                : `HMRC projects about ${totalPeople.toLocaleString("en-GB", { maximumFractionDigits: 1 })} million income taxpayers in tax year ${year}.`}
+            <p id="answer">
+              {answer}
               {payers.projected
                 ? " Figures for 2026-27 are projections based on the 2023-24 Survey of Personal Incomes and the OBR's March 2026 Economic and fiscal outlook. The top 1% projection is indicative."
                 : ""}
@@ -66,17 +80,25 @@ export default async function TaxpayersPage() {
           </>
         }
       />
+      <CiteShare
+        sentence={answer}
+        citation={`${answer} Source: ${meta.publisher}, Income Tax liabilities statistics. Via budget.vahaah.com/taxpayers.`}
+        url={`${SITE_URL}/taxpayers`}
+      />
+      <PersonalTaxNote />
       {payers.projected ? (
         <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-neutral-300 px-3 py-1 text-xs dark:border-neutral-700">
           <span aria-hidden="true">◐</span> Projection: HMRC estimate for {year}
         </p>
       ) : null}
-      <div className="mb-3 grid gap-3 sm:grid-cols-3">
+      <div id="shares" className="mb-3 grid scroll-mt-28 gap-3 sm:grid-cols-3">
         <Stat label="Share of income tax paid by the top 1%" value={shares.top1Percent == null ? "Not available" : formatPercent(shares.top1Percent)} detail="Top 1% of income taxpayers, ranked by income. HMRC marks this projection as indicative." />
         <Stat label="Share of income tax paid by the top 10%" value={shares.top10Percent == null ? "Not available" : formatPercent(shares.top10Percent)} detail="Top 10% of income taxpayers, ranked by income." />
         <Stat label="Total income tax liabilities" value={shares.totalTaxBillion == null ? "Not available" : formatBillions(shares.totalTaxBillion)} detail="Tax owed for the year. Differs from cash received." />
       </div>
       <ChartFrame
+        id="by-rate"
+        path="/taxpayers"
         title={`Income taxpayers by highest rate paid, tax year ${year}`}
         source={<SourceNote publisher={meta.publisher} title="Income Tax liabilities statistics" url={snapshot.data.attachmentUrl} releaseDate={snapshot.releaseDate} licenceUrl={meta.licenceUrl} sourceId="hmrc-income-tax" />}
       >

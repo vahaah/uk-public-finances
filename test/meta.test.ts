@@ -5,9 +5,12 @@ import { ogImageUrl, pageMeta } from "@/lib/meta";
 describe("pageMeta", () => {
   it("sets og:image and twitter:image on every page", () => {
     const meta = pageMeta({ title: "Debt", description: "d", path: "/debt" });
-    const og = meta.openGraph as { images: { url: string }[] };
+    const og = meta.openGraph as { images: { url: string; alt: string }[] };
+    const twitter = meta.twitter as { images: { url: string; alt: string }[] };
     expect(og.images[0]?.url).toContain("/og?");
-    expect((meta.twitter as { images: string[] }).images[0]).toBe(og.images[0]?.url);
+    expect(og.images[0]?.alt).toBe("Debt");
+    expect(twitter.images[0]?.url).toBe(og.images[0]?.url);
+    expect(twitter.images[0]?.alt).toBe("Debt");
   });
 
   it("names the section on the card", () => {
