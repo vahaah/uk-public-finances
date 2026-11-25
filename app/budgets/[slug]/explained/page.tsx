@@ -26,6 +26,7 @@ import { eventLabel, financialYearOf } from "@/lib/budgets/events";
 import { formatDateLong } from "@/lib/format";
 import { formatUnit } from "@/lib/story-format";
 import { pageMeta } from "@/lib/meta";
+import { laterStamp } from "@/lib/sitemap-entries";
 import { rhdiByDecade } from "@/lib/rhdi-decades";
 import { latestStory, measuresPerEvent, storyEvents } from "@/lib/story";
 import { readSnapshot, takeSnapshot } from "@/lib/store";
@@ -86,7 +87,7 @@ export default async function ExplainedPage({ params }: { params: Promise<{ slug
           headline,
           description: answer,
           datePublished: event.date,
-          dateModified: obr.measures.asOf ?? story.releaseDate ?? event.date,
+          dateModified: laterStamp(event.date, story.releaseDate) ?? event.date,
         })}
       />
       <Breadcrumb current="Explained" parents={parents} />

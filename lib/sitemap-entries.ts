@@ -1,5 +1,4 @@
-/** Events older than this keep their own date, so Budget pages do not all share the latest release. */
-export const RECENT_EVENT_MS = 18 * 30 * 24 * 60 * 60 * 1000;
+import { yearAheadFy } from "@/lib/budgets/events";
 
 export const NOINDEX_PATHS = ["/api", "/data-health"] as const;
 
@@ -42,10 +41,21 @@ function latest(...dates: Date[]): Date {
   return dates.reduce((max, date) => (date.getTime() > max.getTime() ? date : max));
 }
 
-/** A Budget page moves with new ONS or OBR data only while its year is still being revised. */
+/**
+ * The year-ahead comparison stops moving two years after that financial year ends.
+ * 31 March, plus two years. An October 2024 Budget compares 2025-26, so it keeps
+ * the latest ONS release until 31 March 2028.
+ */
+export function outturnSettledAt(eventDate: string): Date {
+  const endYear = Number(yearAheadFy(eventDate).slice(0, 4)) + 1;
+  return new Date(Date.UTC(endYear + 2, 2, 31, 12, 0, 0));
+}
+
+/** A Budget page moves with new ONS or OBR data only while its year-ahead outturn is still being revised. */
 export function eventLastModified(date: string, now: Date, moving: Date): Date {
   const held = parseDay(date);
-  if (now.getTime() - held.getTime() > RECENT_EVENT_MS) return held;
+  const settledAt = outturnSettledAt(date);
+  if (now.getTime() > settledAt.getTime()) return settledAt;
   return latest(held, moving);
 }
 

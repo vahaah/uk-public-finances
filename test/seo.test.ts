@@ -4,7 +4,7 @@ import { lastObservationByMonth } from "@/lib/chart-time";
 import { indexNowUrls } from "@/lib/indexnow";
 import { articleJsonLd, breadcrumbJsonLd, datasetJsonLd, officialDataset } from "@/lib/jsonld";
 import { DESCRIPTION_MAX, PAGE_COPY, TITLE_SUFFIX, TITLE_TAG_MAX, clampDescription, clampTitle } from "@/lib/page-copy";
-import { NOINDEX_PATHS, buildSitemapEntries } from "@/lib/sitemap-entries";
+import { NOINDEX_PATHS, buildSitemapEntries, laterStamp, outturnSettledAt } from "@/lib/sitemap-entries";
 import robots from "@/app/robots";
 
 const source = {
@@ -121,12 +121,18 @@ describe("sitemap dates", () => {
     expect(at("/receipts")?.lastModified.toISOString()).toBe("2026-10-21T00:00:00.000Z");
   });
 
-  it("gives older Budget pages their own dates", () => {
-    expect(at("/budgets/2010-06-emergency-budget")?.lastModified.toISOString().slice(0, 10)).toBe("2010-06-22");
-    expect(at("/budgets/2024-10-autumn-budget")?.lastModified.toISOString().slice(0, 10)).toBe("2024-10-30");
+  it("keeps a Budget page on the latest release until its year-ahead outturn has settled", () => {
+    expect(outturnSettledAt("2024-10-30").toISOString().slice(0, 10)).toBe("2028-03-31");
+    expect(outturnSettledAt("2010-06-22").toISOString().slice(0, 10)).toBe("2014-03-31");
+    expect(at("/budgets/2010-06-emergency-budget")?.lastModified.toISOString().slice(0, 10)).toBe("2014-03-31");
+    expect(at("/budgets/2024-10-autumn-budget")?.lastModified.toISOString()).toBe("2026-11-20T23:00:00.000Z");
     expect(at("/budgets/2026-10-budget")?.lastModified.toISOString()).toBe("2026-11-20T23:00:00.000Z");
-    const dates = entries.filter((entry) => entry.path.startsWith("/budgets/") && !entry.path.endsWith("/explained") && entry.path !== "/budgets/rules").map((entry) => entry.lastModified.toISOString());
-    expect(new Set(dates).size).toBe(dates.length);
+    expect(at("/budgets/2010-06-emergency-budget")?.lastModified.toISOString()).not.toBe(at("/budgets/2026-10-budget")?.lastModified.toISOString());
+  });
+
+  it("does not date an article before it was published", () => {
+    expect(laterStamp("2026-10-28", "2024-03-06")).toBe("2026-10-28");
+    expect(laterStamp("2026-10-28", "2026-11-20T00:00:00.000Z")).toBe("2026-11-20T00:00:00.000Z");
   });
 
   it("dates the explained page from the OBR file, not the monthly ONS release", () => {
