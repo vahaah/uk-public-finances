@@ -146,7 +146,7 @@ export async function renderLlms(full: boolean): Promise<string> {
     "- get_latest_figures: receipts, spending, borrowing, debt and debt as a share of GDP, with the period and the ONS source. Positive borrowing is a deficit.",
     "- search_site: pages, the FAQ and the glossary, the same index as the search palette.",
     "- get_budget_event: the latest Budget's headline borrowing forecast, and links to the event page and the explained page.",
-    "- get_chart_data: one chart id and its official series, with the publisher.",
+    "- get_chart_data: one chart id and its official series, with the publisher. A shared id needs the page path, such as /receipts#by-month.",
     "snapshot, query and act come from the page's UI SDK bridge. act may open the search palette, choose a tab, period or series, or open a disclosure. It refuses anything else.",
     "",
     "## How to cite",

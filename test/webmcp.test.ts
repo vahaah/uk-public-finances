@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { allowAgentStep } from "@/lib/agent-allow";
 import { mountAgent } from "@/lib/agent-mount";
 import { loadChart, loadLatestFigures } from "@/lib/webmcp-load";
-import { CHART_IDS, budgetEvent, latestFigures, searchSite, webmcpTools } from "@/lib/webmcp";
+import { CHARTS, budgetEvent, latestFigures, resolveChart, searchSite, webmcpTools } from "@/lib/webmcp";
 import type { CommandItem } from "@/lib/command-match";
 
 const items: CommandItem[] = [
@@ -85,7 +85,24 @@ describe("WebMCP tools", () => {
     expect(borrowing.series[0]?.points.length).toBeGreaterThan(0);
     expect(borrowing.series[0]?.points.length).toBeLessThanOrEqual(18);
     const unknown = await loadChart("not-a-chart");
-    expect(unknown).toEqual({ error: "Unknown chart.", charts: CHART_IDS });
+    expect(unknown).toEqual({ error: "Unknown chart.", matches: CHARTS });
+  });
+
+  it("does not treat a shared chart id as borrowing", async () => {
+    expect(resolveChart({ id: "by-month" })).toEqual({
+      error: "This chart id is used on more than one page. Pass path.",
+      matches: [
+        { id: "by-month", path: "/borrowing" },
+        { id: "by-month", path: "/receipts" },
+      ],
+    });
+    const receipts = await loadChart("/receipts#by-month");
+    expect("series" in receipts).toBe(true);
+    if (!("series" in receipts)) return;
+    expect(receipts.source.publisher).toBe("HM Revenue & Customs");
+    expect(receipts.source.series).toBe("HMRC monthly receipts");
+    const borrowing = await loadChart("by-month", "/borrowing");
+    expect("series" in borrowing && borrowing.source.series).toBe("J5II");
   });
 
   it("does nothing when the browser has no model context", () => {

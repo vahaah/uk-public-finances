@@ -34,10 +34,13 @@ export const webmcpTools = [
   {
     name: "get_chart_data",
     description:
-      "One chart on this site: its id, the official series behind it, and the publisher. Ask with an id such as borrowing-by-month, ratio, by-tax, by-function or yields.",
+      "One chart on this site: its id, the page path, the official series behind it, and the publisher. Some ids are used on more than one page. Pass path, or an id like /receipts#by-month, so the series matches that page.",
     inputSchema: {
       type: "object",
-      properties: { id: { type: "string", description: "The chart id from the page, such as borrowing-by-month or ratio." } },
+      properties: {
+        id: { type: "string", description: "The chart id, or a page hash such as /receipts#by-month." },
+        path: { type: "string", description: "The page path when the id is shared, such as /receipts or /borrowing." },
+      },
       required: ["id"],
       additionalProperties: false,
     },
@@ -106,7 +109,37 @@ export function budgetEvent(input: { label: string; slug: string; date: string; 
   };
 }
 
-export const CHART_IDS = ["borrowing-by-month", "by-month", "so-far", "ratio", "by-tax", "by-year", "by-function", "yields"] as const;
+export type ChartRef = { id: string; path: string };
+
+/** Page anchors. The same id can name a different series on another page. */
+export const CHARTS: ChartRef[] = [
+  { id: "borrowing-by-month", path: "/" },
+  { id: "by-month", path: "/borrowing" },
+  { id: "by-month", path: "/receipts" },
+  { id: "so-far", path: "/borrowing" },
+  { id: "ratio", path: "/debt" },
+  { id: "by-tax", path: "/receipts" },
+  { id: "by-year", path: "/receipts" },
+  { id: "by-function", path: "/spending" },
+  { id: "yields", path: "/debt" },
+];
+
+/** An id, an optional page path, or a hash such as `/receipts#by-month`. */
+export function resolveChart(input: { id: string; path?: string | null }): ChartRef | { error: string; matches: ChartRef[] } {
+  const requested = parseChartInput(input.id, input.path);
+  const matches = CHARTS.filter((chart) => chart.id === requested.id && (requested.path == null || chart.path === requested.path));
+  if (matches.length === 1) return matches[0]!;
+  if (matches.length === 0) return { error: "Unknown chart.", matches: CHARTS };
+  return { error: "This chart id is used on more than one page. Pass path.", matches };
+}
+
+function parseChartInput(id: string, path?: string | null): { id: string; path: string | null } {
+  const trimmed = id.trim();
+  const hash = /^(?:https?:\/\/[^/#]+)?(\/[^#]*)#([A-Za-z0-9-]+)$/.exec(trimmed);
+  const explicit = path?.trim();
+  if (hash) return { id: hash[2] ?? trimmed, path: explicit || hash[1] || null };
+  return { id: trimmed, path: explicit || null };
+}
 
 export type ChartPoint = { period: string; value: number };
 

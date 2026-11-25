@@ -24,7 +24,7 @@ async function runTool(tool: WebmcpToolName, url: URL): Promise<unknown> {
     case "get_budget_event":
       return (await loadBudgetEvent()) ?? { error: "No Budget is loaded." };
     case "get_chart_data":
-      return loadChart(url.searchParams.get("id") ?? "");
+      return loadChart(url.searchParams.get("id") ?? "", url.searchParams.get("path"));
     default: {
       const exhaustive: never = tool;
       return exhaustive;

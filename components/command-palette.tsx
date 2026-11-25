@@ -2,8 +2,9 @@
 
 import { Command, CommandEmpty, CommandGroup, CommandGroupLabel, CommandInput, CommandItem, CommandList } from "@ui-sdk/react/command";
 import { Dialog, DialogBackdrop, DialogContent, DialogTitle } from "@ui-sdk/react/dialog";
+import { useShortcut } from "@ui-sdk/react/shortcuts";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { matchCommand, type CommandItem as SiteCommand } from "@/lib/command-match";
 
@@ -16,7 +17,16 @@ const GROUPS: { kind: SiteCommand["kind"]; label: string }[] = [
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const layer = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<SiteCommand[] | null>(null);
+  useShortcut(
+    "mod+k",
+    (event) => {
+      event.preventDefault();
+      onClose();
+    },
+    { layer },
+  );
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     void fetch("/api/command")
@@ -43,6 +53,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         style={{ position: "fixed", top: "12vh", left: "50%", translate: "-50% 0", margin: 0 }}
       >
         <DialogTitle className="sr-only">Search Budget</DialogTitle>
+        <div ref={layer}>
         <Command
           filter={(item, query) => {
             const kind = item.keywords?.[0] as SiteCommand["kind"] | undefined;
@@ -83,6 +94,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           </CommandList>
           {items ? <CommandEmpty className="px-4 py-3 text-sm">No matches.</CommandEmpty> : null}
         </Command>
+        </div>
       </DialogContent>
     </Dialog>
   );

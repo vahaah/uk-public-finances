@@ -47,7 +47,10 @@ async function callTool(name: (typeof webmcpTools)[number]["name"], input: Recor
   const url = new URL("/api/agent", window.location.origin);
   url.searchParams.set("tool", name);
   if (name === "search_site") url.searchParams.set("q", typeof input.query === "string" ? input.query : "");
-  if (name === "get_chart_data") url.searchParams.set("id", typeof input.id === "string" ? input.id : "");
+  if (name === "get_chart_data") {
+    url.searchParams.set("id", typeof input.id === "string" ? input.id : "");
+    if (typeof input.path === "string" && input.path) url.searchParams.set("path", input.path);
+  }
   const response = await fetch(url);
   if (!response.ok) return { error: "The figures could not be loaded." };
   return response.json() as Promise<unknown>;
