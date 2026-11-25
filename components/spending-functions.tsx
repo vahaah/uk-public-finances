@@ -71,7 +71,9 @@ function SpendingFunctionsInner({ items, year, total, prices }: { items: Item[];
             <tr>
               {header("name", "Function", false)}
               {header("value", "£bn", true)}
-              {header("value", "Share of total", true)}
+              <th scope="col" className="h-9 border-b border-neutral-200 pr-3 text-right text-xs font-medium text-neutral-900 dark:border-neutral-800 dark:text-neutral-100">
+                Share of total
+              </th>
             </tr>
           </thead>
           <tbody>

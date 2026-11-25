@@ -1,12 +1,14 @@
 "use client";
 
+import { Command, CommandEmpty, CommandGroup, CommandGroupLabel, CommandInput, CommandItem, CommandList } from "@ui-sdk/react/command";
+import { Dialog, DialogBackdrop, DialogContent, DialogTitle } from "@ui-sdk/react/dialog";
+import { useShortcut } from "@ui-sdk/react/shortcuts";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 
-import { matchCommand, type CommandItem } from "@/lib/command-match";
+import { matchCommand, type CommandItem as SiteCommand } from "@/lib/command-match";
 
-const GROUPS: { kind: CommandItem["kind"]; label: string }[] = [
+const GROUPS: { kind: SiteCommand["kind"]; label: string }[] = [
   { kind: "figure", label: "Latest figures" },
   { kind: "page", label: "Pages" },
   { kind: "faq", label: "FAQ" },
@@ -15,128 +17,85 @@ const GROUPS: { kind: CommandItem["kind"]; label: string }[] = [
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const titleId = useId();
-  const listId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [items, setItems] = useState<CommandItem[] | null>(null);
+  const layer = useRef<HTMLDivElement>(null);
+  const [items, setItems] = useState<SiteCommand[] | null>(null);
+  useShortcut(
+    "mod+k",
+    (event) => {
+      event.preventDefault();
+      onClose();
+    },
+    { layer },
+  );
   const [failed, setFailed] = useState(false);
-  const [query, setQuery] = useState("");
-  const [active, setActive] = useState(0);
   useEffect(() => {
-    const previous = document.activeElement;
-    inputRef.current?.focus();
     void fetch("/api/command")
       .then((response) => {
         if (!response.ok) throw new Error(String(response.status));
-        return response.json() as Promise<CommandItem[]>;
+        return response.json() as Promise<SiteCommand[]>;
       })
       .then(setItems)
       .catch(() => setFailed(true));
-    return () => {
-      if (previous instanceof HTMLElement) previous.focus();
-    };
   }, []);
-  const matches = useMemo(() => (items ?? []).filter((item) => matchCommand(item, query)).slice(0, 24), [items, query]);
-  useEffect(() => {
-    setActive(0);
-  }, [query]);
-  const go = (item: CommandItem | undefined) => {
-    if (!item) return;
+  const go = (value: string) => {
+    const href = value.slice(value.indexOf("\n") + 1);
+    if (!href) return;
     onClose();
-    router.push(item.href);
+    router.push(href);
   };
-  if (typeof document === "undefined") return null;
-  return createPortal(
-    <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/40 px-4 pt-[12vh]" onMouseDown={onClose}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="w-full max-w-lg border border-neutral-200 bg-white shadow-lg dark:border-neutral-800 dark:bg-black"
-        onMouseDown={(event) => event.stopPropagation()}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            onClose();
-            return;
-          }
-          if (event.key === "Tab") {
-            const focusable = [...event.currentTarget.querySelectorAll<HTMLElement>("button, input")];
-            const first = focusable[0];
-            const last = focusable.at(-1);
-            if (!first || !last) return;
-            if (event.shiftKey && document.activeElement === first) {
-              event.preventDefault();
-              last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-              event.preventDefault();
-              first.focus();
-            }
-            return;
-          }
-          if (matches.length === 0) return;
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            setActive((index) => Math.min(matches.length - 1, index + 1));
-          } else if (event.key === "ArrowUp") {
-            event.preventDefault();
-            setActive((index) => Math.max(0, index - 1));
-          } else if (event.key === "Enter" && event.target === inputRef.current) {
-            event.preventDefault();
-            go(matches[active]);
-          }
-        }}
+  return (
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }} presentation="dialog" modal>
+      {/* A controlled dialog has no trigger to anchor to, so it is placed here. */}
+      <DialogBackdrop className="fixed inset-0 bg-black/40" style={{ position: "fixed", inset: 0 }} />
+      <DialogContent
+        initialFocus="input"
+        className="w-[min(32rem,calc(100vw-2rem))] border border-neutral-200 bg-white text-neutral-950 shadow-lg dark:border-neutral-800 dark:bg-black dark:text-neutral-50"
+        style={{ position: "fixed", top: "12vh", left: "50%", translate: "-50% 0", margin: 0 }}
       >
-        <h2 id={titleId} className="sr-only">
-          Search Budget
-        </h2>
-        <input
-          ref={inputRef}
-          role="combobox"
-          aria-expanded="true"
-          aria-controls={listId}
-          aria-activedescendant={matches[active] ? optionId(listId, active) : undefined}
-          value={query}
-          placeholder="Search pages, figures, FAQ, glossary"
-          className="h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm outline-none dark:border-neutral-800"
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        <div id={listId} role="listbox" className="max-h-[50vh] overflow-y-auto py-2">
-          {failed ? <p className="px-4 py-3 text-sm">The index did not load.</p> : null}
-          {!failed && items == null ? <p className="px-4 py-3 text-sm">Loading…</p> : null}
-          {items && matches.length === 0 ? <p className="px-4 py-3 text-sm">No matches.</p> : null}
-          {GROUPS.map((group) => {
-            const rows = matches.flatMap((item, index) => (item.kind === group.kind ? [{ item, index }] : []));
-            if (rows.length === 0) return null;
-            return (
-              <div key={group.kind} className="pb-2">
-                <p className="px-4 py-1 text-xs text-neutral-700 dark:text-neutral-300">{group.label}</p>
-                {rows.map(({ item, index }) => (
-                  <button
-                    key={`${item.kind}-${item.href}-${item.label}`}
-                    id={optionId(listId, index)}
-                    type="button"
-                    role="option"
-                    aria-selected={index === active}
-                    className={`flex w-full items-baseline justify-between gap-3 px-4 py-2 text-left text-sm ${index === active ? "bg-neutral-100 dark:bg-neutral-900" : ""}`}
-                    onMouseEnter={() => setActive(index)}
-                    onFocus={() => setActive(index)}
-                    onClick={() => go(item)}
-                  >
-                    <span className="min-w-0">{item.label}</span>
-                    <span className="shrink-0 text-xs text-neutral-700 dark:text-neutral-300">{item.hint}</span>
-                  </button>
-                ))}
-              </div>
-            );
-          })}
+        <DialogTitle className="sr-only">Search Budget</DialogTitle>
+        <div ref={layer}>
+        <Command
+          filter={(item, query) => {
+            const kind = item.keywords?.[0] as SiteCommand["kind"] | undefined;
+            if (!kind) return false;
+            return matchCommand({ kind, label: item.label, href: "", hint: item.keywords?.[1] ?? "" }, query);
+          }}
+          onAction={go}
+          loop
+        >
+          <CommandInput
+            aria-label="Search pages, figures, FAQ and glossary"
+            placeholder="Search pages, figures, FAQ, glossary"
+            className="h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm outline-none dark:border-neutral-800"
+          />
+          {items == null ? <p className="px-4 py-3 text-sm">{failed ? "The index did not load." : "Loading…"}</p> : null}
+          <CommandList className="max-h-[50vh] overflow-y-auto py-2">
+            {GROUPS.map((group) => (
+              <CommandGroup key={group.kind}>
+                <CommandGroupLabel className="px-4 py-1 text-xs text-neutral-700 dark:text-neutral-300">{group.label}</CommandGroupLabel>
+                {(items ?? [])
+                  .filter((item) => item.kind === group.kind)
+                  .map((item) => (
+                    <CommandItem
+                      key={`${item.kind}\n${item.href}\n${item.label}`}
+                      value={`${item.kind}\n${item.href}`}
+                      label={item.label}
+                      keywords={[item.kind, item.hint]}
+                      className={(state) =>
+                        `flex w-full items-baseline justify-between gap-3 px-4 py-2 text-left text-sm ${state.highlighted ? "bg-neutral-100 dark:bg-neutral-900" : ""}`
+                      }
+                    >
+                      <span className="min-w-0">{item.label}</span>
+                      <span className="shrink-0 text-xs text-neutral-700 dark:text-neutral-300">{item.hint}</span>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+            ))}
+          </CommandList>
+          {items ? <CommandEmpty className="px-4 py-3 text-sm">No matches.</CommandEmpty> : null}
+        </Command>
         </div>
-      </div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   );
-}
-
-function optionId(listId: string, index: number): string {
-  return `${listId}-option-${index}`;
 }

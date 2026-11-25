@@ -2,6 +2,7 @@ import { TopicStory } from "@/components/topic-story";
 import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
+import { Disclosure } from "@/components/disclosure";
 import { ForecastTrackChart, SmallSeriesChart } from "@/components/lazy-charts";
 import { RelatedPages } from "@/components/related-pages";
 import { WhenVisible } from "@/components/when-visible";
@@ -134,13 +135,12 @@ export default async function ForecastsPage() {
           <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">
             The solid line is {fy} so far and the dashed line is {lastFy}. The dotted line is the OBR forecast for the whole of {fy}. The OBR does not publish a month-by-month forecast. Not adjusted for inflation.
           </p>
-          <details className="mt-3 text-sm">
-            <summary className="cursor-pointer">Show table</summary>
+          <Disclosure summary="Show table">
             <DataTable
               columns={["Month", `${fy}, £bn`, `${lastFy}, £bn`]}
               rows={fyData.months.map((row, index) => [formatMonth(row.period), formatBillions(roundBn(-row.cumulative / 1000)), lastYear[index] != null ? formatBillions(lastYear[index] ?? 0) : "—"])}
             />
-          </details>
+          </Disclosure>
         </ChartFrame>
       ) : (
         <EmptySource name="ONS borrowing" />
@@ -162,8 +162,7 @@ export default async function ForecastsPage() {
               ))}
             </div>
             {series.slice(0, 4).map((item) => (
-              <details key={item.name} className="mt-3 text-sm">
-                <summary className="cursor-pointer">Show table: {item.name}</summary>
+              <Disclosure key={item.name} summary={`Show table: ${item.name}`}>
                 <DataTable
                   columns={["Financial year", "Outturn", "Forecast"]}
                   rows={recentWindow(item.points).map((point) => [
@@ -172,7 +171,7 @@ export default async function ForecastsPage() {
                     point.forecast == null ? "—" : formatBillions(roundBn(point.forecast)),
                   ])}
                 />
-              </details>
+              </Disclosure>
             ))}
             <p className="mt-3 text-sm">
               <Link className="underline decoration-neutral-400 underline-offset-4" href="/forecasts/history">

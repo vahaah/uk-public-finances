@@ -1,6 +1,10 @@
 "use client";
 
+import { announce } from "@ui-sdk/core";
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@ui-sdk/react/popover";
 import { useState } from "react";
+
+import { popupPanel, textButton } from "@/components/ui/popup-classes";
 
 export function CiteShare({
   sentence,
@@ -11,48 +15,57 @@ export function CiteShare({
   citation: string;
   url: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState<"cite" | "link" | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const note = (message: string) => {
+    setStatus(message);
+    announce(message);
+  };
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        className="h-8 rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700"
-        aria-label="Copy a citation for this summary"
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-      >
-        Cite
-      </button>
-      <button
-        type="button"
-        className="h-8 rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700"
-        aria-label="Share this page"
-        onClick={() => {
-          const text = `${sentence} ${url}`;
-          if (typeof navigator.share === "function") {
-            void navigator.share({ text, url }).catch(() => copy(url, () => setCopied("link")));
-            return;
-          }
-          copy(url, () => setCopied("link"));
-        }}
-      >
-        Share
-      </button>
-      {copied === "link" ? <span className="text-xs">Link copied</span> : null}
-      {open ? (
-        <div className="w-full rounded-md border border-neutral-200 p-3 text-sm dark:border-neutral-800">
-          <p className="font-medium">Cite this figure</p>
+      <Popover>
+        <PopoverTrigger className={textButton} aria-label="Copy a citation for this summary">
+          Cite
+        </PopoverTrigger>
+        <PopoverContent side="bottom" align="start" sideOffset={8} collisionPadding={12} className={popupPanel}>
+          <PopoverTitle className="text-sm font-medium">Cite this figure</PopoverTitle>
           <p className="mt-2 leading-6">{citation}</p>
-          <button
-            type="button"
-            className="mt-2 h-8 rounded-md border border-neutral-300 px-3 text-xs dark:border-neutral-700"
-            onClick={() => copy(citation, () => setCopied("cite"))}
-          >
-            {copied === "cite" ? "Copied" : "Copy"}
+          <button type="button" className={`${textButton} mt-2`} onClick={() => copy(citation, () => note("Citation copied"))}>
+            Copy
           </button>
-        </div>
-      ) : null}
+        </PopoverContent>
+      </Popover>
+      <Popover>
+        <PopoverTrigger className={textButton} aria-label="Share this page">
+          Share
+        </PopoverTrigger>
+        <PopoverContent side="bottom" align="start" sideOffset={8} collisionPadding={12} className={popupPanel}>
+          <PopoverTitle className="text-sm font-medium">Share this page</PopoverTitle>
+          <p className="mt-2 leading-6">{sentence}</p>
+          <p className="mt-2 break-all text-xs text-neutral-700 dark:text-neutral-300">{url}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" className={textButton} onClick={() => copy(url, () => note("Link copied"))}>
+              Copy link
+            </button>
+            <button
+              type="button"
+              className={textButton}
+              onClick={() => {
+                const text = `${sentence} ${url}`;
+                if (typeof navigator.share === "function") {
+                  void navigator.share({ text, url }).catch(() => copy(url, () => note("Link copied")));
+                  return;
+                }
+                copy(url, () => note("Link copied"));
+              }}
+            >
+              Share using this device
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <span className="text-xs" aria-live="polite">
+        {status}
+      </span>
     </div>
   );
 }

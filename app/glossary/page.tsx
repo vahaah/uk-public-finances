@@ -1,4 +1,5 @@
 import { Breadcrumb, JsonLd, PageIntro, breadcrumbJsonLd } from "@/components/blocks";
+import { GlossaryLetters } from "@/components/glossary-letters";
 import { GLOSSARY } from "@/lib/content";
 import { pageMeta } from "@/lib/meta";
 import { SITE_URL } from "@/lib/site";
@@ -32,25 +33,16 @@ export default function GlossaryPage() {
         title="What do these terms mean?"
         lede="Plain definitions of the terms used on this site."
       />
-      <nav aria-label="A to Z" className="sticky top-14 z-10 mb-4 hidden gap-2 bg-white/80 py-2 text-xs backdrop-blur lg:flex dark:bg-black/80">
-        {[...new Set(GLOSSARY.map((entry) => entry.term[0]?.toUpperCase() ?? ""))].map((letter) => (
-          <a key={letter} href={`#letter-${letter}`} className="underline decoration-neutral-400 underline-offset-4">
-            {letter}
-          </a>
-        ))}
-      </nav>
+      <GlossaryLetters letters={[...new Set(GLOSSARY.map((entry) => entry.term[0]?.toUpperCase() ?? ""))]} />
       <dl className="max-w-[68ch] divide-y divide-neutral-200 dark:divide-neutral-800">
         {GLOSSARY.map((entry, index) => {
           const letter = entry.term[0]?.toUpperCase() ?? "";
           const firstOfLetter = GLOSSARY.findIndex((item) => (item.term[0]?.toUpperCase() ?? "") === letter) === index;
           return (
             <div key={entry.id} id={entry.id} className="scroll-mt-20 py-4">
-              {firstOfLetter ? (
-                <span id={`letter-${letter}`} className="sr-only">
-                  {letter}
-                </span>
-              ) : null}
-              <dt className="text-sm font-medium">{entry.term}</dt>
+              <dt id={firstOfLetter ? `letter-${letter}` : undefined} className="text-sm font-medium">
+                {entry.term}
+              </dt>
               <dd className="mt-1 text-sm leading-6 text-neutral-800 dark:text-neutral-200">{entry.body}</dd>
             </div>
           );

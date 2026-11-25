@@ -3,6 +3,7 @@ import { StoryStepper } from "@/components/story-stepper";
 import Link from "next/link";
 
 import { CiteShare } from "@/components/cite-share";
+import { Disclosure } from "@/components/disclosure";
 import { HistoryChart, ReceiptsChart, ReceiptMixChart } from "@/components/lazy-charts";
 import { JumpTo } from "@/components/jump-to";
 import { RelatedPages } from "@/components/related-pages";
@@ -137,13 +138,12 @@ export default async function ReceiptsPage() {
           columns={["Tax", "£bn", "Share of total"]}
           rows={rows.slice(0, 10).map((tax) => [tax.name, receiptCell(tax.value), formatReceiptShare(tax.value, annual.total)])}
         />
-        <details className="mt-3 text-sm">
-          <summary className="cursor-pointer font-medium">All {rows.length} taxes</summary>
+        <Disclosure summary={`All ${rows.length} taxes`}>
           <DataTable
             columns={["Tax", "£bn", "Share of total"]}
             rows={rows.map((tax) => [tax.name, receiptCell(tax.value), formatReceiptShare(tax.value, annual.total)])}
           />
-        </details>
+        </Disclosure>
       </ChartFrame>
       </div>
       <div className="mt-3">
@@ -203,14 +203,13 @@ export default async function ReceiptsPage() {
               markers={markers}
             />
           </WhenVisible>
-          <details className="mt-3 text-sm">
-            <summary className="cursor-pointer font-medium">Show table</summary>
+          <Disclosure summary="Show table">
             <p className="mt-2 text-xs text-neutral-700 dark:text-neutral-300">Last 18 months, £m. Source figures are £ million, so 75,778 is £75.8bn.</p>
             <DataTable
               columns={["Month", "£m"]}
               rows={monthly.slice(-18).map((row) => [formatMonth(row.period), row.total.toLocaleString("en-GB", { maximumFractionDigits: 0 })])}
             />
-          </details>
+          </Disclosure>
         </ChartFrame>
       </div>
       <RelatedPages

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { ChartTooltip } from "@/components/chart-tooltip";
+import { Toggle } from "@ui-sdk/react/toggle";
 import { yearTickValues } from "@/lib/chart-time";
 import { formatAxis } from "@/lib/format";
 import { functionChartRows, mixNominal, TAX_GROUPS, TAX_LABELS, type FunctionMixRow, type MixRow, type TaxGroup } from "@/lib/mix";
@@ -97,14 +98,16 @@ function MixFrame({
   const baseYear = chartBaseYear(null);
   return (
     <div>
-      <button
-        type="button"
-        aria-pressed={asShare}
-        className={`mb-3 h-8 rounded-md border px-3 text-xs ${asShare ? "bg-neutral-100 font-medium dark:bg-neutral-800" : "border-neutral-300 dark:border-neutral-700"}`}
-        onClick={onToggle}
+      <Toggle
+        pressed={asShare}
+        aria-label={asShare ? "Showing shares" : "Show 100%"}
+        onPressedChange={() => onToggle()}
+        className={(state) =>
+          `mb-3 inline-flex h-11 items-center rounded-md border px-3 text-xs sm:h-8 ${state.pressed ? "bg-neutral-100 font-medium dark:bg-neutral-800" : "border-neutral-300 dark:border-neutral-700"}`
+        }
       >
         {asShare ? "Showing shares" : "Show 100%"}
-      </button>
+      </Toggle>
       <div className="h-[200px] sm:h-[280px]">
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <AreaChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>

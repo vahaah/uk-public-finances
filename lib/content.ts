@@ -70,7 +70,7 @@ export const GLOSSARY: Term[] = [
   {
     id: "nominal",
     term: "Nominal and real",
-    body: "Figures on this site are nominal: pounds at the time, not adjusted for inflation. PESA also publishes real-terms columns. Those columns are not shown here.",
+    body: "Nominal figures are pounds at the time, not adjusted for inflation. Where a chart says real terms, pounds are restated with the GDP deflator (ONS series MNF2 or L8GG).",
   },
   {
     id: "public-sector",

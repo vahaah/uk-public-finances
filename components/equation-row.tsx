@@ -4,6 +4,7 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense } from "react";
 
 import { Sparkline } from "@/components/blocks";
+import { Segmented } from "@/components/ui/segmented";
 import { reconcileSignedDisplay } from "@/lib/display-rounding";
 
 export type EquationTrend = { values: number[]; label: string };
@@ -38,14 +39,17 @@ function EquationRowInner({ month, yearToDate, trends }: { month: EquationView; 
   const borrowing = Number((spending - receipts).toFixed(1));
   return (
     <section className="border border-neutral-200 p-6 dark:border-neutral-800" data-balanced={rounded.balanced ? "true" : "false"}>
-      <div className="mb-4 inline-flex rounded-md border border-neutral-300 p-0.5 dark:border-neutral-700" role="group">
-        <button type="button" aria-pressed={which === "month"} className={chip(which === "month")} onClick={() => setWhich("month")}>
-          {month.periodLabel}
-        </button>
-        <button type="button" aria-pressed={which === "ytd"} className={chip(which === "ytd")} onClick={() => setWhich("ytd")}>
-          Year to date
-        </button>
-      </div>
+      <Segmented
+        label="Period"
+        className="mb-4"
+        itemClassName="sm:h-11"
+        value={which}
+        options={[
+          { value: "month", label: month.periodLabel },
+          { value: "ytd", label: "Year to date" },
+        ]}
+        onChange={setWhich}
+      />
       <div className="hidden items-end gap-x-4 lg:grid lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
         <Term label="Spending" value={spending} trend={trends?.spending} />
         <Operator symbol="−" />
@@ -70,10 +74,6 @@ function EquationRowInner({ month, yearToDate, trends }: { month: EquationView; 
 function signedBillions(value: number): string {
   const text = Math.abs(value).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   return value < 0 ? `−£${text}` : `£${text}`;
-}
-
-function chip(on: boolean): string {
-  return `h-11 min-w-11 px-3 text-xs ${on ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200"}`;
 }
 
 function Term({ label, value, trend }: { label: string; value: number; trend?: EquationTrend }) {

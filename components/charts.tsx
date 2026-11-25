@@ -18,6 +18,7 @@ import {
 } from "recharts";
 
 import { ChartTooltip } from "@/components/chart-tooltip";
+import { Segmented } from "@/components/ui/segmented";
 import { PriceControls, RANGES, usePriceView } from "@/components/prices";
 import { markerPeriod } from "@/lib/budgets/events";
 import { yearLabel, yearTickValues } from "@/lib/chart-time";
@@ -104,12 +105,13 @@ function BorrowingChartInner({
   return (
     <div>
       <PriceControls years={(prices?.deflatorYears ?? []).map((point) => point.period)} frequency gdp />
-      <div className="h-72">
+      {plotted.length === 0 ? <p className="text-sm">No figures for this range.</p> : null}
+      <div className={plotted.length === 0 ? "hidden" : "h-72"}>
         <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
           <BarChart data={plotted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
             <XAxis dataKey="period" ticks={yearTickValues(plotted.map((point) => point.period))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
-            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.borrowing))} />
+            <YAxis tick={{ fontSize: 13, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.borrowing))} />
             <Tooltip
               cursor={{ fill: theme.cursor }}
               content={({ active, payload, label }) => {
@@ -225,8 +227,8 @@ function CumulativeChartInner({
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
         <LineChart data={data} margin={{ top: 28, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid stroke={theme.grid} vertical={false} />
-          <XAxis dataKey="period" tick={{ fontSize: 12, fill: theme.tick }} />
-          <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={40} tickFormatter={formatAxis} />
+          <XAxis dataKey="period" tick={{ fontSize: 13, fill: theme.tick }} />
+          <YAxis tick={{ fontSize: 13, fill: theme.tick }} width={40} tickFormatter={formatAxis} />
           <Tooltip
             cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
             content={({ active, payload, label }) => (
@@ -271,7 +273,7 @@ function CumulativeChartInner({
           {compare ? (
             <Line type="linear" dataKey="lastYear" name={lastYear} stroke={theme.muted} strokeDasharray="4 4" dot={false} activeDot={{ r: 3 }} strokeWidth={2} isAnimationActive={false} />
           ) : null}
-          {compare ? <Legend verticalAlign="top" align="left" iconType="plainline" wrapperStyle={{ fontSize: 12 }} /> : null}
+          {compare ? <Legend verticalAlign="top" align="left" iconType="plainline" wrapperStyle={{ fontSize: 13 }} /> : null}
         </LineChart>
       </ResponsiveContainer>
       </div>
@@ -350,7 +352,7 @@ function HistoryChartInner({
           <LineChart data={plotted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
             <XAxis dataKey="period" ticks={yearTickValues(plotted.map((point) => point.period))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
-            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.value))} />
+            <YAxis tick={{ fontSize: 13, fill: theme.tick }} width={48} tickFormatter={formatAxis} ticks={niceTicks(plotted.map((point) => point.value))} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
               content={({ active, payload, label }) => {
@@ -548,6 +550,7 @@ function DepartmentChartInner({
     <div>
       <div className="mb-3 flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
         <Segmented
+          label="Outturn or plans"
           value={basis}
           options={[
             { value: "outturn", label: `${outturn.year} (spent)` },
@@ -606,7 +609,7 @@ function YieldChartInner({
           <LineChart data={data} margin={{ top: 28, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
             <XAxis dataKey="date" ticks={yearTickValues(data.map((point) => point.date))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
-            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={36} tickFormatter={(value) => `${formatAxis(Number(value))}`} />
+            <YAxis tick={{ fontSize: 13, fill: theme.tick }} width={36} tickFormatter={(value) => `${formatAxis(Number(value))}`} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
               content={({ active, payload, label }) => (
@@ -619,7 +622,7 @@ function YieldChartInner({
             />
             <Line type="stepAfter" dataKey="bank" name="Bank Rate" stroke={theme.bar} dot={false} activeDot={{ r: 3 }} strokeWidth={2} connectNulls={false} isAnimationActive={false} />
             <Line type="linear" dataKey="gilt" name="10-year gilt yield" stroke={theme.muted} dot={false} activeDot={{ r: 3 }} strokeWidth={2} connectNulls={false} isAnimationActive={false} />
-            <Legend verticalAlign="top" align="left" iconType="plainline" wrapperStyle={{ fontSize: 12 }} />
+            <Legend verticalAlign="top" align="left" iconType="plainline" wrapperStyle={{ fontSize: 13 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -647,7 +650,7 @@ function DebtRatioChartInner({ points, markers }: { points: { period: string; va
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke={theme.grid} vertical={false} />
             <XAxis dataKey="period" ticks={yearTickValues(data.map((point) => point.period))} interval={0} tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={yearLabel} />
-            <YAxis tick={{ fontSize: 12, fill: theme.tick }} width={36} domain={["auto", "auto"]} tickFormatter={formatAxis} />
+            <YAxis tick={{ fontSize: 13, fill: theme.tick }} width={36} domain={["auto", "auto"]} tickFormatter={formatAxis} />
             <Tooltip
               cursor={{ stroke: "#a3a3a3", strokeWidth: 1 }}
               content={({ active, payload, label }) => (
@@ -676,6 +679,8 @@ function RangeControl({
 }) {
   return (
     <Segmented
+      label="Time range"
+      className="mb-3"
       value={value}
       options={ranges.map((option) => ({ value: option, label: option === "all" ? "All" : `${option}y` }))}
       onChange={onChange}
@@ -683,31 +688,6 @@ function RangeControl({
   );
 }
 
-function Segmented<T extends string>({
-  value,
-  options,
-  onChange,
-}: {
-  value: T;
-  options: { value: T; label: string }[];
-  onChange: (value: T) => void;
-}) {
-  return (
-    <div className="mb-3 inline-flex rounded-md border border-neutral-300 p-0.5 dark:border-neutral-700" role="group">
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          aria-pressed={option.value === value}
-          className={`h-7 px-2.5 text-xs ${option.value === value ? "bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white" : "text-neutral-800 dark:text-neutral-200"}`}
-          onClick={() => onChange(option.value)}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 function eventLines(markers: EventMarker[], periods: string[]) {
   const seen = new Set<string>();
@@ -821,7 +801,7 @@ function CategoryBars({
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 720, height: 280 }}>
         <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
           <CartesianGrid stroke={theme.grid} horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 12, fill: theme.tick }} tickFormatter={formatAxis} ticks={niceTicks(data.map((row) => row.value))} />
+          <XAxis type="number" tick={{ fontSize: 13, fill: theme.tick }} tickFormatter={formatAxis} ticks={niceTicks(data.map((row) => row.value))} />
           <YAxis type="category" dataKey="name" width={200} tick={<EllipsisTick fill={theme.tick} />} />
           <Tooltip
             cursor={{ fill: theme.cursor }}
